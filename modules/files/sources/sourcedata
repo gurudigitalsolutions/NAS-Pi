@@ -1,0 +1,70 @@
+#!/usr/bin/php
+<?///////////////////////////////////////////////////////////////////////////////////
+//
+//	Mount Source Data
+//
+/////////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright 2013 Brian Murphy
+//	www.gurudigitalsolutions.com
+//
+/////////////////////////////////////////////////////////////////////////////////////
+
+chdir("/home/media/naspi/modules/files/sources");
+
+if(count($argv) == 1)
+{
+	//	No arguments were given, so we simply list available sources.
+	$ds = scandir("data");
+	foreach($ds as $esource)
+	{
+		if($esource != "." && $esource != "..")
+		{
+			echo $esource."\n";
+		}
+	}
+	
+	exit;
+}
+
+if($argv[1] == "--help" || $argv[1] == "-h")
+{
+	echo "Pi-NAS Mount Source Data\n";
+	echo "\n";
+	echo "Copyright 2013 Brian Murphy\n";
+	echo "\twww.gurudigitalsolutions.com\n\n";
+	echo "USAGE:\n\n";
+	echo "sourcedata\n";
+	echo "\tList available sources\n\n";
+	echo "sourcedata <sourcecode>\n";
+	echo "\tList available properties of <sourcecode>\n\n";
+	echo "sourcedata <sourcecode> <property>\n";
+	echo "\tGet value of <sourcecode>'s <property>\n";
+	exit;
+}
+
+require_once("0source.class.php");
+require_once("source-ftp.class.php");
+require_once("source-local.class.php");
+require_once("source-smb.class.php");
+require_once("source-sshfs.class.php");
+
+if(!file_exists("data/".$argv[1]))
+{
+	echo "Source file not found.\n";
+	exit;
+}
+
+$Source = unserialize(file_get_contents("data/".$argv[1]));
+
+if(count($argv) > 2)
+{
+	echo $Source->{$argv[2]}."\n";
+	exit;
+}
+
+$vars = get_object_vars($Source);
+foreach($vars as $ekey=>$eval)
+{
+	if(!is_array($eval)) { echo $ekey."\n"; }
+}

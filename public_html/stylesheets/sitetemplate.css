@@ -1,0 +1,72 @@
+body
+{
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-top: 0px;
+}
+
+#page_header
+{
+	height: 50px;
+	background: #777777;
+}
+
+.page_header_loginbox
+{
+	width: 500px;
+	position: float;
+	float: right;
+	text-align: right;
+}
+
+#page_body
+{
+	
+}
+
+#page_leftmenu
+{
+	width: 220px;
+	background: #CCCCCC;
+	position: float;
+	float: left;
+}
+
+#page_content
+{
+	margin-left: 225px;
+}
+
+#page_footer
+{
+	background: #777777;
+	color: #FFFFFF;
+	clear: both;
+	text-align: center;
+}
+
+.page_header_title
+{
+	margin-left: 67px;
+	font-size: 1.9em;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+
+.page_mainmenu_item
+{
+
+}
+
+.page_mainmenu_item_title
+{
+	background: #CCCCFF;
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+.page_mainmenu_item_submenus
+{
+	margin-left: 22px;
+}
+

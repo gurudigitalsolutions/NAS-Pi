@@ -1,0 +1,18 @@
+<frameset>
+	<legend>Add Source</legend>
+	<div id="files_newsource">
+		<form name="newsourceform">
+			<select name="newsourcetype" onchange="LoadPage('/?module=files&sub=newform&sourcetype='+this.value, 'files_newsource_inner')">
+				<option disabled selected>--Source Type--</option>
+				<option value="local">Local Drive</option>
+				<option value="bind">Bind Mount</option>
+				<option value="smb">Samba/Windows Share</option>
+				<option value="sshfs">SSHFS</option>
+				<option value="ftp">FTP</option>
+			</select>
+		</form>
+		
+		<div id="files_newsource_inner">
+		</div>
+	</div>
+</frameset>

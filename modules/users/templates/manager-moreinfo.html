@@ -1,0 +1,29 @@
+<form method="post" action="/">
+	<input type="hidden" name="module" value="users" />
+	<input type="hidden" name="sub" value="updateuser" />
+	<input type="hidden" name="username" value="[USERNAME]" />
+	<span class="users_manager_moreinfo_header">Groups</span>
+	<hr />
+	
+	<table border="0">
+		[EACHGROUP]
+	</table>
+	
+	<hr />
+	<span class="users_manager_moreinfo_header">Password</span>
+	<hr />
+	<table border="0">
+		<tr>
+			<td>Password:</td>
+			<td><input type="password" name="newpass" /></td>
+		</tr>
+		<tr>
+			<td>Confirm:</td>
+			<td><input type="password" name="newpassconf" /></td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td><input type="submit" value="Save User" /></td>
+		</tr>
+	</table>
+</form>

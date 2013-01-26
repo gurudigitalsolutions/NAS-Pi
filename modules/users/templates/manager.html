@@ -1,0 +1,60 @@
+<div class="users_manager_header">
+	User Manager
+</div>
+
+<div class="users_manager_groupman">
+	<table border="0">
+		[EACHGROUP]
+	</table>
+	<hr />
+	<form method="post" action="/">
+		<input type="hidden" name="module" value="users" />
+		<input type="hidden" name="sub" value="addgroup" />
+		Add Group:<br />
+		<input type="text" name="groupname" />
+		<input type="submit" value="Add" />
+	</form>
+</div>
+
+<table border="1">
+	<tr>
+		<th>User</th>
+		<th>Email</th>
+		<th>More</th>
+	</tr>
+	[EACHUSER]
+</table>
+
+<div class="users_manager_header">
+	Add A User
+</div>
+
+<div id="users_manager_adduser">
+	<form method="post" action="/">
+		<input type="hidden" name="module" value="users" />
+		<input type="hidden" name="sub" value="adduser" />
+		
+		<table border="0">
+			<tr>
+				<td>Username:</td>
+				<td><input type="text" name="username" /></td>
+			</tr>
+			<tr>
+				<td>Password:</td>
+				<td><input type="password" name="password" /></td>
+			</tr>
+			<tr>
+				<td>Confirm:</td>
+				<td><input type="password" name="passwordconf" /></td>
+			</tr>
+			<tr>
+				<td>Email:</td>
+				<td><input type="text" name="email" /></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td><input type="submit" value="Add User" /></td>
+			</tr>
+		</table>
+	</form>
+</div>
