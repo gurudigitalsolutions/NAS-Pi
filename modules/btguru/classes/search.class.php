@@ -30,7 +30,16 @@ class btguruSearch
 	{
 		global $RequestVars;
 		$this->NameDumpFile = MODULEPATH."/btguru/dumps/namedump.txt";
-		$this->SearchResultTemplate = file_get_contents(MODULEPATH."/btguru/templates/searchresult.html");
+		
+		if($RequestVars['js'] == 1)
+		{
+			$this->SearchResultTemplate = file_get_contents(MODULEPATH."/btguru/templates/search/result-each-json.html");
+		}
+		else
+		{
+			$this->SearchResultTemplate = file_get_contents(MODULEPATH."/btguru/templates/search/result-each.html");
+		}
+		
 		$this->SearchResultOutline = file_get_contents(MODULEPATH."/btguru/templates/search/result-outline.html");
 		$this->ActionAddTemplate = file_get_contents(MODULEPATH."/btguru/templates/search/result-action-add.html");
 		$this->ActionNoneTemplate = file_get_contents(MODULEPATH."/btguru/templates/search/result-action-none.html");
@@ -47,7 +56,7 @@ class btguruSearch
 	
 	public function Run()
 	{
-
+		global $RequestVars;
 		$this->scrapers["tpb"]->MaxSearchResults = $this->MaxSearchResults;
 		$this->scrapers["tpb"]->SearchTerms = $this->SearchQuery;
 		$this->scrapers["tpb"]->Run();
@@ -114,11 +123,13 @@ class btguruSearch
 				
 				if($torpres)
 				{
+					$trtmp = str_replace("[TORRENTPRESENT]", "1", $trtmp);
 					$trtmp = str_replace("[RESULTACTION]", $this->ActionNoneTemplate, $trtmp);
 					$trtmp = str_replace("[RESULTCLASS]", "have", $trtmp);
 				}
 				else
 				{
+					$trtmp = str_replace("[TORRENTPRESENT]", "0", $trtmp);
 					$trtmp = str_replace("[RESULTACTION]", $this->ActionAddTemplate, $trtmp);
 					
 					$trtmp = str_replace("[RESULTCLASS]", "new", $trtmp);
@@ -180,7 +191,16 @@ class btguruSearch
 			}
 		}*/
 
-		echo str_replace("[RESULTROWS]", $fullr, $this->SearchResultOutline);
+		if($RequestVars['js'] == 1)
+		{
+			$fullr = trim($fullr);
+			$fullr = substr($fullr, 0, strlen($fullr) - 1);
+			echo "{[".$fullr."]}";
+		}
+		else
+		{
+			echo str_replace("[RESULTROWS]", $fullr, $this->SearchResultOutline);
+		}
 	}
 
 	function IsTorrentPresent($torrentlink)

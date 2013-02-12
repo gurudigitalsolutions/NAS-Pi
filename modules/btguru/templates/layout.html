@@ -1,19 +1,39 @@
 
 <div id="pageheader">
-	<span class="pageheader_title">btguru search</span><br />
+	<div id="btguru_searchbox">
+		<form action="#" onsubmit="javascript:return false;">
+			<input type="text" name="query" id="query" size="50" onkeypress="EnterHandler(event)"/>
+			<input type="button" name="searchbutton" value="Search" onclick="javascript:DoSearch()" />
+		</form>
+	</div>
 	
-	<form action="#" onsubmit="javascript:return false;">
-		<input type="text" name="query" id="query" size="50" onkeypress="EnterHandler(event)"/>
-		<input type="button" name="searchbutton" value="Search" onclick="javascript:DoSearch()" />
-	</form>
+	<div id="btguru_title">
+		<span class="pageheader_title">btguru search</span>
+	</div>
+	
 	<div id="tccount"></div>
 </div>
 <div id="pagebody">
-	<div id="transmission_current">
-		
+	<div id="btguru_tabs">&nbsp;
+		<!--<div id="btguru_transmission_tab">
+			Transmission
+		</div>
+		<div id="btguru_search_tab">
+			Search
+		</div>
+		<div id="btguru_extratabs">
+			&nbsp;
+		</div>-->
 	</div>
-	<div id="results_tpb">
+	<div id="btguru_content">
+		<!--<div id="transmission_current">
+			
+		</div>
+		<div id="results_tpb">
+			
+		</div>
 		
+		<div style="clear: both"></div>-->
 	</div>
 </div>
 

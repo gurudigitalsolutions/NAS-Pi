@@ -42,6 +42,7 @@ class modbtguru extends PiNASModule
 		else if($sub == "search") { $this->trigSearch(); }
 		else if($sub == "addtorrent") { $this->trigAddTorrent(); }
 		else if($sub == "torrentprogress") { $this->trigTorrentProgress(); }
+		else if($sub == "template") { $this->trigTemplate(); }
 		
 		
 		return $toret;
@@ -49,10 +50,17 @@ class modbtguru extends PiNASModule
 	
 	public function trigTransmissionState()
 	{
+		global $RequestVars;
+		$js = $RequestVars['js'];
+		
+		if($js != 1) { $js = false; } else { $js = true; }
+		
 		$rpc = new TransmissionRPC("http://".$this->TransmissionHost.":".$this->TransmissionPort."/transmission/rpc");
 		$result = $rpc->get(array(), array( "id", "name", "status", "doneDate", "haveValid", "totalSize","rateDownload", "rateUpload", "isFinished", "isStalled", "eta" ));
 
-		$etortem = file_get_contents(MODULEPATH."/btguru/templates/currenttorrent.html");
+
+		if(!$js) { $etortem = file_get_contents(MODULEPATH."/btguru/templates/currenttorrent.html"); }
+		else { $etortem = file_get_contents(MODULEPATH."/btguru/templates/currenttorrent-json.html"); }
 
 		if($result->result == "success")
 		{
@@ -110,6 +118,12 @@ class modbtguru extends PiNASModule
 				
 			}
 			
+			if($js)
+			{
+				$toret = trim($toret);
+				$toret = substr($toret, 0, strlen($toret) -1);
+				$toret = "{[".$toret."]}";
+			}
 			echo $toret;
 		}
 		else
@@ -133,13 +147,15 @@ class modbtguru extends PiNASModule
 	{
 		global $RequestVars;
 		$torrent = $RequestVars['torrentlink'];
+		
+		
 
 		$rpc = new TransmissionRPC("http://".$this->TransmissionHost.":".$this->TransmissionPort."/transmission/rpc");
 		$result = $rpc->add($torrent);
 
-		if($result->result == "invalid or corrupt torrent file") { echo ":("; }
-		else if($result->result == "success") { echo ":)"; }
-		else { echo ":("; }
+		if($result->result == "invalid or corrupt torrent file") { echo "FAIL Corrupt or invalid file.\n(".$torrent.")"; }
+		else if($result->result == "success") { echo "YEAH Success!"; }
+		else { echo "FAIL Weird: ".$result->result; }
 		
 		exit;
 	}
@@ -188,6 +204,24 @@ class modbtguru extends PiNASModule
 		// finally destroy image resources  
 		imagedestroy($im);  
 		
+		exit;
+	}
+	
+	public function trigTemplate()
+	{
+		global $RequestVars;
+		$tmp = $RequestVars["template"];
+		
+		if($tmp == "" || $tmp == null) { echo ""; exit; }
+		
+		if($tmp == "trans-current") { echo file_get_contents(MODULEPATH."/btguru/templates/currenttorrent.html"); exit; }
+		if($tmp == "tabs-each") { echo file_get_contents(MODULEPATH."/btguru/templates/tabs-each.html"); exit; }
+		if($tmp == "search-outline") { echo file_get_contents(MODULEPATH."/btguru/templates/search/result-outline.html"); exit; }
+		if($tmp == "search-each") { echo file_get_contents(MODULEPATH."/btguru/templates/search/result-each.html"); exit; }
+		if($tmp == "result-action-add") { echo file_get_contents(MODULEPATH."/btguru/templates/search/result-action-add.html"); exit; }
+		if($tmp == "result-action-none") { echo file_get_contents(MODULEPATH."/btguru/templates/search/result-action-none.html"); exit; }
+		
+		echo "";
 		exit;
 	}
 }
