@@ -1,0 +1,39 @@
+<div id="files_menu_mousewatcher">
+<table border="0" width="100%">
+	<tr onclick="javascript:$panes[[PANEID]].UploadFiles()"
+		onMouseover="javascript:MouseOverMenu(this)"
+		onMouseout="javascript:MouseOutMenu(this)">
+		<td>Upload</td>
+	</tr>
+	<tr onclick="javascript:Navigate('[PANEID]','[NODEID]');"
+		onMouseover="javascript:MouseOverMenu(this)"
+		onMouseout="javascript:MouseOutMenu(this)">
+		<td>Open</td>
+	</tr>
+	<tr onclick="javascript:$panes[[PANEID]].Mirror('[NODEID]');"
+		onMouseover="javascript:MouseOverMenu(this)"
+		onMouseout="javascript:MouseOutMenu(this)">
+		<td>Open In Other Pane</td>
+	</tr>
+	<tr onclick="javascript:CreateDir('[PANEID]', '[NODEID]')"
+		onMouseover="javascript:MouseOverMenu(this)"
+		onMouseout="javascript:MouseOutMenu(this)">
+		<td>Create Directory</td>
+	</tr>
+	<tr onclick="javascript:DeleteNode('[PANEID]', '[NODEID]')"
+		onMouseover="javascript:MouseOverMenu(this)"
+		onMouseout="javascript:MouseOutMenu(this)">
+		<td>Delete</td>
+	</tr>
+	<tr onclick="javascript:RenameNode('[PANEID]', '[NODEID]')"
+		onMouseover="javascript:MouseOverMenu(this)"
+		onMouseout="javascript:MouseOutMenu(this)">
+		<td>Rename</td>
+	</tr>
+	<tr onclick="javascript:NodeProperties('[NODEID]')"
+		onMouseover="javascript:MouseOverMenu(this)"
+		onMouseout="javascript:MouseOutMenu(this)">
+		<td>Properties</td>
+	</tr>
+</table>
+</div>

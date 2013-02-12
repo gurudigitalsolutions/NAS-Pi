@@ -1,7 +1,10 @@
-<tr>
+<tr id="files_each_[PANEID]_[NODEID]"
+	onClick="javascript:$panes[[PANEID]].ClickFile('[NODEID]')"
+	ondblclick="javascript:Navigate('[PANEID]','[NODEID]')"
+	onMouseover="javascript:$panes[[PANEID]].MouseOverNode('[NODEID]')"
+	onMouseout="javascript:$panes[[PANEID]].MouseOutNode('[NODEID]')">
 	<td>
-		<img src="/icons/[ICONFILE]" width="20" height="22" />
-		<a href="/?module=files&sub=browse&dir=[DIRPATH]">[FILENAME]</a>
+		<img src="/icons/[ICON].gif" width="20" height="22" />
+		[FILENAME]
 	</td>
-	<td style="white-space: nowrap">[MODIFIED]</td>
 </tr>

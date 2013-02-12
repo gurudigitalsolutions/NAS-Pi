@@ -1,13 +1,31 @@
-<div class="files_browse_header">
-	Browse [PATH]
-</div>
+<table border="0" width="100%">
+	<tr>
+		<td valign="top">
+			<div class="files_browse_filelist" id="files_browse_pane0">
+				<img src="/images/pi.png" onLoad="InitializeBrowser()" />
+			</div>
+		</td>
+		<td width="80">
+			<div class="files_browse_buttons" id="files_browse_buttons">
+				<table border="0" height="100%" width="100%">
+					<tr>
+						<td>
+							<a href="javascript:$panes[1].UploadFiles()"><img src="/images/back.png" border="0" alt="&lt;&lt;" title="&lt;&lt" /></a><br />
+							<a href="javascript:$panes[0].UploadFiles()"><img src="/images/next.png" border="0" alt="&gt;&gt;" title="&gt;&gt;" /></a>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</td>
+		<td valign="top">
 
-<div class="files_browse_filelist">
-	<table border="0" width="100%">
-		<tr>
-			<th>Name</th>
-			<th>Modified</th>
-		</tr>
-		[EACHFILE]
-	</table>
+			<div class="files_browse_filelist" id="files_browse_pane1">
+				[RIGHTPANE]
+			</div>
+		</td>
+	</tr>
+</table>
+
+<div class="files_clickmenu" id="files_clickmenu" style="display: none">
+	&nbsp;
 </div>

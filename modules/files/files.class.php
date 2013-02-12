@@ -27,7 +27,7 @@ class modFiles extends PiNASModule
 	{
 		global $StyleSheets; $StyleSheets[] = "files";
 		global $RequestVars;
-		global $Scripts; $Scripts[] = "files";
+		global $Scripts; $Scripts[] = "files"; $Scripts[] = "files-browser";
 		$toret = "";
 		
 		if($RequestVars["sub"] == "") { $RequestVars["sub"] = "browse"; }
@@ -214,9 +214,59 @@ class modFiles extends PiNASModule
 			header("Location: /?module=files&sub=sources");
 			exit;
 		}
+		else if($RequestVars["sub"] == "pane")
+		{
+			$wpane = new BrowserPane();
+			$dir = $RequestVars["dir"];
+			$dir = str_replace("..", ".", $dir);
+			if($dir == "") { $dir = "/"; }
+			
+			$wpane->Dir = $dir;
+			$wpane->LoadDir();
+			
+			$jsonout = "";
+			
+			foreach($wpane->Nodes as $enkey=>$enode)
+			{
+				$jsonout = $jsonout."{\"id\" : \"".$enode->ID."\", ".
+									"\"name\" : \"".$enode->Name."\", ".
+									"\"icon\" : \"".$enode->Icon."\", ".
+									"\"selected\" : false, ";
+				if($enode->IsFile) { $jsonout = $jsonout."\"isfile\" : \"true\"},\n"; }
+				else { $jsonout = $jsonout."\"isfile\" : false},\n"; }
+			}
+			
+			$jsonout = trim($jsonout);
+			$jsonout = substr($jsonout, 0, strlen($jsonout) - 1);
+			
+			//$jsonout = "{\"nodes\": [".$jsonout."]}";
+			$jsonout = "{[".$jsonout."]}";
+			echo $jsonout;
+			
+			exit;
+		}
+		else if($RequestVars["sub"] == "panetemplate")
+		{
+			$tmpl = $RequestVars["template"];
+			$toret = "";
+			
+			if($tmpl == "browse-pane") { $toret = file_get_contents(MODULEPATH."/files/templates/browse-pane.html"); }
+			else if($tmpl == "browse-eachfile") { $toret = file_get_contents(MODULEPATH."/files/templates/browse-eachfile.html"); }
+			else if($tmpl == "browse-rightclick") { $toret = file_get_contents(MODULEPATH."/files/templates/browse-rightclick.html"); }
+			else { $toret = ""; }
+			
+			echo $toret;
+			exit;
+		}
 		else if($RequestVars["sub"] == "browse")
 		{
-			$dir = $RequestVars["dir"];
+			
+			$BrowseTemplate = file_get_contents(MODULEPATH."/files/templates/browse.html");
+			
+			
+			$toret = $BrowseTemplate;
+			
+			/*$dir = $RequestVars["dir"];
 			if($dir == "") { $dir = "/"; }
 			$dir = str_replace("..", ".", $dir);
 			
@@ -236,6 +286,7 @@ class modFiles extends PiNASModule
 			$fullpath = "/media".$dir;
 			$BrowseTemplate = file_get_contents(MODULEPATH."/files/templates/browse.html");
 			$EachFileTemplate = file_get_contents(MODULEPATH."/files/templates/browse-eachfile.html");
+			$PaneTemplate = file_get_contents(MODULEPATH."/files/templates/browse-pane.html");
 			
 			$SourceCode = $dir;
 			if($SourceCode == "/") { $SourceCode = ""; }
@@ -304,7 +355,10 @@ class modFiles extends PiNASModule
 							}
 							
 							$BrowseTemplate = str_replace("[PATH]", $dir, $BrowseTemplate);
-							$toret = str_replace("[EACHFILE]", $ttlfiles, $BrowseTemplate);
+							$BrowseTemplate = str_replace("[LEFTPANE]", str_replace("[EACHFILE]", $ttlfiles, $PaneTemplate), $BrowseTemplate);
+							$BrowseTemplate = str_replace("[RIGHTPANE]", str_replace("[EACHFILE]", $ttlfiles, $PaneTemplate), $BrowseTemplate);
+							//$toret = str_replace("[EACHFILE]", $ttlfiles, $BrowseTemplate);
+							$toret = $BrowseTemplate;
 						}
 						else
 						{
@@ -334,7 +388,7 @@ class modFiles extends PiNASModule
 			else
 			{
 				$toret = "You are not authorized to view that share.";
-			}
+			}*/
 		}
 		
 		/*$blocks = $this->GetBlocks();
