@@ -74,7 +74,7 @@ class btguruSearch
 			$ttlresults+=count($this->scrapers[$ekey]->ScrapeResults); 
 		}
 
-		$dfh = fopen($this->NameDumpFile, "a");
+		//$dfh = fopen($this->NameDumpFile, "a");
 
 		for($eitem = 0; $eitem < $ttlresults; $eitem++)
 		{
@@ -108,7 +108,7 @@ class btguruSearch
 			{
 				$hashes[$torrenthash] = 1;
 				
-				fwrite($dfh, $torrenthash." ".$eres["name"]."\n");
+				//fwrite($dfh, $torrenthash." ".$eres["name"]."\n");
 
 				$torpres = $this->IsTorrentPresent($eres["link"]);
 				
@@ -140,7 +140,7 @@ class btguruSearch
 			$scraperindex[$turnhighestkey]++;
 		}
 
-		fclose($dfh);
+		//fclose($dfh);
 
 		foreach($hashes as $ehash=>$cnt)
 		{
