@@ -1,5 +1,6 @@
 var UpdateTranDelayTime = 10000;
 var kaktive = 0;
+<<<<<<< HEAD
 var windowWidth = 800;
 var windowHeight = 600;
 var btTabs = Array();
@@ -164,10 +165,26 @@ function DoSearch()
 	btTabs[1].engine.Search();
 	RenderTabBar();
 	btTabs[1].Render();
+=======
+//var tccount = 0;
+
+function DoSearch(usequery)
+{
+	var sbid = document.getElementById('query');
+	var searchquery = "";
+	if(usequery == "")
+	{
+		searchquery = sbid.value;
+	}
+	else { searchquery = usequery; }
+	
+	LoadPage("/?module=btguru&sub=search&query="+searchquery, 'results_tpb');
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 }
 
 function EnterHandler(e)
 {
+<<<<<<< HEAD
 	if(e.keyCode == 13)
 	{
 		btActiveTab = 1;
@@ -175,6 +192,18 @@ function EnterHandler(e)
 		
 		RenderTabBar();
 		btTabs[1].Render();
+=======
+	
+	if(e.keyCode == 13)
+	{
+		var tb = document.getElementById('query');
+		
+		var evvedto = tb.value;
+		//eval(tb.value);
+		setTimeout("DoSearch('"+tb.value+"')", 250);
+		tb.value = "";
+		return false;
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 	}
 }
 
@@ -249,29 +278,45 @@ function AddTorrent(torrentlink, resultid)
 	//rsadd.innerHTML = "...";
 	
 	resultrow.style.borderColor = "#12C672";
+<<<<<<< HEAD
 	var encurl = encodeURIComponent(torrentlink);
 	alert("Encoded URL: "+encurl);
 	LoadPageCallFunction("/?module=btguru&sub=addtorrent&torrentlink="+encurl, 'AddTorrentResponse', Array(resultid));
+=======
+	
+	LoadPageCallFunction("/?module=btguru&sub=addtorrent&torrentlink"+torrentlink, 'AddTorrentResponse', Array(resultid));
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 }
 
 function AddTorrentResponse(restext, args)
 {
+<<<<<<< HEAD
 	if(restext.substring(0, 4) == "YEAH")
 	{
 		
+=======
+	if(restext == ":)")
+	{
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 		var torresdiv = document.getElementById("result_row_"+args[0]);
 		torresdiv.style.background = '#80F080';
 		//(document.getElementById('result_addtorrent_'+args[0])).innerHTML = "&lt;&lt;";
 	}
+<<<<<<< HEAD
 	else if(restext.substring(0, 4) == "FAIL")
 	{
 		alert("Adding torrent failed:\n"+restext.substring(5));
+=======
+	else if(restext == ":(")
+	{
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 		var torresdiv = document.getElementById("result_row_"+args[0]);
 		torresdiv.style.borderColor = "#CC3310";
 		//(document.getElementById('result_addtorrent_'+args[0])).innerHTML = "---";
 	}
 }
 
+<<<<<<< HEAD
 
 function RenderTabBar()
 {
@@ -412,3 +457,19 @@ function Template(template)
 }
 
 window.onload = InitializebtGuru;
+=======
+function UpdateTransmissionStats()
+{
+	SingleTransmissionUpdate()
+	setTimeout("UpdateTransmissionStats()", UpdateTranDelayTime);
+}
+
+function SingleTransmissionUpdate()
+{
+	LoadPage("/?module=btguru&sub=transmissionstate", 'transmission_current');
+	//tccount++;
+	//document.getElementById('tccount').innerHTML = tccount;
+}
+
+window.onload = UpdateTransmissionStats;
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b

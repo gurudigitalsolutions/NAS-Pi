@@ -7,12 +7,17 @@
 
 .pageheader_title
 {
+<<<<<<< HEAD
 	font-size: 1.8em;
+=======
+	font-size: 2.2em;
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 	font-weight: bold;
 }
 
 #pagebody
 {
+<<<<<<< HEAD
 	border-style: solid;
 	border-bottom-width: 0px;
 	border-top-width: 0px;
@@ -90,6 +95,9 @@
 	border-bottom-width: 2px;
 	margin-top: 0px;
 	overflow: scroll;
+=======
+
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 }
 
 #results_tpb
@@ -125,7 +133,11 @@
 {
 	position: float;
 	float: left;
+<<<<<<< HEAD
 	width: 500px;
+=======
+	width: 250px;
+>>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 }
 
 .tran_current_torrent
