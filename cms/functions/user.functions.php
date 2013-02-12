@@ -13,6 +13,7 @@ function CheckLogin()
 {
 	global $CurrentUser;
 	global $CurrentSession;
+	global $CurrentSessionData;
 	
 	if($_COOKIE['sid'] != "")
 	{
@@ -35,6 +36,8 @@ function CheckLogin()
 			$tsess->LastActive = time();
 			$tsess->IP = $_SERVER['REMOTE_ADDR'];
 			$tsess->Save();
+			
+			$CurrentSessionData = $tsess;
 			
 			$CurrentSession = $insid;
 			define("USERLOGGEDIN", true);

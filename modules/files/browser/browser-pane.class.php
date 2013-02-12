@@ -87,6 +87,7 @@ class BrowserPane
 						$tnode = new FileBrowserNode();
 						$tnode->Name = $es->SourceCode;
 						$tnode->ID = $idcnt;
+						$tnode->IsSource = true;
 						
 						$mimetype = $this->MimeTypeOf("/media/".$es->SourceCode);
 										
@@ -117,7 +118,7 @@ class BrowserPane
 		}
 	}
 	
-	private function SourceCodeFromDir($dir)
+	public function SourceCodeFromDir($dir)
 	{
 		if(substr($dir, 0, 1) == "/") { $dir = substr($dir, 1); }
 		
@@ -127,6 +128,7 @@ class BrowserPane
 	
 	public function IsSourceAccessable($sourcecode)
 	{
+		if(count($this->Sources) == 0) { $this->LoadSources(); }
 		if(!array_key_exists($sourcecode, $this->Sources)) { return false; }
 		
 		$es = $this->Sources[$sourcecode];

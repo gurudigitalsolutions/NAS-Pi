@@ -22,7 +22,7 @@ function browserPane(id)
 			lnxhr = new ActiveXObject("Microsoft.XMLHTTP");
 		}
 
-		lnxhr.open("GET", "/?module=files&sub=pane&dir="+this.dir, false);
+		lnxhr.open("GET", "/?module=files&sub=pane&paneid="+this.id+"&dir="+this.dir, false);
 		lnxhr.send(null);
 
 
@@ -166,6 +166,31 @@ function browserPane(id)
 		allnodes = "Selected Nodes:\n\n" + allnodes;
 		alert(allnodes);
 	}
+	
+	this.CreateDirectory = function(dirname)
+	{
+		var newdirname = this.dir+"/"+dirname;
+		newdirname = newdirname.replace("//", "/");
+		
+		if (window.XMLHttpRequest)
+		{// code for IE7+, Firefox, Chrome, Opera, Safari
+			cnxhr = new XMLHttpRequest();
+		}
+		else
+		{// code for IE6, IE5
+			cnxhr = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		cnxhr.open("GET", "/?module=files&sub=mkdir&dir="+newdirname, false);
+		cnxhr.send(null);
+
+		var rezz = cnxhr.responseText;
+		if(rezz.substr(0, 4) == "FAIL") { alert("Directory Creation Failed!\n\n"+rezz.substring(5)); }
+		else { this.LoadNodes(); }
+	
+	}
+	
+	
 }
 
 function RenderRightClickMenu(e, rowid)
@@ -245,6 +270,16 @@ function HideMenu()
 	menu.innerHTML = "";
 }
 
+function CreateDir(paneid, nodeid)
+{
+	var dirname = prompt("Create Directory:", "Directory");
+	
+	if(dirname == null) { return; }
+	if(dirname == "") { return; }
+	
+	$panes[paneid].CreateDirectory(dirname);
+}
+
 function paneNode(id)
 {
 	this.id = id;
@@ -253,16 +288,22 @@ function paneNode(id)
 	this.isfile = false;
 }
 
-function InitializeBrowser()
+function InitializeBrowser(p0dir, p1dir)
 {
+	if(p0dir == "") { p0dir = "/"; }
+	if(p1dir == "") { p1dir = "/"; }
+	
 	$panes[0] = new browserPane(0);
 	$panes[0].element = "files_browse_pane0";
+	$panes[0].dir = p0dir;
 	$panes[1] = new browserPane(1);
 	$panes[1].element = "files_browse_pane1";
+	$panes[1].dir = p1dir;
 	
 	LoadTemplate("browse-pane");
 	LoadTemplate("browse-eachfile");
 	LoadTemplate("browse-rightclick");
+	LoadTemplate("browse-createdir");
 	
 	if(window.innerWidth) {
 		windowWidth = window.innerWidth;

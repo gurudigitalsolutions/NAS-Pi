@@ -15,6 +15,7 @@ class UserSession
 	public $Username = "";
 	public $IP = "";
 	public $LastActive = 0;
+	public $FileBrowserDirs = array("/", "/");
 	
 	public function Save()
 	{

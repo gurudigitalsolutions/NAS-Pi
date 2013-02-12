@@ -1,0 +1,80 @@
+#pageheader
+{
+	background: #000000;
+	color: #FFFFFF;
+	padding: 10px;
+}
+
+.pageheader_title
+{
+	font-size: 2.2em;
+	font-weight: bold;
+}
+
+#pagebody
+{
+
+}
+
+#results_tpb
+{
+	margin-left: 260px;
+	margin-right: auto;
+	width: 800px;
+}
+
+.result_result_new
+{
+
+}
+
+.result_result_have
+{
+	background: #C0FFC0;
+}
+
+.result_name
+{
+	overflow: hidden;
+	height: 18px;
+	width: 550px;
+}
+
+.result_datesize
+{
+	font-size: 0.8em;
+}
+
+#transmission_current
+{
+	position: float;
+	float: left;
+	width: 250px;
+}
+
+.tran_current_torrent
+{
+	border-width: 1px;
+	border-style: solid;
+	padding-bottom: 5px;
+}
+
+.tran_current_name
+{
+	font-weight: bold;
+	font-size: 0.8em;
+	overflow: hidden;
+	height: 16px;
+}
+
+.tran_current_state
+{
+	font-size: 0.8em;
+	overflow: hidden;
+}
+
+.tran_current_stats
+{
+	font-size: 0.8em;
+	overflow: hidden;
+}
