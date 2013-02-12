@@ -25,6 +25,7 @@ $PageTitle = array("NAS-Pi");
 $PageTitleSpacer = " :: ";
 $CurrentUser = "";
 $CurrentSession = "";
+$CurrentSessionData = "";
 $SiteTemplate = file_get_contents(PUBLICHTMLPATH."/template.html");
 $MainMenuItemTemplate = file_get_contents(CMSPATH."/templates/menu-eachitem.html");
 $MainMenuSubItemTemplate = file_get_contents(CMSPATH."/templates/menu-eachsubitem.html");

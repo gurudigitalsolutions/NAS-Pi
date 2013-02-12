@@ -28,6 +28,7 @@ class modFiles extends PiNASModule
 		global $StyleSheets; $StyleSheets[] = "files";
 		global $RequestVars;
 		global $Scripts; $Scripts[] = "files"; $Scripts[] = "files-browser";
+		global $CurrentSessionData;
 		$toret = "";
 		
 		if($RequestVars["sub"] == "") { $RequestVars["sub"] = "browse"; }
@@ -221,6 +222,9 @@ class modFiles extends PiNASModule
 			$dir = str_replace("..", ".", $dir);
 			if($dir == "") { $dir = "/"; }
 			
+			$dapane = $RequestVars["paneid"];
+			if($dapane == null || $dapane == "") { $dapane = -1; }
+			
 			$wpane->Dir = $dir;
 			$wpane->LoadDir();
 			
@@ -232,7 +236,9 @@ class modFiles extends PiNASModule
 									"\"name\" : \"".$enode->Name."\", ".
 									"\"icon\" : \"".$enode->Icon."\", ".
 									"\"selected\" : false, ";
-				if($enode->IsFile) { $jsonout = $jsonout."\"isfile\" : \"true\"},\n"; }
+				if($enode->IsSource) { $jsonout = $jsonout."\"issource\" : true, "; }
+				else { $jsonout = $jsonout."\"issource\" : false, "; }
+				if($enode->IsFile) { $jsonout = $jsonout."\"isfile\" : true},\n"; }
 				else { $jsonout = $jsonout."\"isfile\" : false},\n"; }
 			}
 			
@@ -242,6 +248,12 @@ class modFiles extends PiNASModule
 			//$jsonout = "{\"nodes\": [".$jsonout."]}";
 			$jsonout = "{[".$jsonout."]}";
 			echo $jsonout;
+			
+			if(USERLOGGEDIN && $dapane > -1)
+			{
+				$CurrentSessionData->FileBrowserDirs[$dapane] = $dir;
+				$CurrentSessionData->Save();
+			}
 			
 			exit;
 		}
@@ -253,16 +265,59 @@ class modFiles extends PiNASModule
 			if($tmpl == "browse-pane") { $toret = file_get_contents(MODULEPATH."/files/templates/browse-pane.html"); }
 			else if($tmpl == "browse-eachfile") { $toret = file_get_contents(MODULEPATH."/files/templates/browse-eachfile.html"); }
 			else if($tmpl == "browse-rightclick") { $toret = file_get_contents(MODULEPATH."/files/templates/browse-rightclick.html"); }
+			else if($tmpl == "browse-createdir") { $toret = file_get_contents(MODULEPATH."/files/templates/browse-createdir.html"); }
 			else { $toret = ""; }
 			
 			echo $toret;
+			exit;
+		}
+		else if($RequestVars["sub"] == "mkdir")
+		{
+			$dir = $RequestVars["dir"];
+			
+			if($dir == null || $dir == "") { echo "FAIL You need to specify a directory name to create a directory."; exit; }
+			
+			$wpane = new BrowserPane();
+			$dir = str_replace("..", ".", $dir);
+			if($dir == "") { $dir = "/"; }
+			
+			$SourceCode = $wpane->SourceCodeFromDir($dir);
+			if(!$wpane->IsSourceAccessable($SourceCode))
+			{
+				echo "FAIL You don't have permission to access that folder.\n(".$SourceCode.")";
+				exit;
+			}
+			
+			if(!mkdir("/media".$dir))
+			{
+				echo "FAIL Created the directory failed.  (Permissions perhaps?)\n".$dir;
+				exit;
+			}
+			
+			echo "YEAH Directory Created";
 			exit;
 		}
 		else if($RequestVars["sub"] == "browse")
 		{
 			
 			$BrowseTemplate = file_get_contents(MODULEPATH."/files/templates/browse.html");
+			$poned = "/";
+			$ptwod = "/";
 			
+			if(USERLOGGEDIN)
+			{
+				if(count($CurrentSessionData->FileBrowserDirs) > 1)
+				{
+					$poned = $CurrentSessionData->FileBrowserDirs[0];
+					$ptwod = $CurrentSessionData->FileBrowserDirs[1];
+					
+					if($poned == "") { $poned = "/"; }
+					if($ptwod == "") { $ptwod = "/"; }
+				}
+			}
+			
+			$BrowseTemplate = str_replace("[PANE0DIR]", $poned, $BrowseTemplate);
+			$BrowseTemplate = str_replace("[PANE1DIR]", $ptwod, $BrowseTemplate);
 			
 			$toret = $BrowseTemplate;
 			

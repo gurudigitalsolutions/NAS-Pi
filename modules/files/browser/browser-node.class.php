@@ -15,5 +15,6 @@ class FileBrowserNode
 	public $ID = -1;
 	public $Name = "";
 	public $IsFile = false;
+	public $IsSource = false;
 	public $Icon = "unknown";
 }

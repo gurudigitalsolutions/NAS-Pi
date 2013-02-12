@@ -1,0 +1,454 @@
+#!/bin/bash
+#set -x
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+# 
+# COPYRIGHT 2013 GURU DIGITAL SOLUTIONS
+# 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#
+# mount-naspid (MOUNT NETWORK ATTACHED STORAGE RASPBERRY PI DAEMON)
+# rpnasmd (RASPBERRY PI NETWORK ATTACHED STORAGE MOUNT DAEMON)
+# remountctl (REMOTE INTERFACE FOR CONTROLING MOUNTS)
+# CONTROLS MOUNTING/UNMOUNTING USER DEFINED MOUNTS
+# SUPPORTED MOUNT TYPES: SSHFS, SAMBA, DEVICES, FTP, BIND
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#-----####--#-------###---####----###---#-------####-------------------------#
+#----#------#------#---#--#---#--#---#--#------#-----------------------------#
+#----#--##--#------#---#--####---#####--#-------###--------------------------#
+#----#---#--#------#---#--#---#--#---#--#----------#-------------------------#
+#-----####--#####---###---####---#---#--#####--####--------------------------#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+# [DAEMON OPTIONS]
+# Location of the mount control file
+CONTROL_FILE="/tmp/pinasd.control"
+# Interval in seconds for daemon to check control file
+CHECK_INTERVAL=2
+# Default port to listen on
+LISTEN_PORT=31415
+
+# [MOUNT OPTIONS]
+# Base directory for mounted shares
+MOUNT_PATH="/media"
+# Directory containing share fstab files
+FSTAB_DIR="/etc/fstab.d"
+# Number of retries attempted on failed mount/unmounts
+RETRIES=20
+# Interval in seconds for retry on failed mount/unmounts
+RETRY_INTERVAL=4
+# Location of the share mount status file
+STATUS_PATH="/tmp/status/"
+# User to run as
+RUN_AS=root
+
+# [FSTAB OPTIONS]
+# Location of the share php data collector
+GET_DATA="/home/media/naspi/modules/files/sources/./sourcedata"
+# Default mount options for devices
+DEVICE_DEFAULTS='auto noauto,defaults 0 0'
+# Default mount options for smb shares
+SMB_DEFAULTS='cifs noexec,noauto,defaults,user,_netdev,credentials='
+# Default mount options for ftp shares
+FTP_DEFAULTS='fuse auto,user,uid=1000,allow_other,_netdev 0 0'
+# Default mount options for bind shares
+BIND_DEFAULTS="none bind,defaults 0 0"
+# Location of smb/ssh share credential files
+CREDENTIALS='.credentials'
+
+# [ERRORS AND MESSAGES]
+# Root user id
+ROOT_UID=0
+# Non root user error code
+E_NOTROOT=69
+# Empty data error
+BAD_DATA="ERROR: Empty data found"
+# Disconnected device error
+BAD_DEVICE="ERROR: Device not connected"
+# Empty control file error
+BAD_CONTROL="ERROR: Contol file empty"
+# Command line syntax error
+BAD_USAGE="ERROR: Invalid usage use --help to show usage"
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#----#####--#---#--#---#---####--#####--#####---###---#---#---####-----------#
+#----#------#---#--##--#--#--------#------#----#---#--##--#--#---------------#
+#----###----#---#--#-#-#--#--------#------#----#---#--#-#-#---###------------#
+#----#------#---#--#--##--#--------#------#----#---#--#--##------#-----------#
+#----#-------###---#---#---####----#----#####---###---#---#--####------------#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+function already_running() {
+# Prevents multiple running instances by checking for itself
+	#set -x
+	SCRIPT_NAME=$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")
+	DAEMON_PID=$(pidof -x -o%PPID "$SCRIPT_NAME")
+	if [[ -n  $DAEMON_PID ]]; then
+		echo -e "Daemon already running.\n$DAEMON_PID"
+		exit 
+	fi
+	set +x
+}
+
+function must_be_root() {
+# Check userid to ensure it is run as root
+	#set -x
+	if [ "$UID" -ne "$ROOT_UID" ]; then
+		echo "Must be run as root" 1>&2
+		exit $E_NOTROOT
+	fi
+	set +x
+}
+
+function device_test() {
+# Check that specified device is attached
+	#set -x
+	DEVICE_TEST=$(blkid | grep $1)
+	if [[ -z $DEVICE_TEST ]]; then
+		echo $BAD_DEVICE
+	fi
+	set +x
+}
+
+function create_missing_directory() {
+# Make directory if it doesn't exist
+	#set -x
+	if [[ ! -e $1 ]] && [[ ! -d $1 ]]; then
+		mkdir -p "$1"
+	fi
+	set +x
+}
+
+function get_data() {
+# Run external script to query web interface for data
+	#set -x
+	$GET_DATA $MOUNT $1
+	set +x
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#----###-----###---#####--#---#---###---#---#--------------------------------#
+#----#--#---#---#--#------##-##--#---#--##--#--------------------------------#
+#----#---#--#####--###----#-#-#--#---#--#-#-#--------------------------------#
+#----#--#---#---#--#------#---#--#---#--#--##--------------------------------#
+#----###----#---#--#####--#---#---###---#---#--------------------------------#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+function send_control() {
+# Sends commands to control file
+	#set -x
+	if [[ ! -e $CONTROL_FILE ]]; then
+		echo $1 > $CONTROL_FILE
+	fi
+	set +x
+}
+
+function check_control() {
+# Check control input
+	#set -x
+	MOUNT=$(cat $CONTROL_FILE)
+	rm $CONTROL_FILE
+	if [[ -n $MOUNT ]]; then
+		write_fstab $MOUNT
+		mount_filesystem $MOUNT
+	else
+		echo "$BAD_CONTROL" 1>&2
+	fi
+	set +x
+}
+
+function remove_source() {
+# Removes unused share files
+	echo "Remove source not implemented."
+}
+
+function start_daemon() {
+# Runs mount control listening daemon
+	#set -x
+	must_be_root
+	already_running
+	create_missing_directory $FSTAB_DIR
+	create_missing_directory $STATUS_PATH
+	while [[ true ]]; do
+		if [[ -e $CONTROL_FILE ]]; then
+			check_control
+			echo "PROCESSING" > $STATUS_PATH/$MOUNT.status		
+		fi
+		sleep $CHECK_INTERVAL
+	done
+	set +x 
+}
+
+function listener() {
+# Socket control listener
+	set -x
+	while [[ true ]]; do
+		MOUNT=$(nc -lm 1 -p $LISTEN_PORT)
+		write_fstab
+		mount_filesystem		
+	done
+	set +x
+}
+
+function start_socket() {
+# Starts listening socket
+	set -x
+	must_be_root
+	already_running
+	create_missing_directory $FSTAB_DIR
+	listener
+	set +x 
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#----#####---####--#####---###---###-----------------------------------------#
+#----#------#--------#----#---#--#--#----------------------------------------#
+#----###-----###-----#----#####--####----------------------------------------#
+#----#----------#----#----#---#--#---#---------------------------------------#
+#----#------####-----#----#---#--####----------------------------------------#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+function device_fstab() {		
+# Create fstab for device specific shares
+	#set -x
+	local UUID=$(get_data $1 UUID)
+	local SOURCE_CODE=$(get_data $1 SourceCode)
+	# Write device fstab to file
+	echo "UUID=$UUID \
+	$MOUNT_PATH/$SOURCE_CODE \
+	$DEVICE_DEFAULTS" \
+	> $FSTAB_DIR/$1.fstab
+	set +x
+}
+
+function smb_fstab() {
+# Create fstab for smb specific shares
+	#set -x
+	local REMOTE_HOST=$(get_data RemoteHost)
+	local REMOTE_PATH=$(get_data RemotePath)
+	local SOURCE_CODE=$(get_data SourceCode)
+	local USERNAME=$(get_data Username)
+	local PASSWORD=$(get_data Password)
+	
+	create_missing_directory $HOME/$CREDENTIALS
+	
+	echo "username=$USERNAME\npassword=$PASSWORD" \
+	> $HOME/$CREDENTIALS/$1.smb
+	
+	echo "//$REMOTE_HOST${REMOTE_PATH// /\\040} \
+	$MOUNT_PATH/$SOURCE_CODE \
+	$SMB_DEFAULTS$HOME/$CREDENTIALS/$1.smb \
+	0 0" \
+	> $FSTAB_DIR/$1.fstab
+	set +x
+}
+
+function sshfs_fstab() {
+# Create shell script for sshfs shares
+	#set -x
+	local REMOTE_HOST=$(get_data RemoteHost)
+	local REMOTE_PORT=$(get_data Port)
+	local REMOTE_PATH=$(get_data RemotePath)
+	local SOURCE_CODE=$(get_data SourceCode)
+	local USERNAME=$(get_data Username)
+	local PASSWORD=$(get_data Password)
+	
+	create_missing_directory $HOME/$CREDENTIALS
+	
+	echo "$PASSWORD" \
+	> $HOME/$CREDENTIALS/$1.sshfs
+	
+	echo "sshfs $USERNAME@$REMOTE_HOST:$REMOTE_PATH \
+	-p $REMOTE_PORT \
+	-o password_stdin \
+	-o allow_other \
+	-o StrictHostKeyChecking=no \
+	$MOUNT_PATH/$SOURCE_CODE" \
+	> $FSTAB_DIR/$1-sshfs.sh
+	set +x
+}
+
+function ftp_fstab() {
+# Create fstab for ftp shares
+	set -x
+	local REMOTE_HOST=$(get_data RemoteHost)
+	local REMOTE_PORT=$(get_data Port)
+	local SOURCE_CODE=$(get_data SourceCode)
+	local USERNAME=$(get_data Username)
+	local PASSWORD=$(get_data Password)
+	
+	echo -e  "machine $REMOTE_HOST\nlogin $USERNAME\npassword $PASSWORD" \
+	> $HOME/.netrc
+	
+	echo "curlftpfs#$USERNAME:$PASSWORD@$REMOTE_HOST \
+	$MOUNT_PATH/$SOURCE_CODE \
+	$FTP_DEFAULTS"\
+	> $FSTAB_DIR/$1.fstab
+	set +x
+}
+
+function bind_fstab() {
+# Create fstab for bind mounts
+	set -x
+	local TARGET=$(get_data Target)
+	local SOURCE_CODE=$(get_data SourceCode)
+	
+	echo "$TARGET \
+	$SOURCE_CODE \
+	$BIND_DEFAULTS" \
+	> $FSTAB_DIR/$1.fstab
+	set +x
+}
+
+function write_fstab() {
+# Makes decisions based on share types
+	#set -x
+	TYPE=$(get_data FSType)
+	if [[ $TYPE = device ]]; then
+		device_fstab $MOUNT
+	elif [[ $TYPE = smb ]]; then
+		smb_fstab $MOUNT
+	elif [[ $TYPE = sshfs ]]; then
+		sshfs_fstab $MOUNT
+	elif [[ $TYPE = ftp ]]; then
+		ftp_fstab $MOUNT
+	elif [[ $TYPE = bind ]]; then
+		bind_fstab $MOUNT
+	fi
+	cat $FSTAB_DIR/headfstab $FSTAB_DIR/*.fstab \
+	> ${FSTAB_DIR}/fullstab
+	cat $FSTAB_DIR/fullstab > /etc/fstab
+	set +x
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#----#---#---###---#---#--#---#--#####---------------------------------------#
+#----##-##--#---#--#---#--##--#----#-----------------------------------------#
+#----#-#-#--#---#--#---#--#-#-#----#-----------------------------------------#
+#----#---#--#---#--#---#--#--##----#-----------------------------------------#
+#----#---#---###----###---#---#----#-----------------------------------------#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+function mount_filesystem() {
+# makes mount/unmount decisions
+	#set -x
+	FSTYPE=$(get_data FSType)
+	is_mounted
+	IS_ENABLED=$(get_data Enabled)
+	if [[ -z $IS_MOUNTED ]]; then
+		not_mounted
+	else
+		already_mounted
+	fi
+	set +x
+}
+
+function is_mounted() {
+# search list of mounts for our target
+	#set -x
+	IS_MOUNTED=$(mount -l | grep "on $MOUNT_PATH/$MOUNT type ")
+	set +x
+}
+
+function not_mounted() {
+# mount unmounted shares if enabled
+	#set -x
+	if [[ -n $IS_ENABLED ]]; then
+		create_missing_directory "$MOUNT_PATH/$MOUNT"
+		ATTEMPT=0
+		until [[ -n $IS_MOUNTED ]] || [[ $ATTEMPT = $RETRIES ]];do
+			mount_by_type
+			is_mounted
+			((ATTEMPT++))
+			sleep $RETRY_INTERVAL
+		done
+		success_fail "Mounting"
+	fi
+	set +x
+}
+
+function mount_by_type() {
+	#set -x
+	if [[ $FSTYPE = sshfs ]]; then
+		SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$MOUNT-sshfs.sh)
+		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$MOUNT.sshfs
+	else
+		mount "$MOUNT_PATH/$MOUNT"
+	fi
+	set +x
+}
+
+function already_mounted() {
+# unmount mounted shares if disabled
+	#set -x
+	if [[ -z $IS_ENABLED ]]; then
+		ATTEMPT=0
+		until [[ -z $IS_MOUNTED ]] || [[ $ATTEMPT = $RETRIES ]];do
+			unmount_by_type
+			is_mounted
+			((ATTEMPT++))
+			sleep $RETRY_INTERVAL
+		done
+		success_fail "Unmounted"
+	fi
+	set +x
+}
+
+function unmount_by_type() {
+# unmounting method based on share type
+	#set -x
+	if [[ $FSTYPE = sshfs ]]; then
+		fusermount -u $MOUNT_PATH/$MOUNT
+	else
+		umount "$MOUNT_PATH/$MOUNT"
+	fi
+	set +x
+}
+
+function success_fail() {
+# sends final status update to status file
+	#set -x
+	if [[ $ATTEMPT = $RETRIES ]];then
+		echo "$1 attempt failed"
+		echo "FAILED" > $STATUS_PATH/$MOUNT.status
+	else
+		echo "$1 $MOUNT successfully"
+		echo "SUCCESS" > $STATUS_PATH/$MOUNT.status
+	fi
+	set +x
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+#----#####--#---#--####---#---#--#####----------------------------------------
+#------#----##--#--#---#--#---#----#------------------------------------------
+#------#----#-#-#--####---#---#----#------------------------------------------
+#------#----#--##--#------#---#----#------------------------------------------
+#----#####--#---#--#-------###-----#------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+# PARSE COMMAND LINE ARGUMENTS FOR THE CORESPONDING FUNCTION
+set -x
+
+if [[ -z $1 ]];then
+	already_running
+	echo "Daemon not running"
+fi
+
+case $1 in
+	start)
+		start_daemon
+		;;
+	control)
+		send_control $2
+		;;
+	remove)
+		remove_source $2
+		;;
+	*)
+		echo "$BAD_USAGE" 1>&2
+		echo "$USAGE "
+		;;		
+esac
