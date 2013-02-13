@@ -12,16 +12,20 @@
 
 class modbtguru extends PiNASModule
 {
-	public $TransmissionHost = "10.42.0.100";
-	public $TransmissionPort = "9091";
+	
+	public $TransConf = "";
 	
 	public function Initialize()
 	{
 		$this->ModuleCode = "btguru";
 		$this->MenuTitle = "BitTorrent";
 		
+		
+		
 		//$this->AddSubMenu("sources", "Sources", true, array("admin", "filesource"));
 		//$this->AddSubMenu("browse", "Browse");
+	
+	
 	}
 	
 	public function Render()
@@ -30,6 +34,13 @@ class modbtguru extends PiNASModule
 		global $RequestVars;
 		global $Scripts; $Scripts[] = "btguru";
 		global $CurrentSessionData;
+		
+		if(file_exists(MODULEPATH."/btguru/settings.cfg")) { $this->TransConf = unserialize(file_get_contents(MODULEPATH."/btguru/settings.cfg")); }
+		else
+		{
+			$this->TransConf = new btguruSettings();
+			$this->TransConf->Save();
+		}
 		
 		$sub = $RequestVars['sub'];
 		
@@ -42,10 +53,7 @@ class modbtguru extends PiNASModule
 		else if($sub == "search") { $this->trigSearch(); }
 		else if($sub == "addtorrent") { $this->trigAddTorrent(); }
 		else if($sub == "torrentprogress") { $this->trigTorrentProgress(); }
-<<<<<<< HEAD
 		else if($sub == "template") { $this->trigTemplate(); }
-=======
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 		
 		
 		return $toret;
@@ -53,24 +61,17 @@ class modbtguru extends PiNASModule
 	
 	public function trigTransmissionState()
 	{
-<<<<<<< HEAD
 		global $RequestVars;
 		$js = $RequestVars['js'];
 		
 		if($js != 1) { $js = false; } else { $js = true; }
 		
-		$rpc = new TransmissionRPC("http://".$this->TransmissionHost.":".$this->TransmissionPort."/transmission/rpc");
+		$rpc = new TransmissionRPC("http://".$this->TransConf->Host.":".$this->TransConf->Port."/transmission/rpc");
 		$result = $rpc->get(array(), array( "id", "name", "status", "doneDate", "haveValid", "totalSize","rateDownload", "rateUpload", "isFinished", "isStalled", "eta" ));
 
 
 		if(!$js) { $etortem = file_get_contents(MODULEPATH."/btguru/templates/currenttorrent.html"); }
 		else { $etortem = file_get_contents(MODULEPATH."/btguru/templates/currenttorrent-json.html"); }
-=======
-		$rpc = new TransmissionRPC("http://".$this->TransmissionHost.":".$this->TransmissionPort."/transmission/rpc");
-		$result = $rpc->get(array(), array( "id", "name", "status", "doneDate", "haveValid", "totalSize","rateDownload", "rateUpload", "isFinished", "isStalled", "eta" ));
-
-		$etortem = file_get_contents(MODULEPATH."/btguru/templates/currenttorrent.html");
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 
 		if($result->result == "success")
 		{
@@ -128,15 +129,12 @@ class modbtguru extends PiNASModule
 				
 			}
 			
-<<<<<<< HEAD
 			if($js)
 			{
 				$toret = trim($toret);
 				$toret = substr($toret, 0, strlen($toret) -1);
 				$toret = "{[".$toret."]}";
 			}
-=======
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 			echo $toret;
 		}
 		else
@@ -160,24 +158,15 @@ class modbtguru extends PiNASModule
 	{
 		global $RequestVars;
 		$torrent = $RequestVars['torrentlink'];
-<<<<<<< HEAD
 		
 		
-=======
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 
-		$rpc = new TransmissionRPC("http://".$this->TransmissionHost.":".$this->TransmissionPort."/transmission/rpc");
+		$rpc = new TransmissionRPC("http://".$this->TransConf->Host.":".$this->TransConf->Port."/transmission/rpc");
 		$result = $rpc->add($torrent);
 
-<<<<<<< HEAD
 		if($result->result == "invalid or corrupt torrent file") { echo "FAIL Corrupt or invalid file.\n(".$torrent.")"; }
 		else if($result->result == "success") { echo "YEAH Success!"; }
 		else { echo "FAIL Weird: ".$result->result; }
-=======
-		if($result->result == "invalid or corrupt torrent file") { echo ":("; }
-		else if($result->result == "success") { echo ":)"; }
-		else { echo ":("; }
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 		
 		exit;
 	}
@@ -228,7 +217,6 @@ class modbtguru extends PiNASModule
 		
 		exit;
 	}
-<<<<<<< HEAD
 	
 	public function trigTemplate()
 	{
@@ -247,8 +235,6 @@ class modbtguru extends PiNASModule
 		echo "";
 		exit;
 	}
-=======
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 }
 
 ?>

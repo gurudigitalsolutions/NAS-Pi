@@ -13,8 +13,7 @@
 class btguruSearch
 {
 	public $NameDumpFile = "";
-	public $TransmissionHost = "10.42.0.100";
-	public $TransmissionPort = "9091";
+	public $TransConf = "";
 	public $SearchResultTemplate = "";
 	public $SearchResultOutline = "";
 	public $ActionAddTemplate = "";
@@ -29,8 +28,14 @@ class btguruSearch
 	public function Initialize()
 	{
 		global $RequestVars;
+		
+		if(file_exists(MODULEPATH."/btguru/settings.cfg"))
+		{
+			$this->TransConf = unserialize(file_get_contents(MODULEPATH."/btguru/settings.cfg"));
+		}
+		else { $this->TransConf = new btguruSettings(); }
+		
 		$this->NameDumpFile = MODULEPATH."/btguru/dumps/namedump.txt";
-<<<<<<< HEAD
 		
 		if($RequestVars['js'] == 1)
 		{
@@ -41,9 +46,6 @@ class btguruSearch
 			$this->SearchResultTemplate = file_get_contents(MODULEPATH."/btguru/templates/search/result-each.html");
 		}
 		
-=======
-		$this->SearchResultTemplate = file_get_contents(MODULEPATH."/btguru/templates/searchresult.html");
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 		$this->SearchResultOutline = file_get_contents(MODULEPATH."/btguru/templates/search/result-outline.html");
 		$this->ActionAddTemplate = file_get_contents(MODULEPATH."/btguru/templates/search/result-action-add.html");
 		$this->ActionNoneTemplate = file_get_contents(MODULEPATH."/btguru/templates/search/result-action-none.html");
@@ -60,11 +62,7 @@ class btguruSearch
 	
 	public function Run()
 	{
-<<<<<<< HEAD
 		global $RequestVars;
-=======
-
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 		$this->scrapers["tpb"]->MaxSearchResults = $this->MaxSearchResults;
 		$this->scrapers["tpb"]->SearchTerms = $this->SearchQuery;
 		$this->scrapers["tpb"]->Run();
@@ -72,7 +70,7 @@ class btguruSearch
 		$this->scrapers["kat"]->SearchTerms = $this->SearchQuery;
 		$this->scrapers["kat"]->Run();
 
-		$rpc = new TransmissionRPC("http://".$this->TransmissionHost.":".$this->TransmissionPort."/transmission/rpc");
+		$rpc = new TransmissionRPC("http://".$this->TransConf->Host.":".$this->TransConf->Port."/transmission/rpc");
 		$this->tsm = $rpc->get(array(), array( "id", "name", "magnetLink", "eta", "isFinished"));
 
 
@@ -131,19 +129,13 @@ class btguruSearch
 				
 				if($torpres)
 				{
-<<<<<<< HEAD
 					$trtmp = str_replace("[TORRENTPRESENT]", "1", $trtmp);
-=======
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 					$trtmp = str_replace("[RESULTACTION]", $this->ActionNoneTemplate, $trtmp);
 					$trtmp = str_replace("[RESULTCLASS]", "have", $trtmp);
 				}
 				else
 				{
-<<<<<<< HEAD
 					$trtmp = str_replace("[TORRENTPRESENT]", "0", $trtmp);
-=======
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 					$trtmp = str_replace("[RESULTACTION]", $this->ActionAddTemplate, $trtmp);
 					
 					$trtmp = str_replace("[RESULTCLASS]", "new", $trtmp);
@@ -205,7 +197,6 @@ class btguruSearch
 			}
 		}*/
 
-<<<<<<< HEAD
 		if($RequestVars['js'] == 1)
 		{
 			$fullr = trim($fullr);
@@ -216,9 +207,6 @@ class btguruSearch
 		{
 			echo str_replace("[RESULTROWS]", $fullr, $this->SearchResultOutline);
 		}
-=======
-		echo str_replace("[RESULTROWS]", $fullr, $this->SearchResultOutline);
->>>>>>> bd85ace10cbfd53db7ff2f999409f7b0dad1e94b
 	}
 
 	function IsTorrentPresent($torrentlink)
