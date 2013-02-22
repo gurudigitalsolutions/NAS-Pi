@@ -1,0 +1,78 @@
+#!/bin/bash 
+### BEGIN INIT INFO
+# Provides: 			naspid
+# Required-Start: 		$remote_fs dbus udev
+# Required-Stop: 		$remote_fs dbus udev
+# Default-Start: 		2 3 4 5
+# Default-Stop:			0 1 6
+# Short-Description: 	Network Attached Storage for Raspberry PI Daemon
+# Description: 			Mounts and unmounts user defined file systems using the NASPI
+#               		Web Administation Utility
+### END INIT INFO
+
+PROG="naspid"
+PROG_PATH="/usr/bin"
+RUN_PATH="/var/run/"
+LOCK_FILE=$RUN_PATH/${PROG}.lock
+LOG="/var/log/$PROG"
+
+ETC_PATH="/etc/naspi"
+ERRORS=$ETC_PATH/errors
+CONFIG=$ETC_PATH/${PROG}.conf
+
+. $ERRORS
+
+error() {
+	echo "ERROR:$@" 1>&2
+	exit $1
+}
+
+start() {
+    if [ -e "$LOCK_FILE" ]; then
+		error $E_START $M_START
+    else
+		$PROG_PATH/$PROG $PROG_ARGS 2>&1 >$LOG &
+        touch "$LOCK_FILE"
+    fi
+}
+
+stop() {
+    if [ -e "$LOCK_FILE" ]; then
+		RUN=FALSE
+        killall $PROG nc 2> /dev/null
+        rm "$LOCK_FILE"
+    else
+		error $E_STOP $M_STOP
+    fi
+}
+
+
+if [ "$(id -u)" != "0" ]; then
+    error $E_ROOT $M_ROOT
+fi
+
+case "$1" in
+    start)
+        start
+        echo "$PROG started"
+        exit 0
+    ;;
+    stop)
+        stop
+        echo "$PROG stopped"
+        exit 0
+    ;;
+    reload|restart|force-reload)
+		if [[ -e $LOCK_FILE ]]; then
+			stop
+		fi
+        start
+        echo "$PROG restarted"
+        exit 0
+    ;;
+    **)
+		error $E_USAGE $M_USAGE
+    ;;
+esac
+
+:

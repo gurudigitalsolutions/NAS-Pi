@@ -68,7 +68,11 @@ class FileSource
 	function Save()
 	{
 		file_put_contents(MODULEPATH."/files/sources/data/".$this->SourceCode, serialize($this));
-		$cntrl = "/home/media/naspi/mount-naspid control ".$this->SourceCode;
+		
+		
+		
+		//$cntrl = "/home/media/naspi/mount-naspid control ".$this->SourceCode;
+		$cntrl = "/etc/naspi/control update ".$this->SourceCode;
 		$cntrlout = `$cntrl`;
 		error_log($cntrlout);
 	}

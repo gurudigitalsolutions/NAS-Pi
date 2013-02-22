@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# These functions are responsible for interpreting the controls sent to the
+# Daemon's listener and then invoking the corresponding function to handle
+# the control.
+
+# directs daemon controls based on contorl input
+
+function control() {
+	#set -x
+	CONTROL=($(cat $CONTROL_FILE))
+	case ${CONTROL[0]} in
+		update )
+			SOURCE=${CONTROL[1]}
+			update &
+			;;
+		remove )
+			remove_source
+			;;
+		*)
+			echo "${CONTROL[@]}"
+			#echo $E_CONTROL
+			#exit
+			;;
+	esac
+	set +x
+}
+
+# Updates the fstabs and mount/unmounts the source
+
+function update() {
+	#set -x
+	commit_mounts
+	mount_filesystem
+	set +x
+}

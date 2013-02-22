@@ -98,6 +98,23 @@ Download the source for NAS-Pi:
 Put the public_html files where they belong:
 	mv naspi/public_html/* public_html
 	
+Create data directories:
+	exit
+	mkdir naspi/modules/files/sources/data
+	sudo chmod ugo+rwx naspi/modules/files/sources/data
+	mkdir naspi/modules/users/accounts
+	mkdir naspi/modules/users/sessions
+	sudo chmod ugo+rwx naspi/modules/users/accounts
+	sudo chmod ugo+rwx naspi/modules/users/sessions
+
+Create backend directories:
+	sudo mkdir /etc/naspi
+
+Copy backend config files:
+	cd ~/naspi
+	sudo cp -r backend/etc/naspi/* /etc/naspi
+	sudo cp backend/etc/init.d/naspid /etc/init.d/naspid
+	sudo cp backend/usr/bin/naspid /usr/bin/naspid
 =====================================================================================
 
 The NAS-Pi mounting daemon does not run by default yet.  It's still a work in
