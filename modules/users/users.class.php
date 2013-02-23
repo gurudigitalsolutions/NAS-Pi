@@ -25,6 +25,11 @@ class modUsers extends PiNASModule
 		$this->AddSubMenu("myaccount", "My Account");
 		$this->AddSubMenu("manager", "User Manager", true, array("admin", "usermanager"));
 		
+		$this->AddSubAuth("adduser", array("admin", "usermanager"));
+		$this->AddSubAuth("addgroup", array("admin", "usermanager"));
+		$this->AddSubAuth("updateuser", array("admin", "usermanager"));
+		$this->AddSubAuth("moreinfo", array("admin", "usermanager"));
+		
 		if(filesize(MODULEPATH."/users/groups.txt") < 5)
 		{
 			file_put_contents(MODULEPATH."/users/groups.txt", serialize(array("admin", "user")));

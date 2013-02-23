@@ -73,8 +73,29 @@ else
 	//	Check if this module requires authentication, and if the user is
 	//	authenticated and allowed to view it.  If so, render the page.
 	//	TODO: ^^^^
+	$sub = $RequestVars["sub"];
 	
-	$pagecontent = $Modules[$mod]->Render();
+	if($sub == "") { $pagecontent = $Modules[$mod]->Render(); }
+	else
+	{
+		if(!array_key_exists($sub, $Modules[$mod]->SubAuthList))
+		{ $pagecontent = $Modules[$mod]->Render(); }
+		else
+		{
+			if(!USERLOGGEDIN) { $pagecontent = "You must be logged in to do that."; }
+			else
+			{
+				if($CurrentUser->GroupMemberOfAny($Modules[$mod]->SubAuthList[$sub]))
+				{
+					$pagecontent = $Modules[$mod]->Render();
+				}
+				else
+				{
+					$pagecontent = "Permission denied.";
+				}
+			}
+		}
+	}
 }
 $SiteTemplate = str_replace("[PAGECONTENT]", $pagecontent, $SiteTemplate);
 

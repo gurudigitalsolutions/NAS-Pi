@@ -22,6 +22,7 @@ class modbtguru extends PiNASModule
 		
 		$this->AddSubMenu("settings", "Settings", true, array("admin", "btgurusettings"));
 		
+		$this->AddSubAuth("update-settings", array("admin", "btgurusettings"));
 		//$this->AddSubMenu("sources", "Sources", true, array("admin", "filesource"));
 		//$this->AddSubMenu("browse", "Browse");
 	

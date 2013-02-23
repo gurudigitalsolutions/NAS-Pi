@@ -21,6 +21,11 @@ class modFiles extends PiNASModule
 		
 		$this->AddSubMenu("sources", "Sources", true, array("admin", "filesource"));
 		$this->AddSubMenu("browse", "Browse");
+		
+		$this->AddSubAuth("moreinfo", array("admin", "filesource"));
+		$this->AddSubAuth("newform", array("admin", "filesource"));
+		$this->AddSubAuth("addsource", array("admin", "filesource"));
+		$this->AddSubAuth("deletesource", array("admin", "filesource"));
 	}
 	
 	public function Render()
