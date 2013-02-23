@@ -14,6 +14,7 @@ function input() {
 			;;
 		update )
 			. $SRC_PATH/$1.inc $2
+			;;
 		remove )
 			remove_source
 			;;
