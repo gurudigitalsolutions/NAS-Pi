@@ -24,108 +24,18 @@ NAS-Pi is a project meant to turn your Raspberry Pi into a network attached stor
 system.  You can create user accounts, assign permissions to user groups, and
 add all sorts of mount points for local devices and remote machines.
 
-There is currently not an installer, so I strongly suggest either reading all of the
-code (haha), or visiting our FAQ for the project at 
-www.gurudigitalsolutions.com/projects/naspi/faq if you would like to get this up
-and running.
+Being modular, it is fairly simple to drop in or create new functionality.  So far,
+there are modules for maintaining user accounts and groups, mounting filesystems,
+and searching bittorrent using btguru, with the ability to control Transmission.
 
 =====================================================================================
 
-Dependencies
-------------
+How to Install:
 
-This was developed and tested using Raspbian on the Raspberry Pi.  That being said,
-the following dependencies are for Raspbian, but it wouldn't surprise me if this
-project is extremely portable.
-
-apache2
-php5
-php5-cli
-samba
-sshfs
-git
-
-=====================================================================================
-
-Installing
-----------
-
-Since this was a work in progress on an already started Raspberry Pi, this process
-will probably need to be refined.  Send a line to brian@gurudigitalsolutions.com if
-you run into hiccups.
-
-Follow the process to write a Raspbian image to your SD Card from:
-	http://www.raspberrypi.org/downloads
-	
-Boot up and go through the installer process for Raspbian.
-
-Once you are at a command prompt,
-
-Create 'media' user:
-	sudo useradd -d /home/media -m media
-	sudo passwd media
-	
-Install dependencies:
-	sudo apt-get install apache2 php5 php5-cli samba sshfs git
-
-Set up FUSE:
-	sudo nano /etc/fuse.conf
-	
-	Uncomment the "user_allow_other" line.
-	(Hit ctrl+o to save, then ctrl+x to exit nano)
-
-Edit Apache configuration:
-	sudo nano /etc/apache2/sites-available/default
-	
-	Change the line that starts with DocumentRoot to:
-		DocumentRoot /home/media/public_html
-		
-	Change the line that has Directory /var/www to:
-		Directory /home/media/public_html
-		
-	Save and exit nano.
-	
-Create public_html folder:
-	sudo mkdir /home/media/public_html
-	sudo chown media:media /home/media/public_html
-	
-Download the source for NAS-Pi:
-	sudo su media
-	cd ~
+Open a terminal, and type in:
 	git clone git://github.com/gurudvlp/NAS-Pi.git
-	mv NAS-Pi naspi
+	cd NAS-Pi
+	sudo ./install.sh
 
-Put the public_html files where they belong:
-	mv naspi/public_html/* public_html
-	
-Create data directories:
-	exit
-	mkdir naspi/modules/files/sources/data
-	sudo chmod ugo+rwx naspi/modules/files/sources/data
-	mkdir naspi/modules/users/accounts
-	mkdir naspi/modules/users/sessions
-	sudo chmod ugo+rwx naspi/modules/users/accounts
-	sudo chmod ugo+rwx naspi/modules/users/sessions
 
-Create backend directories:
-	sudo mkdir /etc/naspi
-
-Copy backend config files:
-	cd ~/naspi
-	sudo cp -r backend/etc/naspi/* /etc/naspi
-	sudo cp backend/etc/init.d/naspid /etc/init.d/naspid
-	sudo cp backend/usr/bin/naspid /usr/bin/naspid
-=====================================================================================
-
-The NAS-Pi mounting daemon does not run by default yet.  It's still a work in
-progress, and we haven't gotten to that point.  So, to run the daemon, type:
-	sudo /home/media/naspi/mount-naspid start
-
-At this point, you should be able to type the IP Address of your Raspberry Pi into
-a web browser, and start using it.
-
-Well in theory.  I have a feeling that I missed a few steps.  Fairly soon I'll start
-with a fresh install of Raspbian and follow my own guide to figure out what is
-missing.
-
-Enjoy :)
+Then simply point your favorite web browser to the IP of your Raspberry Pi.
