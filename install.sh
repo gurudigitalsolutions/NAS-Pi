@@ -116,6 +116,9 @@ function create_data_directories
 		mkdir /etc/naspi
 	fi
 	
+	chmod ugo+rw /home/media/naspi/modules/btguru/settings.cfg
+	chmod ugo+rw /home/media/naspi/modules/users/groups.txt
+	
 }
 
 function place_backend_files

@@ -17,6 +17,7 @@ class PiNASModule
 	public $SubMenus = array();
 	public $AuthRequired = false;
 	public $AllowGroups = array();
+	public $SubAuthList = array();
 	
 	function Initialize()
 	{
@@ -33,8 +34,21 @@ class PiNASModule
 	function AddSubMenu($submenucode, $submenutitle, $authrequired = false, $authgroups = array())
 	{
 		$this->SubMenus[$submenucode] = array("title"=>$submenutitle, "authrequired"=>$authrequired, "authgroups"=>$authgroups);
+		
+		if($authrequired == true) { $this->AddSubAuth($submenucode, $authgroups); }
 		return true;
 	}
+	
+	function AddSubAuth($subcode, $authgroups)
+	{
+		//if(!array_key_exists($subcode, $this->SubAuthList))
+		//{
+			$this->SubAuthList[$subcode] = $authgroups;
+		//	return true;
+		//}
+		return true;
+	}
+	
 }
 
 ?>

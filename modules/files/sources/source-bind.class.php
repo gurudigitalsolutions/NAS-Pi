@@ -21,12 +21,19 @@ class FileSourceBIND extends FileSource
 	{
 		global $RequestVars;
 		
-		$this->SourceNode = $RequestVars["sourcenode"];
+		$this->OriginalSourceCode = $RequestVars["ogsourcecode"];
+		$this->OriginalPath = $RequestVars["ogsourcepath"];
 		$this->Title = $RequestVars["title"];
 		$this->SourceCode = $RequestVars["sourcecode"];
 		$this->FSType = "bind";
 		
-		if($this->SourceNode == "") { return false; }
+		if($this->OriginalSourceCode == "") { return false; }
+		if($this->OriginalPath == "") { return false; }
+		if(substr($this->OriginalPath, 0, 1) == "/")
+		{
+			if(strlen($this->OriginalPath) == 1) { return false; }
+			$this->OriginalPath = substr($this->OriginalPath, 1);
+		}
 		if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
 		if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
@@ -37,7 +44,8 @@ class FileSourceBIND extends FileSource
 	function InitFormElements()
 	{
 		$this->InitBasicFormElements();
-		$this->AddFormElement("sourcenode", "text", "Original Path", "SourceNode");
+		$this->AddFormElement("ogsourcecode", "text", "Original Source", "OriginalSourceCode");
+		$this->AddFormElement("ogsourcepath", "text", "Original Path", "OriginalPath");
 	}
 }
 

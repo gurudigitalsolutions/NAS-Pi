@@ -21,6 +21,11 @@ class modFiles extends PiNASModule
 		
 		$this->AddSubMenu("sources", "Sources", true, array("admin", "filesource"));
 		$this->AddSubMenu("browse", "Browse");
+		
+		$this->AddSubAuth("moreinfo", array("admin", "filesource"));
+		$this->AddSubAuth("newform", array("admin", "filesource"));
+		$this->AddSubAuth("addsource", array("admin", "filesource"));
+		$this->AddSubAuth("deletesource", array("admin", "filesource"));
 	}
 	
 	public function Render()
@@ -211,6 +216,8 @@ class modFiles extends PiNASModule
 			$sourcecode = $RequestVars["sourcecode"];
 			$source = unserialize(file_get_contents(MODULEPATH."/files/sources/data/".$sourcecode));
 			$source->Delete();
+			
+			unlink(MODULEPATH."/files/sources/data/".$sourcecode);
 			
 			header("Location: /?module=files&sub=sources");
 			exit;

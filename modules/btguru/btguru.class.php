@@ -20,8 +20,9 @@ class modbtguru extends PiNASModule
 		$this->ModuleCode = "btguru";
 		$this->MenuTitle = "BitTorrent";
 		
+		$this->AddSubMenu("settings", "Settings", true, array("admin", "btgurusettings"));
 		
-		
+		$this->AddSubAuth("update-settings", array("admin", "btgurusettings"));
 		//$this->AddSubMenu("sources", "Sources", true, array("admin", "filesource"));
 		//$this->AddSubMenu("browse", "Browse");
 	
@@ -54,6 +55,8 @@ class modbtguru extends PiNASModule
 		else if($sub == "addtorrent") { $this->trigAddTorrent(); }
 		else if($sub == "torrentprogress") { $this->trigTorrentProgress(); }
 		else if($sub == "template") { $this->trigTemplate(); }
+		else if($sub == "settings") { $toret = $this->trigSettings(); }
+		else if($sub == "update-settings") { $this->trigUpdateSettings(); }
 		
 		
 		return $toret;
@@ -233,6 +236,32 @@ class modbtguru extends PiNASModule
 		if($tmp == "result-action-none") { echo file_get_contents(MODULEPATH."/btguru/templates/search/result-action-none.html"); exit; }
 		
 		echo "";
+		exit;
+	}
+	
+	public function trigSettings()
+	{
+		global $RequestVars;
+		
+		$toret = file_get_contents(MODULEPATH."/btguru/templates/settings/outline.html");
+		$toret = str_replace("[HOST]", $this->TransConf->Host, $toret);
+		$toret = str_replace("[PORT]", $this->TransConf->Port, $toret);
+		
+		return $toret;
+	}
+	
+	public function trigUpdateSettings()
+	{
+		global $RequestVars;
+		
+		$nhost = $RequestVars["hostname"];
+		$nport = $RequestVars["port"];
+		
+		$this->TransConf->Host = $nhost;
+		$this->TransConf->Port = $nport;
+		$this->TransConf->Save();
+		
+		header("Location: /?module=btguru&sub=settings");
 		exit;
 	}
 }
