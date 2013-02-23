@@ -9,14 +9,10 @@
 # Description: 			Mounts and unmounts user defined file systems using the NASPI
 #               		Web Administation Utility
 ### END INIT INFO
-
 PROG="naspid"
 PROG_PATH="/usr/bin"
-RUN_PATH="/var/lock/"
-LOCK_FILE=$RUN_PATH/${PROG}.lock
-$(grep "LOG=" /etc/naspi/naspid.conf)
-#LOG="/var/log/$PROG"
-
+RUN_PATH="/var/lock"
+export NASPID_LOCK_FILE=$RUN_PATH/${PROG}.lock
 ETC_PATH="/etc/naspi"
 ERRORS=$ETC_PATH/errors
 CONFIG=$ETC_PATH/${PROG}.conf
@@ -29,18 +25,18 @@ error() {
 }
 
 start() {
-    if [ -e "$LOCK_FILE" ]; then
+    if [ -e "$NASPID_LOCK_FILE" ]; then
 		error $E_START $M_START
     else
-		$PROG_PATH/$PROG start 2>&1 > $LOG &
-        touch "$LOCK_FILE"
+		$PROG_PATH/$PROG start 2>&1 &
+        touch "$NASPID_LOCK_FILE"
     fi
 }
 
 stop() {
-    if [ -e "$LOCK_FILE" ]; then
-		RUN=FALSE
-        $PROG_PATH/$PROG stop 2>&1 > $LOG &
+    if [ -e "$NASPID_LOCK_FILE" ]; then
+		export RUN=FALSE
+        $PROG_PATH/$PROG stop 2>&1 &
     else
 		error $E_STOP $M_STOP
     fi
@@ -63,11 +59,11 @@ case "$1" in
         exit 0
     ;;
     reload|restart|force-reload)
-		if [[ -e $LOCK_FILE ]]; then
+		if [[ -e $NASPID_LOCK_FILE ]]; then
 			stop
 		fi
         start
-        echo "$PROG restarted" > $LOG &
+        echo "$PROG restarted" >> $LOG &
         exit 0
     ;;
     **)

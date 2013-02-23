@@ -7,7 +7,7 @@
 # directs daemon controls based on contorl input
 
 function input() {
-	#set -x
+	set -x
 	case $1 in
 		commit )
 			. $SRC_PATH/$1.inc $2
@@ -40,11 +40,12 @@ set -x
 
 RUN=TRUE
 echo "Starting Listener" >> $LOG
+echo $PPID >> $NASPID_LOCK_FILE
 
 while [[ $RUN = TRUE ]]; do
 	nc -l $PORT > $CONTROL_FILE
 	INPUT=($(cat $CONTROL_FILE))
-	input ${INPUT[@]}
+	input ${INPUT[@]} &
 	rm $CONTROL_FILE
 	sleep .5
 done
