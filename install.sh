@@ -31,9 +31,9 @@ NASPI_HOME=$MEDIA_HOME/"naspi"
 
 DATA_DIRECTORIES=("modules/users/accounts" "modules/users/sessions" "modules/files/sources/data"
 
-DEFAULT_SITE="backend/etc/apache2/sites-available/default"
+SITES_AVAILABLE="/etc/apache2/sites-available"
 
-APACHE_DEFAULT_SITE="/etc/apache2/sites-available/default"
+DEFAULT_SITE=$SITES_AVAILABLE"/default"
 
 ETC_PATH="/etc/naspi"
 
@@ -64,10 +64,23 @@ function create_media_account
 
 function install_dependencies
 {
+	for each_depend in ${DEPENDANCIES[@]}; do
 
-	echo "Installing dependencies for NAS-Pi"
-	apt-get update
-	apt-get install ${DEPENDANCIES[@]}
+		if [[ -z $(dpkg -l | grep " $each_depend ") ]]; then
+			INSTALL=(${INSTALL[@]} $each_depend)
+		else
+			echo "Skipping $each_depend, package already installed"
+		fi
+	
+	done
+	
+	if [[ ${#INSTALL[@]} -gt 0 ]]; then
+		echo "Installing dependencies for NAS-Pi"
+		apt-get update
+		apt-get install ${INSTALL[@]}
+	else
+		echo "All dependencies for NAS-Pi met"
+	fi
 }
 
 function configure_fuse
@@ -77,18 +90,30 @@ function configure_fuse
 
 function configure_apache
 {
-	if [[ -z $(diff -q $BASE/$DEFAULT_SITE $APACHE_DEFAULT_SITE) ]]; then
-		echo "$APACHE_DEFAULT_SITE is modified, would you like to overwrite?"
-		echo -n " y/n? "
-		read OVERWRITE
-		case $OVERWRITE in
-			y|Y|yes|YES)
-				cat "$BASE"/$DEFAULT_SITE > $APACHE_DEFAULT_SITE
-				;;
-		esac
+	if [[ -d ${SITES_AVAILABLE} ]]; then
+		
+		if [[ -z $(diff -q ${BASE}${DEFAULT_SITE} ${DEFAULT_SITE}) ]]; then
+			echo "${DEFAULT_SITE} is modified, would you like to overwrite?"
+			echo -n " y/n? "
+			read OVERWRITE
+			
+			case $OVERWRITE in
+				y|Y|yes|YES)
+					cat ${BASE}${DEFAULT_SITE} > ${DEFAULT_SITE}
+					;;
+			esac
+		
+		else
+			cat ${BASE}${DEFAULT_SITE} > ${DEFAULT_SITE}
+		fi
+	
+	else
+		
+		mkdir $SITES_AVAILABLE
+		cp ${BASE}${DEFAULT_SITE} > ${DEFAULT_SITE}
+	
 	fi
 }
-
 
 function place_files
 {
@@ -119,14 +144,14 @@ function create_data_directories
 
 function place_backend_files
 {
-	if [[ ! -e $ETC_PATH ]]; then
-		mkdir $ETC_PATH
+	if [[ ! -e ${ETC_PATH} ]]; then
+		mkdir ${ETC_PATH}
 	fi
 	
-	cp -r backend$ETC_PATH/* $ETC_PATH	
-	cp backend/$INIT_PATH $INIT_PATH
+	cp -r backend${ETC_PATH}/* ${ETC_PATH}	
+	cp backend/${INIT_PATH} ${INIT_PATH}
 	
-	chmod 0755 $INIT_PATH
+	chmod 0755 ${INIT_PATH}
 	
 	update-rc.d naspid defaults
 }
@@ -144,7 +169,6 @@ function restart_daemons
 install_dependencies
 configure_fuse
 configure_apache
-create_public_html
 place_files
 create_data_directories
 place_backend_files
