@@ -38,14 +38,17 @@ if(!IncludeDir(FUNCTIONPATH) || !IncludeDir(CLASSPATH)) { echo "Smells like rott
 require_once(MODULEPATH."/module-base.class.php");
 if(!IncludeDir(MODULEPATH, "ImportModule")) { echo "Modular decay :("; exit; }
 
-/*$tusr = new UserAccount();
-$tusr->Username = "admin";
-$tusr->Salt = "sdflkej44";
-$tusr->LastActive = 0;
-$tusr->Email = "guru@fatty-j.com";
-$tusr->Password = md5("fuckers".$tusr->Salt);
-$tusr->Groups[] = "admin";
-$tusr->Save();*/
+if(!file_exists(MODULEPATH."/users/accounts/admin"))
+{
+	$tusr = new UserAccount();
+	$tusr->Username = "admin";
+	$tusr->Salt = "sdflkej44";
+	$tusr->LastActive = 0;
+	$tusr->Email = "";
+	$tusr->Password = md5("password".$tusr->Salt);
+	$tusr->Groups[] = "admin";
+	$tusr->Save();
+}
 //include(CMSPATH."login.php");
 
 //	Determine which module we are running and render the page content.
