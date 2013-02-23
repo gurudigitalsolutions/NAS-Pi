@@ -72,7 +72,11 @@ class FileSource
 		
 		
 		//$cntrl = "/home/media/naspi/mount-naspid control ".$this->SourceCode;
-		$cntrl = "/etc/naspi/control update ".$this->SourceCode;
+		//$cntrl = "/etc/naspi/control update ".$this->SourceCode;
+		$cntrl = "/usr/bin/naspid control commit ".$this->SourceCode;
+		$cntrlout = `$cntrl`;
+		error_log($cntrlout);
+		$cntrl = "/usr/bin/naspid control update ".$this->SourceCode;
 		$cntrlout = `$cntrl`;
 		error_log($cntrlout);
 	}
