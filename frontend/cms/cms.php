@@ -19,6 +19,7 @@ if(!defined("INPI")) { exit; }
 //		Run submodule
 //		Build Page
 
+$Version = "0.13.02.23";
 $Config = "";
 $StyleSheets = array("sitetemplate");
 $Scripts = array("gds");
@@ -78,25 +79,36 @@ else
 {
 	if($Config->IsModuleEnabled($mod))
 	{
-		$sub = $RequestVars["sub"];
-		
-		if($sub == "") { $pagecontent = $Modules[$mod]->Render(); }
+		if($Modules[$mod]->AuthRequired && !USERLOGGEDIN && $mod != "users")
+		{
+			$pagecontent = "Permission denied. (0)<br />".$mod;
+		}
+		else if($Modules[$mod]->AuthRequired && USERLOGGEDIN && !$CurrentUser->GroupMemberOfAny($Modules[$mod]->AllowGroups))
+		{
+			$pagecontent = "Permission denied. (1)<br />".$mod;
+		}
 		else
 		{
-			if(!array_key_exists($sub, $Modules[$mod]->SubAuthList))
-			{ $pagecontent = $Modules[$mod]->Render(); }
+			$sub = $RequestVars["sub"];
+			
+			if($sub == "") { $pagecontent = $Modules[$mod]->Render(); }
 			else
 			{
-				if(!USERLOGGEDIN) { $pagecontent = "You must be logged in to do that."; }
+				if(!array_key_exists($sub, $Modules[$mod]->SubAuthList))
+				{ $pagecontent = $Modules[$mod]->Render(); }
 				else
 				{
-					if($CurrentUser->GroupMemberOfAny($Modules[$mod]->SubAuthList[$sub]))
-					{
-						$pagecontent = $Modules[$mod]->Render();
-					}
+					if(!USERLOGGEDIN) { $pagecontent = "You must be logged in to do that."; }
 					else
 					{
-						$pagecontent = "Permission denied.";
+						if($CurrentUser->GroupMemberOfAny($Modules[$mod]->SubAuthList[$sub]))
+						{
+							$pagecontent = $Modules[$mod]->Render();
+						}
+						else
+						{
+							$pagecontent = "Permission denied.";
+						}
 					}
 				}
 			}
