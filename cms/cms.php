@@ -143,39 +143,42 @@ $menutemplate = "";
 
 foreach($Modules as $emkey=>$emval)
 {
-	if($emval->MenuDisplay == true)
+	if($Config->IsModuleEnabled($emkey))
 	{
-		if($emval->AuthRequired == false
-		|| ($emval->AuthRequired == true && USERLOGGEDIN && $CurrentUser->GroupMemberOfAny($emval->AllowGroups)))
+		if($emval->MenuDisplay == true)
 		{
-			$tmenu = $MainMenuItemTemplate;
-			$tmenu = str_replace("[MENUTITLE]", $emval->MenuTitle, $tmenu);
-			$tmenu = str_replace("[MODULECODE]", $emval->ModuleCode, $tmenu);
-			
-			if(count($emval->SubMenus) > 0)
+			if($emval->AuthRequired == false
+			|| ($emval->AuthRequired == true && USERLOGGEDIN && $CurrentUser->GroupMemberOfAny($emval->AllowGroups)))
 			{
-				$tsubtmp = "";
-				foreach($emval->SubMenus as $smkey=>$smval)
+				$tmenu = $MainMenuItemTemplate;
+				$tmenu = str_replace("[MENUTITLE]", $emval->MenuTitle, $tmenu);
+				$tmenu = str_replace("[MODULECODE]", $emval->ModuleCode, $tmenu);
+				
+				if(count($emval->SubMenus) > 0)
 				{
-					if($smval["authrequired"] == false
-					|| ($smval["authrequired"] == true && USERLOGGEDIN && $CurrentUser->GroupMemberOfAny($smval["authgroups"])))
+					$tsubtmp = "";
+					foreach($emval->SubMenus as $smkey=>$smval)
 					{
-						$tsubs = $MainMenuSubItemTemplate;
-						
-						$tsubs = str_replace("[MODULECODE]", $emval->ModuleCode, $tsubs);
-						$tsubs = str_replace("[SUBCODE]", $smkey, $tsubs);
-						$tsubs = str_replace("[SUBTITLE]", $smval["title"], $tsubs);
-						$tsubtmp = $tsubtmp.$tsubs;
+						if($smval["authrequired"] == false
+						|| ($smval["authrequired"] == true && USERLOGGEDIN && $CurrentUser->GroupMemberOfAny($smval["authgroups"])))
+						{
+							$tsubs = $MainMenuSubItemTemplate;
+							
+							$tsubs = str_replace("[MODULECODE]", $emval->ModuleCode, $tsubs);
+							$tsubs = str_replace("[SUBCODE]", $smkey, $tsubs);
+							$tsubs = str_replace("[SUBTITLE]", $smval["title"], $tsubs);
+							$tsubtmp = $tsubtmp.$tsubs;
+						}
 					}
+					$tmenu = str_replace("[SUBMENUS]", $tsubtmp, $tmenu);
 				}
-				$tmenu = str_replace("[SUBMENUS]", $tsubtmp, $tmenu);
+				else
+				{
+					$tmenu = str_replace("[SUBMENUS]", "", $tmenu);
+				}
+				
+				$menutemplate = $menutemplate.$tmenu;
 			}
-			else
-			{
-				$tmenu = str_replace("[SUBMENUS]", "", $tmenu);
-			}
-			
-			$menutemplate = $menutemplate.$tmenu;
 		}
 	}
 }
