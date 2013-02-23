@@ -32,11 +32,11 @@ fi
 
 
 # Includes global functions for use by all sub shells and functions
-INCLUDES=($(ls $SRC_PATH | grep ".include"))
+#INCLUDES=($(ls $SRC_PATH | grep ".inc"))
 
-for each_include in ${INCLUDES[@]}; do
-	. $SRC_PATH/$each_include
-done
+#for each_include in ${INCLUDES[@]}; do
+	#. $SRC_PATH/$each_include
+#done
 
 # Listens for network input and writes it to control file. This file will
 # be used to send commands to the daemon
@@ -45,12 +45,29 @@ done
 	#case $1 in
 		#files)
 			
-RUN=TRUE
-echo "Starting Listener" >> $LOG
-while [[ $RUN = TRUE ]]; do
-	nc -l $PORT > $CONTROL_FILE
-	control	
-	rm $CONTROL_FILE
-	sleep .5
-done
+
 set +x
+# PARSE COMMAND LINE ARGUMENTS FOR THE CORESPONDING FUNCTION
+#set -x
+
+if [[ -z $1 ]];then
+	already_running
+	echo "Daemon not running"
+fi
+
+case $1 in
+	start)
+		trap 'rm $PID_FILE $CONTROL_FILE 2> /dev/null && exit' EXIT INT
+		. $SRC_PATH/$1.inc
+		;;
+	control)
+		. $SRC_PATH/$1.inc ${@:2}
+		;;
+	#remove)
+		#remove_source $2
+		#;;
+	*)
+		echo "$BAD_USAGE" 1>&2
+		echo "$USAGE "
+		;;		
+esac

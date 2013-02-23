@@ -7,27 +7,6 @@
 
 # Makes decisions based on share types
 
-function commit_mounts() {
-	# Creates any non-existant directories
-	create_missing_directory $FSTAB_DIR
-	create_missing_directory $HOME/$CREDENTIALS
-	#set -x
-	TYPE=$(get_data FSType)
-	if [[ $TYPE = device ]]; then
-		device_commit $SOURCE
-	elif [[ $TYPE = smb ]]; then
-		smb_commit $SOURCE
-	elif [[ $TYPE = sshfs ]]; then
-		sshfs_commit $SOURCE
-	elif [[ $TYPE = ftp ]]; then
-		ftp_commit $SOURCE
-	elif [[ $TYPE = bind ]]; then
-		bind_commit $SOURCE
-	fi
-	write
-	set +x
-}
-
 function device_commit() {		
 	#set -x
 	local UUID=$(get_data $1 UUID)
@@ -126,9 +105,39 @@ function write() {
 	if [[ ! -f $FSTAB_DIR/fstab.orignial ]]; then
 		cat /etc/fstab > $FSTAB_DIR/fstab.orignial
 	fi
+	
 	if [[ -e $FSTAB_DIR/*.fstab ]]; then
-		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > ${FSTAB_DIR}/fullstab
+		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > $FSTAB_DIR/fullstab
+	else
+		cp $FSTAB_DIR/fstab.orignial $FSTAB_DIR/fullstab
 	fi
+	
 	cat $FSTAB_DIR/fullstab > /etc/fstab
 	set +x
 }
+
+
+# Creates any non-existant directories
+create_missing_directory $FSTAB_DIR
+create_missing_directory $HOME/$CREDENTIALS
+
+#set -x
+local SOURCE=$1
+
+TYPE=$(get_data $SOURCE FSType)
+echo $TYPE
+
+if [[ $TYPE = device ]]; then
+	device_commit $SOURCE
+elif [[ $TYPE = smb ]]; then
+	smb_commit $SOURCE
+elif [[ $TYPE = sshfs ]]; then
+	sshfs_commit $SOURCE
+elif [[ $TYPE = ftp ]]; then
+	ftp_commit $SOURCE
+elif [[ $TYPE = bind ]]; then
+	bind_commit $SOURCE
+fi
+write
+echo "Commit Sucess: Wrote TYPE: $TYPE SOURCE: $SOURCE entry into fstab"
+set +x

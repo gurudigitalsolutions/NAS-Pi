@@ -17,7 +17,7 @@ function create_missing_directory() {
 
 function get_data() {
 	#set -x
-	$GET_DATA $SOURCE $1
+	$GET_DATA $1 $2
 	set +x
 }
 

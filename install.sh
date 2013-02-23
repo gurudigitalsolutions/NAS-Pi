@@ -17,11 +17,11 @@ E_WRONGDIR=("2" "You must run this script in the directory that contains the NAS
 
 USER_OWNER='media:media'
 
-ROOT_OWNER='ROOT_OWNER'
+ROOT_OWNER='root:root'
 
 DIRS_TO_CHECK=(backend cms modules public_html)
 
-DEPENDANCIES=(apache2 php5 php5-cli sshfs git curlftpfs samba smbclient)
+DEPENDENCIES=(apache2 php5 php5-cli sshfs git curlftpfs samba smbclient netcat-openbsd)
 
 MEDIA_HOME="/home/media"
 
@@ -29,19 +29,24 @@ PUBLIC_HTML=$MEDIA_HOME/"public_html"
 
 NASPI_HOME=$MEDIA_HOME/"naspi"
 
-DATA_DIRECTORIES=("modules/users/accounts" "modules/users/sessions" "modules/files/sources/data"
+DATA_DIRECTORIES=("modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
 
-DEFAULT_SITE="backend/etc/apache2/sites-available/default"
+SITES_AVAILABLE="/etc/apache2/sites-available"
 
-APACHE_DEFAULT_SITE="/etc/apache2/sites-available/default"
+DEFAULT_SITE=$SITES_AVAILABLE"/default"
 
 ETC_PATH="/etc/naspi"
 
-INIT="backend/etc/init.d/naspid"
-INIT_PATH="/etc/init.d/naspid"
+INIT="/etc/init.d/naspid"
+
+BIN="/usr/bin/naspid"
 #####################################################################################
 echo "NAS-Pi Installer"
 echo "Copyright 2013 Guru Digital Solutions"
+
+START_DIR=$(pwd)
+
+cd $BASE
 
 if [[ $(id -u) != 0 ]]; then
 	echo ${E_NOTROOT[1]}
@@ -64,10 +69,23 @@ function create_media_account
 
 function install_dependencies
 {
+	for each_depend in ${DEPENDENCIES[@]}; do
 
-	echo "Installing dependencies for NAS-Pi"
-	apt-get update
-	apt-get install ${DEPENDANCIES[@]}
+		if [[ -z $(dpkg -l | grep " $each_depend ") ]]; then
+			INSTALL=(${INSTALL[@]} $each_depend)
+		else
+			echo "Skipping $each_depend, package already installed"
+		fi
+	
+	done
+	
+	if [[ ${#INSTALL[@]} -gt 0 ]]; then
+		echo "Installing dependencies for NAS-Pi"
+		apt-get update
+		apt-get install ${INSTALL[@]}
+	else
+		echo "All dependencies for NAS-Pi met"
+	fi
 }
 
 function configure_fuse
@@ -77,29 +95,46 @@ function configure_fuse
 
 function configure_apache
 {
-	if [[ -z $(diff -q $BASE/$DEFAULT_SITE $APACHE_DEFAULT_SITE) ]]; then
-		echo "$APACHE_DEFAULT_SITE is modified, would you like to overwrite?"
-		echo -n " y/n? "
-		read OVERWRITE
-		case $OVERWRITE in
-			y|Y|yes|YES)
-				cat "$BASE"/$DEFAULT_SITE > $APACHE_DEFAULT_SITE
-				;;
-		esac
+	[[ -e $MEDIA_HOME/logs ]] || mkdir $MEDIA_HOME/logs && chown $USER_OWNER $MEDIA_HOME/logs
+	
+	if [[ -d ${SITES_AVAILABLE} ]]; then
+		
+		if [[ -z $(diff -q backend${DEFAULT_SITE} ${DEFAULT_SITE}) ]]; then
+			
+			echo "${DEFAULT_SITE} is modified, would you like to overwrite?"
+			echo -n " y/n? "
+			read OVERWRITE
+			
+			case $OVERWRITE in
+				y|Y|yes|YES)
+					cat backend${DEFAULT_SITE} > ${DEFAULT_SITE}
+					;;
+			esac
+		
+		else
+		
+			echo "$DEFAULT_SITE already configured"
+		fi
+	
+	else
+		
+		mkdir $SITES_AVAILABLE
+		cp backend${DEFAULT_SITE} > ${DEFAULT_SITE}
+	
 	fi
 }
-
 
 function place_files
 {
 	#cp -r backend $NASPI_HOME
-	cp -r "$BASE"/cms $NASPI_HOME
-	cp -r "$BASE"/modules $NASPI_HOME
-	cp -r "$BASE"/public_html $MEDIA_HOME
+	cp -r frontend/cms $NASPI_HOME
+	cp -r frontend/modules $NASPI_HOME
+	cp -r frontend/public_html $MEDIA_HOME
 	
 	chown $USER_OWNER $PUBLIC_HTML
 	chmod ugo+rw $NASPI_HOME/modules/btguru/settings.cfg
 	chmod ugo+rw $NASPI_HOME/modules/users/groups.txt
+	chmod 755 $NASPI_HOME/modules/files/sources/sourcedata
 }
 
 function create_data_directories
@@ -123,10 +158,12 @@ function place_backend_files
 		mkdir $ETC_PATH
 	fi
 	
-	cp -r backend$ETC_PATH/* $ETC_PATH	
-	cp backend/$INIT_PATH $INIT_PATH
+	cp -r backend${ETC_PATH} ${ETC_PATH}	
+	cp backend${INIT} ${INIT}
+	cp backend${BIN} ${BIN}
 	
-	chmod 0755 $INIT_PATH
+	chmod 0755 $BIN
+	chmod 0755 $INIT
 	
 	update-rc.d naspid defaults
 }
@@ -144,10 +181,10 @@ function restart_daemons
 install_dependencies
 configure_fuse
 configure_apache
-create_public_html
 place_files
 create_data_directories
 place_backend_files
-restart_deamons
+restart_daemons
 
+cd $START_DIR
 echo "NAS-Pi has been installed."

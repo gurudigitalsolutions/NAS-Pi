@@ -12,9 +12,10 @@
 
 PROG="naspid"
 PROG_PATH="/usr/bin"
-RUN_PATH="/var/run/"
+RUN_PATH="/var/lock/"
 LOCK_FILE=$RUN_PATH/${PROG}.lock
-LOG="/var/log/$PROG"
+$(grep "LOG=" /etc/naspi/naspid.conf)
+#LOG="/var/log/$PROG"
 
 ETC_PATH="/etc/naspi"
 ERRORS=$ETC_PATH/errors
@@ -31,7 +32,7 @@ start() {
     if [ -e "$LOCK_FILE" ]; then
 		error $E_START $M_START
     else
-		$PROG_PATH/$PROG $PROG_ARGS 2>&1 >$LOG &
+		$PROG_PATH/$PROG start 2>&1 > $LOG &
         touch "$LOCK_FILE"
     fi
 }
@@ -39,8 +40,7 @@ start() {
 stop() {
     if [ -e "$LOCK_FILE" ]; then
 		RUN=FALSE
-        killall $PROG nc 2> /dev/null
-        rm "$LOCK_FILE"
+        $PROG_PATH/$PROG stop 2>&1 > $LOG &
     else
 		error $E_STOP $M_STOP
     fi
@@ -67,7 +67,7 @@ case "$1" in
 			stop
 		fi
         start
-        echo "$PROG restarted"
+        echo "$PROG restarted" > $LOG &
         exit 0
     ;;
     **)
