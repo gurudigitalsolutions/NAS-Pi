@@ -9,12 +9,10 @@
 #
 ###############################################################################
 
-BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 E_NOTROOT=("1" "You must run this script as root.")
 E_WRONGDIR=("2" "You must run this script in the directory that contains the NAS-Pi data.")
-
-DEPENDANCIES=(apache2 php5 php5-cli sshfs git curlftpfs samba smb-client)
 
 echo "NAS-Pi Installer"
 echo "Copyright 2013 Guru Digital Solutions"
@@ -38,13 +36,16 @@ done
 	
 function create_media_account
 {
-	useradd -d /home/media -m media
+	useradd -d $MEDIA_HOME -m media
 	echo "Please enter a password for the media account:"
 	passwd media
 }
 
+DEPENDANCIES=(apache2 php5 php5-cli sshfs git curlftpfs samba smb-client)
+
 function install_dependencies
 {
+
 	echo "Installing dependencies for NAS-Pi"
 	apt-get update
 	apt-get install ${DEPENDANCIES[@]}
@@ -59,65 +60,65 @@ function configure_apache
 {
 	APACHE_INSTALL_CONF="backend/etc/apache2/sites-available/default"
 	APACHE_CONF="/etc/apache2/sites-available/default"
-	if [[ -z $(diff -q "$BASE_DIR"/$APACHE_INSTALL_CONF $APACHE_CONF) ]]; then
+	if [[ -z $(diff -q "$BASE"/$APACHE_INSTALL_CONF $APACHE_CONF) ]]; then
 		echo "$APACHE_CONF is modified, would you like to overwrite?"
 		echo -n " y/n? "
 		read OVERWRITE
 		case $OVERWRITE in
 			y|Y|yes|YES)
-				cat "$BASE_DIR"/$APACHE_INSTALL_CONF > $APACHE_CONF
-					;;
+				cat "$BASE"/$APACHE_INSTALL_CONF > $APACHE_CONF
+				;;
 		esac
 	fi
 }
 
+MEDIA_HOME="/home/media"
+PUBLIC_HTML=$MEDIA_HOME/"public_html"
+
 function create_public_html
 {
-	if [[ ! -e /home/media/public_html ]]; then
-		mkdir /home/media/public_html
-		chown media:media /home/media/public_html
+	if [[ ! -e $PUBLIC_HTML ]]; then
+		mkdir $PUBLIC_HTML
+		chown media:media $PUBLIC_HTML
 	fi
 	
 }
 
+NASPI_HOME=$MEDIA_HOME/"naspi"
+
 function place_files
 {
-	if [[ ! -e /home/media/naspi ]]; then
-		mkdir /home/media/naspi
-		chown media:media /home/media/naspi
+	if [[ ! -e $NASPI_HOME ]]; then
+		mkdir $NASPI_HOME
+		chown media:media $NASPI_HOME
 	fi
 	
-	#cp -r backend /home/media/naspi
-	cp -r cms /home/media/naspi
-	cp -r modules /home/media/modules
-	cp -r public_html /home/media
+	#cp -r backend $NASPI_HOME
+	cp -r "$BASE"/cms $NASPI_HOME
+	cp -r "$BASE"/modules $NASPI_HOME
+	cp -r "$BASE"/public_html $MEDIA_HOME
+	
+	chmod ugo+rw $NASPI_HOME/modules/btguru/settings.cfg
+	chmod ugo+rw $NASPI_HOME/modules/users/groups.txt
 }
 
 function create_data_directories
 {
-	if [[ ! -e /home/media/naspi/modules/users/accounts ]]; then
-		mkdir /home/media/naspi/modules/users/accounts
-	fi
-	if [[ ! -e /home/media/naspi/modules/users/sessions ]]; then
-		mkdir /home/media/naspi/modules/users/sessions
-	]]
-	chown media:media /home/media/naspi/modules/users/accounts
-	chown media:media /home/media/naspi/modules/users/sessions
-	chmod ugo+rwx /home/media/naspi/modules/users/accounts
-	chmod ugo+rwx /home/media/naspi/modules/users/sessions
+	DATA_DIRECTORIES=("modules/users/accounts" "modules/users/sessions" "modules/files/sources/data"
 	
-	if [[ ! -e /home/media/naspi/modules/files/sources/data ]]; then
-		mkdir /home/media/naspi/modules/files/sources/data
-	fi
-	chown media:media /home/media/naspi/modules/files/sources/data
-	chmod ugo+rwx /home/media/naspi/modules/files/sources/data
+	for each_data_dir in ${DATA_DIRECTORIES[@]}; do
+
+		if [[ ! -e $NASPI_HOME/${each_data_dir} ]]; then
+			mkdir $NASPI_HOME/${each_data_dir}
+			chmod ugo+rwx $NASPI_HOME/${each_data_dir}
+			chown media:media $NASPI_HOME/${each_data_dir}
+		fi
+
+	done
 	
 	if [[ ! -e /etc/naspi ]]; then
 		mkdir /etc/naspi
 	fi
-	
-	chmod ugo+rw /home/media/naspi/modules/btguru/settings.cfg
-	chmod ugo+rw /home/media/naspi/modules/users/groups.txt
 	
 }
 
