@@ -9,7 +9,7 @@
 #
 ###############################################################################
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 E_NOTROOT=("1" "You must run this script as root.")
 E_WRONGDIR=("2" "You must run this script in the directory that contains the NAS-Pi data.")
@@ -57,12 +57,18 @@ function configure_fuse
 
 function configure_apache
 {
-	if [[ -e /etc/apache2/sites-available/default ]]; then
-		rm /etc/apache2/sites-available/default
+	APACHE_INSTALL_CONF="backend/etc/apache2/sites-available/default"
+	APACHE_CONF="/etc/apache2/sites-available/default"
+	if [[ diff -q "$BASE_DIR"/$APACHE_INSTALL_CONF $APACHE_CONF]]; then
+		echo "$APACHE_CONF is modified, would you like to overwrite?"
+		echo -n " y/n? "
+		read OVERWRITE
+		case $OVERWRITE in
+			y|Y|yes|YES)
+				cat "$BASE_DIR"/$APACHE_INSTALL_CONF > $APACHE_CONF
+					;;
+		esac
 	fi
-	
-	cp backend/etc/apache2/sites-available/default /etc/apache2/sites-available/default
-	
 }
 
 function create_public_html
