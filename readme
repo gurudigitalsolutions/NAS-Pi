@@ -35,7 +35,8 @@ and searching bittorrent using btguru, with the ability to control Transmission.
 How to Install:
 
 Open a terminal, and type in:
-	git clone git://github.com/gurudvlp/NAS-Pi.git
+	sudo apt-get install git
+	git clone git://github.com/gurudigitalsolutions/NAS-Pi.git
 	cd NAS-Pi
 	sudo ./install.sh
 

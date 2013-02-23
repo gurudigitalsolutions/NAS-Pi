@@ -9,59 +9,32 @@
 #
 ###############################################################################
 
-E_NOTROOT = 1
-E_WRONGDIR = 2
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+E_NOTROOT=("1" "You must run this script as root.")
+E_WRONGDIR=("2" "You must run this script in the directory that contains the NAS-Pi data.")
+
+DEPENDANCIES=(apache2 php5 php5-cli sshfs git curlftpfs samba smb-client)
 
 echo "NAS-Pi Installer"
 echo "Copyright 2013 Guru Digital Solutions"
 
 if [[ $(id -u) != 0 ]]; then
-	echo "You must run this script as root."
-	exit $E_NOTROOT
+	echo ${E_NOTROOT[1]}
+	exit ${E_NOTROOT[0]}
 fi
 
-if [[ ! -d backend ]]; then
-	echo "You must run this script in the directory that contains the NAS-Pi data."
-	exit $E_WRONGDIR
-fi
+DIRS_TO_CHECK=(backend cms modules public_html)
 
-if [[ ! -d cms ]]; then
-	echo "You must run this script in the directory that contains the NAS-Pi data."
-	exit $E_WRONGDIR
-fi
-
-if [[ ! -d modules ]]; then
-	echo "You must run this script in the directory that contains the NAS-Pi data."
-	exit $E_WRONGDIR
-fi
-
-if [[ !-d public_html ]]; then
-	echo "You must run this script in the directory that contains the NAS-Pi data."
-	exit $E_WRONGDIR
-fi
+for each_dir in ${DIRS_TO_CHECK[@]}; do
+	
+	if [[ ! -d  $each_dir ]]; then
+		echo ${E_WRONGDIR[1]}
+		exit ${E_WRONGDIR[0]}
+	fi
+done
 
 #####################################################################################
-
-
-	
-#Create data directories:
-	#exit
-	#mkdir naspi/modules/files/sources/data
-	#sudo chmod ugo+rwx naspi/modules/files/sources/data
-	#mkdir naspi/modules/users/accounts
-	#mkdir naspi/modules/users/sessions
-	#sudo chmod ugo+rwx naspi/modules/users/accounts
-	#sudo chmod ugo+rwx naspi/modules/users/sessions
-
-#Create backend directories:
-	#sudo mkdir /etc/naspi
-
-#Copy backend config files:
-	#cd ~/naspi
-	#sudo cp -r backend/etc/naspi/* /etc/naspi
-	#sudo cp backend/etc/init.d/naspid /etc/init.d/naspid
-	#sudo cp backend/usr/bin/naspid /usr/bin/naspid
-	
 	
 function create_media_account
 {
@@ -74,7 +47,7 @@ function install_dependencies
 {
 	echo "Installing dependencies for NAS-Pi"
 	apt-get update
-	apt-get install apache2 php5 php5-cli samba sshfs git
+	apt-get install ${DEPENDANCIES[@]}
 }
 
 function configure_fuse
