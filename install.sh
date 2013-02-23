@@ -59,7 +59,7 @@ function configure_apache
 {
 	APACHE_INSTALL_CONF="backend/etc/apache2/sites-available/default"
 	APACHE_CONF="/etc/apache2/sites-available/default"
-	if [[ diff -q "$BASE_DIR"/$APACHE_INSTALL_CONF $APACHE_CONF]]; then
+	if [[ -z $(diff -q "$BASE_DIR"/$APACHE_INSTALL_CONF $APACHE_CONF) ]]; then
 		echo "$APACHE_CONF is modified, would you like to overwrite?"
 		echo -n " y/n? "
 		read OVERWRITE
