@@ -6,19 +6,19 @@
 
 # directs daemon controls based on contorl input
 
-function control() {
+function input() {
 	#set -x
-	CONTROL=($(cat $CONTROL_FILE))
-	case ${CONTROL[0]} in
-		update )
-			SOURCE=${CONTROL[1]}
-			update &
+	case $1 in
+		commit )
+			. $SRC_PATH/$1.inc $2
 			;;
+		update )
+			. $SRC_PATH/$1.inc $2
 		remove )
 			remove_source
 			;;
 		*)
-			echo "${CONTROL[@]}"
+			echo "${INPUT[@]}"
 			#echo $E_CONTROL
 			#exit
 			;;
@@ -30,7 +30,22 @@ function control() {
 
 function update() {
 	#set -x
-	commit_mounts
+
 	mount_filesystem
 	set +x
 }
+
+set -x
+
+RUN=TRUE
+echo "Starting Listener" >> $LOG
+
+while [[ $RUN = TRUE ]]; do
+	nc -l $PORT > $CONTROL_FILE
+	INPUT=($(cat $CONTROL_FILE))
+	input ${INPUT[@]}
+	rm $CONTROL_FILE
+	sleep .5
+done
+
+set +x

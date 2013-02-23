@@ -4,20 +4,6 @@
 # defined sources.  It uses an included PHP module to query the NASPI web
 # interface for each source's relevant data
 
-# makes mount/unmount decisions
-
-function mount_filesystem() {
-	#set -x
-	FSTYPE=$(get_data FSType)
-	is_mounted
-	IS_ENABLED=$(get_data Enabled)
-	if [[ -z $IS_MOUNTED ]]; then
-		not_mounted
-	else
-		already_mounted
-	fi
-	set +x
-}
 
 # search mounted items for target source
 
@@ -101,3 +87,14 @@ function success_fail() {
 	fi
 	set +x
 }
+
+set -x
+
+local SOURCE=$1
+FSTYPE=$(get_data $SOURCE FSType)
+is_mounted
+IS_ENABLED=$(get_data $SOURCE Enabled)
+
+[[ $IS_MOUNTED ]] && not_mounted || already_mounted
+
+set +x

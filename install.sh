@@ -21,7 +21,7 @@ ROOT_OWNER='root:root'
 
 DIRS_TO_CHECK=(backend cms modules public_html)
 
-DEPENDENCIES=(apache2 php5 php5-cli sshfs git curlftpfs samba smbclient)
+DEPENDENCIES=(apache2 php5 php5-cli sshfs git curlftpfs samba smbclient netcat-openbsd)
 
 MEDIA_HOME="/home/media"
 
@@ -99,7 +99,7 @@ function configure_apache
 	
 	if [[ -d ${SITES_AVAILABLE} ]]; then
 		
-		if [[ -z $(diff -q ${BASE}${DEFAULT_SITE} ${DEFAULT_SITE}) ]]; then
+		if [[ -z $(diff -q backend${DEFAULT_SITE} ${DEFAULT_SITE}) ]]; then
 			
 			echo "${DEFAULT_SITE} is modified, would you like to overwrite?"
 			echo -n " y/n? "
@@ -134,6 +134,7 @@ function place_files
 	chown $USER_OWNER $PUBLIC_HTML
 	chmod ugo+rw $NASPI_HOME/modules/btguru/settings.cfg
 	chmod ugo+rw $NASPI_HOME/modules/users/groups.txt
+	chmod 755 $NASPI_HOME/modules/files/sources/sourcedata
 }
 
 function create_data_directories
