@@ -138,6 +138,7 @@ function create_data_directories
 	fi
 	
 	chmod ugo+rw /home/media/naspi/modules/btguru/settings.cfg
+	chmod ugo+rw /home/media/naspi/modules/users/groups.txt
 	
 }
 
