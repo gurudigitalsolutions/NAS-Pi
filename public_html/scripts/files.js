@@ -19,3 +19,11 @@ function ShowSourceDetails(sourcecode)
 		
 	}
 }
+
+function ConfirmDeleteSource(sourcecode)
+{
+	if(confirm("Are you sure you would like to delete the source '"+sourcecode+"'"))
+	{
+		document.location = "/?module=files&sub=deletesource&sourcecode="+sourcecode;
+	}
+}

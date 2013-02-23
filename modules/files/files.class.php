@@ -217,6 +217,8 @@ class modFiles extends PiNASModule
 			$source = unserialize(file_get_contents(MODULEPATH."/files/sources/data/".$sourcecode));
 			$source->Delete();
 			
+			unlink(MODULEPATH."/files/sources/data/".$sourcecode);
+			
 			header("Location: /?module=files&sub=sources");
 			exit;
 		}
