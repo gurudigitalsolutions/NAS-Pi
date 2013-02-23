@@ -12,6 +12,8 @@ SRC_PATH=/etc/naspi/${PROG}.d
 # Location of the mount control file
 CONTROL_FILE="/tmp/naspid.control"
 
+. /etc/naspi/errors
+
 CONFIG_SET=FALSE
 CONFIG_PATHS=("/etc/naspi" '~' '~/naspi')
 
