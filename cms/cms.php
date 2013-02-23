@@ -19,6 +19,7 @@ if(!defined("INPI")) { exit; }
 //		Run submodule
 //		Build Page
 
+$Config = "";
 $StyleSheets = array("sitetemplate");
 $Scripts = array("gds");
 $PageTitle = array("NAS-Pi");
@@ -35,8 +36,13 @@ $Modules = array();
 $RequestVars = array();
 
 if(!IncludeDir(FUNCTIONPATH) || !IncludeDir(CLASSPATH)) { echo "Smells like rotten fruit :("; exit; }
+
+if(file_exists(CMSPATH."/data/cms.cfg")) { $Config = unserialize(file_get_contents(CMSPATH."/data/cms.cfg")); }
+else { $Config = new NASPiConfig(); }
+
 require_once(MODULEPATH."/module-base.class.php");
 if(!IncludeDir(MODULEPATH, "ImportModule")) { echo "Modular decay :("; exit; }
+
 
 if(!file_exists(MODULEPATH."/users/accounts/admin"))
 {
@@ -70,31 +76,36 @@ $pagecontent = "";
 if($mod == "home") { $pagecontent = "Pi-NAS"; }
 else
 {
-	//	Check if this module requires authentication, and if the user is
-	//	authenticated and allowed to view it.  If so, render the page.
-	//	TODO: ^^^^
-	$sub = $RequestVars["sub"];
-	
-	if($sub == "") { $pagecontent = $Modules[$mod]->Render(); }
-	else
+	if($Config->IsModuleEnabled($mod))
 	{
-		if(!array_key_exists($sub, $Modules[$mod]->SubAuthList))
-		{ $pagecontent = $Modules[$mod]->Render(); }
+		$sub = $RequestVars["sub"];
+		
+		if($sub == "") { $pagecontent = $Modules[$mod]->Render(); }
 		else
 		{
-			if(!USERLOGGEDIN) { $pagecontent = "You must be logged in to do that."; }
+			if(!array_key_exists($sub, $Modules[$mod]->SubAuthList))
+			{ $pagecontent = $Modules[$mod]->Render(); }
 			else
 			{
-				if($CurrentUser->GroupMemberOfAny($Modules[$mod]->SubAuthList[$sub]))
-				{
-					$pagecontent = $Modules[$mod]->Render();
-				}
+				if(!USERLOGGEDIN) { $pagecontent = "You must be logged in to do that."; }
 				else
 				{
-					$pagecontent = "Permission denied.";
+					if($CurrentUser->GroupMemberOfAny($Modules[$mod]->SubAuthList[$sub]))
+					{
+						$pagecontent = $Modules[$mod]->Render();
+					}
+					else
+					{
+						$pagecontent = "Permission denied.";
+					}
 				}
 			}
 		}
+	}
+	else
+	{
+		//	Module is not enabled.
+		$pagecontent = "That module is not enabled.";
 	}
 }
 $SiteTemplate = str_replace("[PAGECONTENT]", $pagecontent, $SiteTemplate);
