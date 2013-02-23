@@ -172,6 +172,6 @@ configure_apache
 place_files
 create_data_directories
 place_backend_files
-restart_deamons
+restart_daemons
 
 echo "NAS-Pi has been installed."
