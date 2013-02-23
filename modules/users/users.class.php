@@ -71,6 +71,7 @@ class modUsers extends PiNASModule
 			
 			$toret = str_replace("[EACHUSER]", $ttlusers, $ManagerTemplate);
 			
+			$groupnames = array();
 			$ttlgroups = "";
 			$groups = unserialize(file_get_contents(MODULEPATH."/users/groups.txt"));
 			foreach($groups as $eg)
@@ -78,6 +79,25 @@ class modUsers extends PiNASModule
 				$tgtmp = $EachGroupTemplate;
 				$tgtmp = str_replace("[GROUPNAME]", $eg, $tgtmp);
 				$ttlgroups = $ttlgroups.$tgtmp;
+				
+				$groupnames[$eg] = true;
+			}
+			
+			foreach($Modules as $emkey=>$emod)
+			{
+				foreach($emod->SubMenus as $eskey=>$esub)
+				{
+					foreach($esub["authgroups"] as $egroup)
+					{
+						if(!array_key_exists($egroup, $groupnames))
+						{
+							$tgtmp = $EachGroupTemplate;
+							$tgtmp = str_replace("[GROUPNAME]", $egroup, $tgtmp);
+							$ttlgroups = $ttlgroups.$tgtmp;
+							$groupnames[$egroup] = true;
+						}
+					}
+				}
 			}
 			
 			$toret = str_replace("[EACHGROUP]", $ttlgroups, $toret);
@@ -159,6 +179,7 @@ class modUsers extends PiNASModule
 			
 			$groups = unserialize(file_get_contents(MODULEPATH."/users/groups.txt"));
 			
+			$groupnames = array();
 			$ttlgroups = "";
 			foreach($groups as $eg)
 			{
@@ -169,6 +190,24 @@ class modUsers extends PiNASModule
 				else { $tgroup = str_replace("[ENABLED]", "", $tgroup); }
 				
 				$ttlgroups = $ttlgroups.$tgroup;
+				$groupnames[$eg] = true;
+			}
+			
+			foreach($Modules as $emkey=>$emod)
+			{
+				foreach($emod->SubMenus as $eskey=>$esub)
+				{
+					foreach($esub["authgroups"] as $egroup)
+					{
+						if(!array_key_exists($egroup, $groupnames))
+						{
+							$tgtmp = $EachGroupTemplate;
+							$tgtmp = str_replace("[GROUPNAME]", $egroup, $tgtmp);
+							$ttlgroups = $ttlgroups.$tgtmp;
+							$groupnames[$egroup] = true;
+						}
+					}
+				}
 			}
 			
 			$MoreInfoTemplate = str_replace("[EACHGROUP]", $ttlgroups, $MoreInfoTemplate);

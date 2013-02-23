@@ -6,6 +6,12 @@
 	color: #FFFFFF;
 }
 
+.users_manager_adduserheader
+{
+	font-size: 1.4em;
+	font-weight: bold;
+}
+
 .users_manager_groupman
 {
 	width: 300px;
