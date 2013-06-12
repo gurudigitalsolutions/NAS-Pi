@@ -29,7 +29,15 @@ class modAddOns extends PiNASModule
 		if($RequestVars["sub"] == "home")
 		{
 			$template = file_get_contents(MODULEPATH."/addons/templates/main.html");
+			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
 			
+			$fulladdon = "";
+			for($i = 0; $i < 5; $i++)
+			{
+				$fulladdon = $fulladdon.$EachAddOnTmp;
+			}
+			
+			$template = str_replace("[EACHADDON]", $fulladdon, $template);
 			$toret = $template;
 		}
 		else
