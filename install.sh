@@ -36,7 +36,7 @@ E_ROOT=("\nYou must run this script as root.\n" "10")
 E_DEP=("\nYou have unmet dependancies.\nUse apt-get install " "11")
 
 
-EMPTY_DIR=("modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
+EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
 
 #####################################################################################
 echo "NAS-Pi Installer"
@@ -143,10 +143,8 @@ function place_files
 	cp -r frontend/cms "$WWW"
 	cp -r frontend/modules "$WWW"
 	cp -r frontend"$WWW/public_html" $WWW
-	touch $WWW/log/error.log
 	
 	chown -R "root:www-data" "$WWW/public_html"
-	chown "root:www-data" "$WWW/log/error.log"
 	
 	chmod 777 "$WWW"/modules/btguru/settings.cfg
 	chmod 777 "$WWW"/modules/users/groups.txt
@@ -176,7 +174,8 @@ function create_empty_directories
 		fi
 
 	done
-	
+	touch $WWW/log/error.log
+	chown "root:www-data" "$WWW/log/error.log"
 
 }
 
