@@ -37,7 +37,7 @@ START_DIR=$(pwd)
 cd $BASE
 
 # Test user and group id for root
-#~ [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]&& echo -e "${E_ROOT[0]}"&& exit "${E_ROOT[1]}"
+[[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]&& echo -e "${E_ROOT[0]}"&& exit "${E_ROOT[1]}"
 
 #####################################################################################
 
