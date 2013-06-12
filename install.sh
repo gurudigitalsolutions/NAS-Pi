@@ -20,6 +20,16 @@ SITE="/etc/apache2/sites-available/nas-pi"
 ETC="/etc/naspi"
 INIT="/etc/init.d/naspid"
 BIN="/usr/bin/naspid"
+FUSE="\
+# Set the maximum number of FUSE mounts allowed to non-root users.
+# The default is 1000.
+#
+#mount_max = 1000
+
+# Allow non-root users to specify the 'allow_other' or 'allow_root'
+# mount options.
+#
+user_allow_other"
 
 BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 E_ROOT=("\nYou must run this script as root.\n" "10")
@@ -37,7 +47,7 @@ START_DIR=$(pwd)
 cd $BASE
 
 # Test user and group id for root
-[[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]&& echo -e "${E_ROOT[0]}"&& exit "${E_ROOT[1]}"
+#~ [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]&& echo -e "${E_ROOT[0]}"&& exit "${E_ROOT[1]}"
 
 #####################################################################################
 
@@ -51,8 +61,9 @@ function install_dependencies
 		dpkg -s $dep 2>/dev/null >/dev/null
 		[[ $? = 1 ]]&& need="$need$dep "
 	done
-
-	[[ -n $need ]] && apt-get install $need#echo -e "${E_DEP[0]}$need\n" && exit ${E_DEP[1]}
+set -x
+	#~ [[ -n $need ]] && echo -e "${E_DEP[0]}$need\n" && exit ${E_DEP[1]}
+	[[ -n $need ]]&& apt-get install $need
 }
 
 #
@@ -60,19 +71,7 @@ function install_dependencies
 #
 function configure_fuse
 {
-	echo "Configured fuse for to allow other"
-cat>/etc/fuse.conf << EOF
-# Set the maximum number of FUSE mounts allowed to non-root users.
-# The default is 1000.
-#
-#mount_max = 1000
-
-# Allow non-root users to specify the 'allow_other' or 'allow_root'
-# mount options.
-#
-user_allow_other
-EOF
-
+	echo "$FUSE" > /etc/fuse.conf
 }
 
 #
@@ -81,9 +80,10 @@ EOF
 function configure_apache
 {
 	echo "Adding nas-pi VirtualHost to apache2"
-	[[ ! -e $SITE ]]|| cat backend${SITE}
-	if [[ -z $(diff -q backend${SITE} $SITE 2>/dev/null) ]]; then
+	if [[ ! -e $SITE ]]; then
+		cp backend${SITE} $SITE
 		
+	elif [[ $(diff -q backend${SITE} $SITE 2>/dev/null) ]]; then
 		echo "$SITE is modified, would you like to overwrite?"
 		echo -n " y=overwrite/n=do nothing/m=move to .old? "
 		read OVERWRITE
@@ -168,7 +168,7 @@ function place_backend_files
 #
 #
 #
-install_dependencies
+install_dependencies ; exit
 configure_apache
 place_files
 create_empty_directories
