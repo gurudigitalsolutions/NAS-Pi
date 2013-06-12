@@ -47,7 +47,7 @@ START_DIR=$(pwd)
 cd $BASE
 
 # Test user and group id for root
-#~ [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]&& echo -e "${E_ROOT[0]}"&& exit "${E_ROOT[1]}"
+[[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]&& echo -e "${E_ROOT[0]}"&& exit "${E_ROOT[1]}"
 
 #####################################################################################
 
@@ -59,19 +59,19 @@ function install_dependencies
 	for dep in ${DEPENDENCIES[@]}; do
 
 		dpkg -s $dep 2>/dev/null >/dev/null
-		[[ $? = 1 ]]&& need="$need$dep "
+		if [[ $? = 1 ]];then
+			need="$need$dep "
+			[[ $dep = apache2 ]]&& export default=TRUE
+		fi
 	done
-set -x
-	#~ [[ -n $need ]] && echo -e "${E_DEP[0]}$need\n" && exit ${E_DEP[1]}
-	[[ -n $need ]]&& apt-get install $need
-}
 
-#
-#
-#
-function configure_fuse
-{
-	echo "$FUSE" > /etc/fuse.conf
+	[[ -n $need ]]&& apt-get install $need
+	
+	#~ if [[ $? = 1 ]];then
+		#~ unset default
+		#~ echo -e "${E_DEP[0]} $need"
+		#~ exit ${E_DEP[1]}
+	#~ fi
 }
 
 #
@@ -79,11 +79,38 @@ function configure_fuse
 #
 function configure_apache
 {
-	echo "Adding nas-pi VirtualHost to apache2"
 	if [[ ! -e $SITE ]]; then
+		echo "Creating $SITE"
 		cp backend${SITE} $SITE
-		
-	elif [[ $(diff -q backend${SITE} $SITE 2>/dev/null) ]]; then
+		a2ensite nas-pi
+	fi
+
+	if [[ $default = TRUE ]];then
+		unset default
+		a2dissite 000-default
+	
+	elif [[ -e /etc/apache2/sites-enabled/000-default ]]; then
+		echo -e "\nNOTICE: 000-default is already configured"
+		echo "Answering no will require you to configure your own NaneVirtualHost file"
+		echo -n "Would you like to disable 000-default y/n? "
+		read configure
+	
+		case $configure in
+			y|Y|yes|YES)
+				a2dissite 000-default
+				a2ensite nas-pi
+				service apache2 restart
+				;;
+			*)
+				a2ensite nas-pi
+				echo "Manually configure apache2's sites-avalible"
+				;;
+		esac
+	fi
+
+
+	
+	if [[ $(diff -q backend${SITE} $SITE 2>/dev/null) ]]; then
 		echo "$SITE is modified, would you like to overwrite?"
 		echo -n " y=overwrite/n=do nothing/m=move to .old? "
 		read OVERWRITE
@@ -91,19 +118,16 @@ function configure_apache
 		case $OVERWRITE in
 			y|Y|yes|YES)
 				cat backend${SITE} > ${SITE}
-				a2ensite $SITE
+				a2ensite nas-pi
 				service apache2 restart
 				;;
 
 			m|M)
 				mv $SITE $SITE.old
-				a2ensite $SITE
+				a2ensite nas-pi
 				service apache2 restart
 				;;				
-		esac
-	
-	else
-		echo "$SITE already configured"
+		esac	
 	fi
 }
 
@@ -122,6 +146,14 @@ function place_files
 	chmod 777 "$WWW"/modules/btguru/settings.cfg
 	chmod 777 "$WWW"/modules/users/groups.txt
 	chmod 755 "$WWW"/modules/files/sources/sourcedata
+}
+
+#
+#
+#
+function configure_fuse
+{
+	echo "$FUSE" > /etc/fuse.conf
 }
 
 
@@ -168,7 +200,7 @@ function place_backend_files
 #
 #
 #
-install_dependencies ; exit
+install_dependencies
 configure_apache
 place_files
 create_empty_directories
