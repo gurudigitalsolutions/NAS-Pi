@@ -21,6 +21,7 @@ class modAddOns extends PiNASModule
 		global $CurrentSessionData;
 		global $StyleSheets;
 		global $Scripts;
+		global $Modules;
 		
 		$toret = "";
  
@@ -30,11 +31,25 @@ class modAddOns extends PiNASModule
 		{
 			$template = file_get_contents(MODULEPATH."/addons/templates/main.html");
 			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
+			$AddOnIconTmp = file_get_contents(MODULEPATH."/addons/templates/addon-icon.html");
 			
 			$fulladdon = "";
-			for($i = 0; $i < 5; $i++)
+			foreach($Modules as $emkey=>$emval)
 			{
-				$fulladdon = $fulladdon.$EachAddOnTmp;
+				$taot = $EachAddOnTmp;
+				$taot = str_replace("[ADDONCODE]", $emkey, $taot);
+				$taot = str_replace("[TITLE]", $emval->MenuTitle, $taot);
+				
+				if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$emkey.".png"))
+				{
+					$taot = str_replace("[ADDONICON]", str_replace("[ADDONCODE]", $emkey, $AddOnIconTmp), $taot);
+					
+				}
+				else
+				{
+					$taot = str_replace("[ADDONICON]", $emkey, $taot);
+				}
+				$fulladdon = $fulladdon.$taot;
 			}
 			
 			$template = str_replace("[EACHADDON]", $fulladdon, $template);
