@@ -143,8 +143,11 @@ function place_files
 	cp -r frontend/cms "$WWW"
 	cp -r frontend/modules "$WWW"
 	cp -r frontend"$WWW/public_html" $WWW
+	touch $WWW/log/error.log
 	
 	chown -R "root:www-data" "$WWW/public_html"
+	chown "root:www-data" "$WWW/log/error.log"
+	
 	chmod 777 "$WWW"/modules/btguru/settings.cfg
 	chmod 777 "$WWW"/modules/users/groups.txt
 	chmod 755 "$WWW"/modules/files/sources/sourcedata
