@@ -88,7 +88,7 @@ class FileSource
 	
 	function Delete()
 	{
-		$cntrl = "/home/media/naspi/mount-naspid remove ".$this->SourceCode;
+		$cntrl = "/usr/bin/naspid control remove ".$this->SourceCode;
 		$cntrlout = `$cntrl`;
 		error_log($cntrlout);
 	}

@@ -9,11 +9,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-define("CMSPATH", "/home/media/naspi/cms");
-define("FUNCTIONPATH", "/home/media/naspi/cms/functions");
-define("CLASSPATH", "/home/media/naspi/cms/classes");
-define("MODULEPATH", "/home/media/naspi/modules");
-define("PUBLICHTMLPATH", "/home/media/public_html");
+define("CMSPATH", "/usr/share/naspi/cms");
+define("FUNCTIONPATH", "/usr/share/naspi/cms/functions");
+define("CLASSPATH", "/usr/share/naspi/cms/classes");
+define("MODULEPATH", "/usr/share/naspi/modules");
+define("PUBLICHTMLPATH", "/usr/share/naspi/public_html");
 define("INPI", true);
 
 include(CMSPATH."/cms.php");

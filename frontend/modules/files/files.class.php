@@ -187,7 +187,7 @@ class modFiles extends PiNASModule
 					
 					header("Location: /?module=files&sub=sources");
 					exit;
-				} else { error_log("Pi-Nas: Add File Source: Validation failed."); header("Location: /?module=files&sub=sources"); exit; }
+				} else { error_log("NAS-Pi: Add File Source: Validation failed."); header("Location: /?module=files&sub=sources"); exit; }
 			
 			}
 			else
@@ -201,14 +201,14 @@ class modFiles extends PiNASModule
 		{
 			if($RequestVars["sourcecode"] == "")
 			{
-				error_log("Pi-Nas: Delete file source: Source Code not provided");
+				error_log("NAS-Pi: Delete file source: Source Code not provided");
 				header("Location: /?module=files&sub=sources");
 				exit;
 			}
 			
 			if(!file_exists(MODULEPATH."/files/sources/data/".$RequestVars["sourcecode"]))
 			{
-				error_log("Pi-Nas: Delete file source: Source not found (".$RequestVars["sourcecode"].")");
+				error_log("NAS-Pi: Delete file source: Source not found (".$RequestVars["sourcecode"].")");
 				header("Location: /?module=files&sub=sources");
 				exit;
 			}

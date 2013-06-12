@@ -19,7 +19,7 @@ if(!defined("INPI")) { exit; }
 //		Run submodule
 //		Build Page
 
-$Version = "0.13.02.23";
+$Version = "0.13.06.12";
 $Config = "";
 $StyleSheets = array("sitetemplate");
 $Scripts = array("gds");
@@ -74,7 +74,7 @@ if(array_key_exists("module", $RequestVars))
 }
 
 $pagecontent = "";
-if($mod == "home") { $pagecontent = "Pi-NAS"; }
+if($mod == "home") { $pagecontent = "NAS-Pi"; }
 else
 {
 	if($Config->IsModuleEnabled($mod))
@@ -268,12 +268,12 @@ function ImportModule($path)
 	//	The first line of the module needs to be at least
 	//		Pi-NAS Module x x
 	
-	if(strlen($fline) < 17) { error_log("Pi-NAS: ImportModule: Less than 17 chars: ".$fline); return false; }
+	if(strlen($fline) < 17) { error_log("NAS-Pi: ImportModule: Less than 17 chars: ".$fline); return false; }
 	$parts = explode(" ", $fline);
-	if(count($parts) < 4) { error_log("Pi-NAS: ImportModule: Module Description line has less than 4 parts. ".$fline); return false; }
+	if(count($parts) < 4) { error_log("NAS-Pi: ImportModule: Module Description line has less than 4 parts. ".$fline); return false; }
 	
-	if(strtolower($parts[0]) != "pi-nas") { error_log("Pi-NAS: ImportModule: Not == pi-nas: ".$parts[0]); return false; }
-	if(strtolower($parts[1]) != "module" && strtolower($parts[1]) != "component") { error_log("Pi-NAS: ImportModule: Not == module / component: ".$parts[1]); return false; }
+	if(strtolower($parts[0]) != "pi-nas" && strtolower($parts[0]) != "nas-pi") { error_log("NAS-Pi: ImportModule: Not == pi-nas: ".$parts[0]); return false; }
+	if(strtolower($parts[1]) != "module" && strtolower($parts[1]) != "component") { error_log("NAS-Pi: ImportModule: Not == module / component: ".$parts[1]); return false; }
 	
 	//$Modules[$parts[2]] = $parts[3];
 	require_once($path);

@@ -10,7 +10,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-chdir("/home/media/naspi/modules/files/sources");
+chdir("/usr/share/naspi/modules/files/sources");
 
 if(count($argv) == 1)
 {
@@ -29,7 +29,7 @@ if(count($argv) == 1)
 
 if($argv[1] == "--help" || $argv[1] == "-h")
 {
-	echo "Pi-NAS Mount Source Data\n";
+	echo "NAS-Pi Mount Source Data\n";
 	echo "\n";
 	echo "Copyright 2013 Brian Murphy\n";
 	echo "\twww.gurudigitalsolutions.com\n\n";
