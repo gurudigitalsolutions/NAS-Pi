@@ -67,11 +67,11 @@ function install_dependencies
 
 	[[ -n $need ]]&& apt-get install $need
 	
-	#~ if [[ $? = 1 ]];then
-		#~ unset default
-		#~ echo -e "${E_DEP[0]} $need"
-		#~ exit ${E_DEP[1]}
-	#~ fi
+	if [[ $? = 1 ]];then
+		unset default
+		echo -e "${E_DEP[0]} $need"
+		exit ${E_DEP[1]}
+	fi
 }
 
 #
@@ -140,7 +140,7 @@ function place_files
 	
 	cp -r frontend/cms "$WWW"
 	cp -r frontend/modules "$WWW"
-	cp -r frontend/"$WWW/public_html" $WWW
+	cp -r frontend"$WWW/public_html" $WWW
 	
 	chown -R "root:www-data" "$WWW/public_html"
 	chmod 777 "$WWW"/modules/btguru/settings.cfg
