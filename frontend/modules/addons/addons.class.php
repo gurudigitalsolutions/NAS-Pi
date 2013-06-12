@@ -7,6 +7,7 @@ class modAddOns extends PiNASModule
 {
 
 	public $MandatoryAddOns = array("admin", "users", "files");
+	public $RepoHost = "10.42.0.100";
 	
 	public function Initialize()
 	{
@@ -71,6 +72,12 @@ class modAddOns extends PiNASModule
 			
 			$template = str_replace("[EACHADDON]", $fulladdon, $template);
 			$toret = $template;
+		}
+		else if($RequestVars["sub"] == "browse")
+		{
+			$ch = curl_init($this->RepoHost."/list.php");
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$toret = curl_exec($ch);
 		}
 		else
 		{
