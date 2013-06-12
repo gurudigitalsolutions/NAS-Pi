@@ -9,37 +9,25 @@
 #
 ###############################################################################
 
+DEPENDENCIES=( samba smbclient apache2 php5 php5-cli sshfs git curlftpfs netcat-openbsd)
+
+EMPTY_DIR=("$WWW-ROOT/log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
+
+USER="naspid"
+
+WWW="/usr/share/naspi"
+SITE="/etc/apache2/sites-available/nas-pi"
+ETC="/etc/naspi"
+INIT="/etc/init.d/naspid"
+BIN="/usr/bin/naspid"
 
 BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+E_ROOT=("\nYou must run this script as root.\n" "10")
+E_DEP=("\nYou have unmet dependancies.\nUse apt-get install " "11")
 
-E_NOTROOT=("1" "You must run this script as root.")
-E_WRONGDIR=("2" "You must run this script in the directory that contains the NAS-Pi data.")
 
-USER_OWNER='media:media'
+EMPTY_DIR=("modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
 
-ROOT_OWNER='root:root'
-
-DIRS_TO_CHECK=(backend cms modules public_html)
-
-DEPENDENCIES=(apache2 php5 php5-cli sshfs git curlftpfs samba smbclient netcat-openbsd)
-
-MEDIA_HOME="/home/media"
-
-PUBLIC_HTML=$MEDIA_HOME/"public_html"
-
-NASPI_HOME=$MEDIA_HOME/"naspi"
-
-DATA_DIRECTORIES=("modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
-
-SITES_AVAILABLE="/etc/apache2/sites-available"
-
-DEFAULT_SITE=$SITES_AVAILABLE"/default"
-
-ETC_PATH="/etc/naspi"
-
-INIT="/etc/init.d/naspid"
-
-BIN="/usr/bin/naspid"
 #####################################################################################
 echo "NAS-Pi Installer"
 echo "Copyright 2013 Guru Digital Solutions"
@@ -48,103 +36,106 @@ START_DIR=$(pwd)
 
 cd $BASE
 
-if [[ $(id -u) != 0 ]]; then
-	echo ${E_NOTROOT[1]}
-	exit ${E_NOTROOT[0]}
-fi
+# Test user and group id for root
+#~ [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]&& echo -e "${E_ROOT[0]}"&& exit "${E_ROOT[1]}"
 
 #####################################################################################
-	
-function create_media_account
-{
-	if [[ ! -e $NASPI_HOME ]]; then
-		mkdir $NASPI_HOME
-		chown $USER_OWNER $NASPI_HOME
-	fi
-	
-	useradd -d $MEDIA_HOME -m media
-	echo "Please enter a password for the media account:"
-	passwd media
-}
 
+#
+#
+#
 function install_dependencies
 {
-	for each_depend in ${DEPENDENCIES[@]}; do
+	for dep in ${DEPENDENCIES[@]}; do
 
-		if [[ -z $(dpkg -l | grep " $each_depend ") ]]; then
-			INSTALL=(${INSTALL[@]} $each_depend)
-		else
-			echo "Skipping $each_depend, package already installed"
-		fi
-	
+		dpkg -s $dep 2>/dev/null >/dev/null
+		[[ $? = 1 ]]&& need="$need$dep "
 	done
-	
-	if [[ ${#INSTALL[@]} -gt 0 ]]; then
-		echo "Installing dependencies for NAS-Pi"
-		apt-get update
-		apt-get install ${INSTALL[@]}
-	else
-		echo "All dependencies for NAS-Pi met"
-	fi
+
+	#~ [[ -n $need ]] && echo -e "${E_DEP[0]}$need\n" && exit ${E_DEP[1]}
 }
 
+#
+#
+#
 function configure_fuse
 {
-	echo -e "# mount_max = 1000\nuser_allow_other" > /etc/fuse.conf
+	echo "Configured fuse for to allow other"
+cat>/etc/fuse.conf << EOF
+# Set the maximum number of FUSE mounts allowed to non-root users.
+# The default is 1000.
+#
+#mount_max = 1000
+
+# Allow non-root users to specify the 'allow_other' or 'allow_root'
+# mount options.
+#
+user_allow_other
+EOF
+
 }
 
+#
+#
+#
 function configure_apache
 {
-	[[ -e $MEDIA_HOME/logs ]] || mkdir $MEDIA_HOME/logs && chown $USER_OWNER $MEDIA_HOME/logs
-	
-	if [[ -d ${SITES_AVAILABLE} ]]; then
+	echo "Adding nas-pi VirtualHost to apache2"
+	[[ ! -e $SITE ]]|| cat backend${SITE}
+	if [[ -z $(diff -q backend${SITE} $SITE 2>/dev/null) ]]; then
 		
-		if [[ -z $(diff -q backend${DEFAULT_SITE} ${DEFAULT_SITE}) ]]; then
-			
-			echo "${DEFAULT_SITE} is modified, would you like to overwrite?"
-			echo -n " y/n? "
-			read OVERWRITE
-			
-			case $OVERWRITE in
-				y|Y|yes|YES)
-					cat backend${DEFAULT_SITE} > ${DEFAULT_SITE}
-					;;
-			esac
+		echo "$SITE is modified, would you like to overwrite?"
+		echo -n " y=overwrite/n=do nothing/m=move to .old? "
+		read OVERWRITE
 		
-		else
-		
-			echo "$DEFAULT_SITE already configured"
-		fi
+		case $OVERWRITE in
+			y|Y|yes|YES)
+				cat backend${SITE} > ${SITE}
+				a2ensite $SITE
+				service apache2 restart
+				;;
+
+			m|M)
+				mv $SITE $SITE.old
+				a2ensite $SITE
+				service apache2 restart
+				;;				
+		esac
 	
 	else
-		
-		mkdir $SITES_AVAILABLE
-		cp backend${DEFAULT_SITE} > ${DEFAULT_SITE}
-	
+		echo "$SITE already configured"
 	fi
 }
 
+#
+#
+#
 function place_files
 {
-	#cp -r backend $NASPI_HOME
-	cp -r frontend/cms $NASPI_HOME
-	cp -r frontend/modules $NASPI_HOME
-	cp -r frontend/public_html $MEDIA_HOME
+	echo "Placing the front end files in $WWW/"
 	
-	chown $USER_OWNER $PUBLIC_HTML
-	chmod ugo+rw $NASPI_HOME/modules/btguru/settings.cfg
-	chmod ugo+rw $NASPI_HOME/modules/users/groups.txt
-	chmod 755 $NASPI_HOME/modules/files/sources/sourcedata
+	cp -r frontend/cms "$WWW"
+	cp -r frontend/modules "$WWW"
+	cp -r frontend/"$WWW/public_html" $WWW
+	
+	chown -R "root:www-data" "$WWW/public_html"
+	chmod 777 "$WWW"/modules/btguru/settings.cfg
+	chmod 777 "$WWW"/modules/users/groups.txt
+	chmod 755 "$WWW"/modules/files/sources/sourcedata
 }
 
-function create_data_directories
-{	
-	for each_data_dir in ${DATA_DIRECTORIES[@]}; do
 
-		if [[ ! -e $NASPI_HOME/${each_data_dir} ]]; then
-			mkdir $NASPI_HOME/${each_data_dir}
-			chmod ugo+rwx $NASPI_HOME/${each_data_dir}
-			chown $USER_OWNER $NASPI_HOME/${each_data_dir}
+#
+#
+#
+function create_empty_directories
+{	
+	echo "Creating empty directories in $WWW"
+	for empty in ${EMPTY_DIR[@]}; do
+		
+		if [[ ! -e "$WWW"/${empty} ]];then
+			mkdir -p -m 775 "$WWW"/${empty}
+			chown "ROOT":"www-data" "$WWW"/${empty}
 		fi
 
 	done
@@ -152,13 +143,19 @@ function create_data_directories
 
 }
 
+#
+#
+#
 function place_backend_files
 {
-	if [[ ! -e $ETC_PATH ]]; then
-		mkdir $ETC_PATH
+	echo "Placing backend files"
+	[[ -e $ETC ]]|| mkdir -p -m 755 $ETC
+	if [[ ! -e $WWW/logs ]]; then
+		mkdir -p -m 775 $WWW/logs
+		chown "root":"www-data" $WWW/logs
 	fi
 	
-	cp -r backend${ETC_PATH}/* ${ETC_PATH}	
+	cp -r backend${ETC}/* ${ETC}	
 	cp backend${INIT} ${INIT}
 	cp backend${BIN} ${BIN}
 	
@@ -168,23 +165,14 @@ function place_backend_files
 	update-rc.d naspid defaults
 }
 
-function restart_daemons
-{
-	service apache2 restart
-	service naspid start
-}
-
-#Create 'media' user:
-[[ $(grep "^media:" /etc/passwd) ]] || create_media_account
-
-#Install dependencies:
+#
+#
+#
 install_dependencies
-configure_fuse
 configure_apache
 place_files
-create_data_directories
+create_empty_directories
 place_backend_files
-restart_daemons
-
+service naspid start
 cd $START_DIR
 echo "NAS-Pi has been installed."
