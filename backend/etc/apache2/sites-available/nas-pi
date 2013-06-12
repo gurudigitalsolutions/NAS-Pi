@@ -2,6 +2,11 @@
 	ServerAdmin webmaster@localhost
 
 	DocumentRoot /var/www/nas-pi
+	
+	<IfModule mpm_itk_module>
+		AssignUserId naspi naspi
+	</IfModule>
+
 	<Directory />
 		Options FollowSymLinks
 		AllowOverride None

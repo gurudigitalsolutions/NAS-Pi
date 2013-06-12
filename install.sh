@@ -9,11 +9,12 @@
 #
 ###############################################################################
 
-DEPENDENCIES=( samba smbclient apache2 php5 php5-cli sshfs git curlftpfs netcat-openbsd)
+DEPENDENCIES=( samba smbclient apache2 php5 php5-cli apache2-mpm-itk sshfs git curlftpfs netcat-openbsd)
 
 EMPTY_DIR=("$WWW-ROOT/log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
 
 USER="naspid"
+WWWUSER="naspi"
 
 WWW="/usr/share/naspi"
 SITE="/etc/apache2/sites-available/nas-pi"
@@ -74,6 +75,11 @@ function install_dependencies
 			exit ${E_DEP[1]}
 		fi
 	fi
+}
+
+function create_naspi_user
+{
+	useradd -M -r -s /bin/bash -U naspi
 }
 
 #
@@ -142,13 +148,17 @@ function place_files
 	
 	cp -r frontend/cms "$WWW"
 	cp -r frontend/modules "$WWW"
-	cp -r frontend"$WWW/public_html" $WWW
+	cp -r frontend/public_html "$WWW"
 	
-	chown -R "root:www-data" "$WWW/public_html"
+	chown -R "naspi:naspi" "$WWW"
 	
 	chmod 777 "$WWW"/modules/btguru/settings.cfg
 	chmod 777 "$WWW"/modules/users/groups.txt
 	chmod 755 "$WWW"/modules/files/sources/sourcedata
+	
+	if [[ ! -e /var/www/nas-pi ]]; then
+		ln -s /usr/share/naspi/public_html /var/www/nas-pi
+	fi
 }
 
 #
@@ -170,12 +180,12 @@ function create_empty_directories
 		
 		if [[ ! -e "$WWW"/${empty} ]];then
 			mkdir -p -m 775 "$WWW"/${empty}
-			chown "ROOT":"www-data" "$WWW"/${empty}
+			chown "naspi":"naspi" "$WWW"/${empty}
 		fi
 
 	done
 	touch $WWW/log/error.log
-	chown "root:www-data" "$WWW/log/error.log"
+	chown "naspi:naspi" "$WWW/log/error.log"
 
 }
 
@@ -186,9 +196,9 @@ function place_backend_files
 {
 	echo "Placing backend files"
 	[[ -e $ETC ]]|| mkdir -p -m 755 $ETC
-	if [[ ! -e $WWW/logs ]]; then
-		mkdir -p -m 775 $WWW/logs
-		chown "root":"www-data" $WWW/logs
+	if [[ ! -e $WWW/log ]]; then
+		mkdir -p -m 775 $WWW/log
+		chown "naspi":"naspi" $WWW/logs
 	fi
 	
 	cp -r backend${ETC}/* ${ETC}	
@@ -205,6 +215,7 @@ function place_backend_files
 #
 #
 install_dependencies
+create_naspi_user
 configure_apache
 place_files
 create_empty_directories
