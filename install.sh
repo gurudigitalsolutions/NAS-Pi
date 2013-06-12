@@ -14,7 +14,7 @@ DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk s
 EMPTY_DIR=("$WWW-ROOT/log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
 
 USER="naspid"
-WWWUSER="naspi"
+#~ WWWUSER="naspi"
 
 WWW="/usr/share/naspi"
 SITE="/etc/apache2/sites-available/nas-pi"

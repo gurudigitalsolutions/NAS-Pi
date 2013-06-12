@@ -1,13 +1,13 @@
 #!/bin/bash 
 ### BEGIN INIT INFO
-# Provides: 			naspid
-# Required-Start: 		$remote_fs dbus udev
-# Required-Stop: 		$remote_fs dbus udev
-# Default-Start: 		2 3 4 5
-# Default-Stop:			0 1 6
-# Short-Description: 	Network Attached Storage for Raspberry PI Daemon
-# Description: 			Mounts and unmounts user defined file systems using the NASPI
-#               		Web Administation Utility
+# Provides:             naspid
+# Required-Start:       $remote_fs dbus udev
+# Required-Stop:        $remote_fs dbus udev
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Network Attached Storage for Raspberry PI Daemon
+# Description:          Mounts and unmounts user defined file systems using the NASPI
+#                       Web Administation Utility
 ### END INIT INFO
 PROG="naspid"
 PROG_PATH="/usr/bin"
@@ -25,50 +25,48 @@ error() {
 }
 
 start() {
-    if [ -e "$NASPID_LOCK_FILE" ]; then
+	if [ -e "$NASPID_LOCK_FILE" ]; then
 		error $E_START $M_START
-    else
+	else
 		$PROG_PATH/$PROG start 2>&1 &
-        touch "$NASPID_LOCK_FILE"
-    fi
+		touch "$NASPID_LOCK_FILE"
+	fi
 }
 
 stop() {
-    if [ -e "$NASPID_LOCK_FILE" ]; then
+	if [ -e "$NASPID_LOCK_FILE" ]; then
 		export RUN=FALSE
-        $PROG_PATH/$PROG stop 2>&1 &
-    else
+		$PROG_PATH/$PROG stop 2>&1 &
+	else
 		error $E_STOP $M_STOP
-    fi
+	fi
 }
 
 
 if [ "$(id -u)" != "0" ]; then
-    error $E_ROOT $M_ROOT
+	error $E_ROOT $M_ROOT
 fi
 
 case "$1" in
-    start)
-        start
-        echo "$PROG started"
-        exit 0
-    ;;
-    stop)
-        stop
-        echo "$PROG stopped"
-        exit 0
-    ;;
-    reload|restart|force-reload)
-		if [[ -e $NASPID_LOCK_FILE ]]; then
-			stop
-		fi
-        start
-        echo "$PROG restarted" >> $LOG &
-        exit 0
-    ;;
-    **)
+	start)
+		start
+		echo "$PROG started"
+		exit 0
+	;;
+	stop)
+		stop
+		echo "$PROG stopped"
+		exit 0
+	;;
+	reload|restart|force-reload)
+		[[ -e $NASPID_LOCK_FILE ]] && stop
+		start
+		echo "$PROG restarted" >> $LOG &
+		exit 0
+		;;
+	**)
 		error $E_USAGE $M_USAGE
-    ;;
+		;;
 esac
 
 :
