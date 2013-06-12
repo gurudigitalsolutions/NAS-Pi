@@ -42,12 +42,12 @@ class modAddOns extends PiNASModule
 				
 				if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$emkey.".png"))
 				{
-					$taot = str_replace("[ADDONICON]", str_replace("[ADDONCODE]", $emkey, $AddOnIconTmp), $taot);
+					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $emkey, $AddOnIconTmp), $taot);
 					
 				}
 				else
 				{
-					$taot = str_replace("[ADDONICON]", $emkey, $taot);
+					$taot = str_replace("[MODULEICON]", $emkey, $taot);
 				}
 				$fulladdon = $fulladdon.$taot;
 			}
