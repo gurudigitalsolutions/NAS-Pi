@@ -37,7 +37,7 @@ fi
 #INCLUDES=($(ls $SRC_PATH | grep ".inc"))
 
 #for each_include in ${INCLUDES[@]}; do
-	#. $SRC_PATH/$each_include
+. $SRC_PATH/functions.inc
 #done
 
 # Listens for network input and writes it to control file. This file will
@@ -59,11 +59,16 @@ fi
 
 case $1 in
 	start)
-		trap 'rm $PID_FILE $CONTROL_FILE 2> /dev/null && exit' EXIT INT
+	set -x
+		trap 'rm $NASPID_LOCK_FILE $CONTROL_FILE 2> /dev/null && exit' EXIT INT
+	set +x
 		. $SRC_PATH/$1.inc
 		;;
 	control)
 		. $SRC_PATH/$1.inc ${@:2}
+		;;
+	stop)
+		. $SRC_PATH/$1.inc
 		;;
 	#remove)
 		#remove_source $2

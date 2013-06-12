@@ -158,7 +158,7 @@ function place_backend_files
 		mkdir $ETC_PATH
 	fi
 	
-	cp -r backend${ETC_PATH} ${ETC_PATH}	
+	cp -r backend${ETC_PATH}/* ${ETC_PATH}	
 	cp backend${INIT} ${INIT}
 	cp backend${BIN} ${BIN}
 	
