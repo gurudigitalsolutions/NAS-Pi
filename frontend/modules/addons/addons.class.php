@@ -77,7 +77,12 @@ class modAddOns extends PiNASModule
 		{
 			$ch = curl_init($this->RepoHost."/list.php");
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$toret = curl_exec($ch);
+			$rtext = curl_exec($ch);
+			
+			$Packages = array();
+			$Packages = unserialize($rtext);
+			
+			print_r($Packages); exit;
 		}
 		else
 		{
