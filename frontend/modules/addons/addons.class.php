@@ -3,7 +3,7 @@
 //
 //	NAS-Pi HelloWorld Module
  
-class modHelloWorld extends PiNASModule
+class modAddOns extends PiNASModule
 {
 
 	public $MandatoryAddOns = array("admin", "users", "files");
