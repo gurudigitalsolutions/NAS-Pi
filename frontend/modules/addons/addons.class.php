@@ -82,7 +82,43 @@ class modAddOns extends PiNASModule
 			$Packages = array();
 			$Packages = unserialize($rtext);
 			
-			print_r($Packages); exit;
+			$template = file_get_contents(MODULEPATH."/addons/templates/main.html");
+			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
+			$AddOnIconTmp = file_get_contents(MODULEPATH."/addons/templates/addon-icon.html");
+			$AuthorLinkTmp = file_get_contents(MODULEPATH."/addons/templates/addon-authorlink.html");
+			
+			$fulladdon = "";
+			foreach($Packages as $ek=>$ev)
+			{
+				$taot = $EachAddOnTmp;
+				$taot = str_replace("[ADDONCODE]", $ev->ModuleCode, $taot);
+				$taot = str_replace("[TITLE]", $ev->ModuleTitle, $taot);
+				$taot = str_replace("[VERSION]", $ev->Version, $taot);
+				$taot = str_replace("[DESCRIPTION]", $ev->Description, $taot);
+				
+				/*if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$emkey.".png"))
+				{
+					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $emkey, $AddOnIconTmp), $taot);
+					
+				}
+				else
+				{
+					$taot = str_replace("[MODULEICON]", $emkey, $taot);
+				}*/
+				
+				if($ev->Author->URL == "") { $taot = str_replace("[AUTHOR]", $ev->Author->URL, $taot); }
+				else
+				{
+					$tauth = $AuthorLinkTmp;
+					$tauth = str_replace("[AUTHOR]", $ev->Author->AuthorName, $tauth);
+					$tauth = str_replace("[AUTHORURL]", $ev->Author->URL, $tauth);
+					$taot = str_replace("[AUTHOR]", $tauth, $taot);
+				}
+				$fulladdon = $fulladdon.$taot;
+			}
+			
+			$template = str_replace("[EACHADDON]", $fulladdon, $template);
+			$toret = $template;
 		}
 		else
 		{
