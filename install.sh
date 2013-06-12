@@ -65,12 +65,14 @@ function install_dependencies
 		fi
 	done
 
-	[[ -n $need ]]&& apt-get install $need
+	if [[ -n $need ]];then
+		apt-get install $need
 	
-	if [[ $? = 1 ]];then
-		unset default
-		echo -e "${E_DEP[0]} $need"
-		exit ${E_DEP[1]}
+		if [[ $? = 1 ]];then
+			unset default
+			echo -e "${E_DEP[0]} $need"
+			exit ${E_DEP[1]}
+		fi
 	fi
 }
 
