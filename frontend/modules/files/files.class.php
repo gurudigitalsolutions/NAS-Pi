@@ -19,6 +19,11 @@ class modFiles extends PiNASModule
 		$this->ModuleCode = "files";
 		$this->MenuTitle = "Files";
 		
+		$this->Description = "The Files Add On Module gives you the ability to mount drives and network shares, and reshare those from your Raspberry Pi.  There is also a built in web-based file browser.";
+		$this->Author = "Brian Murphy";
+		$this->Version = "v13.03.05";
+		$this->AuthorURL = "http://www.gurudigitalsolutions.com";
+		
 		$this->AddSubMenu("sources", "Sources", true, array("admin", "filesource"));
 		$this->AddSubMenu("browse", "Browse");
 		

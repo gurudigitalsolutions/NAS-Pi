@@ -19,6 +19,11 @@ class PiNASModule
 	public $AllowGroups = array();
 	public $SubAuthList = array();
 	
+	public $Author = "Unknown Author";
+	public $Version = "v0.0.1";
+	public $AuthorURL = "";
+	public $Description = "No description.";
+	
 	function Initialize()
 	{
 		$this->ModuleName = "default";

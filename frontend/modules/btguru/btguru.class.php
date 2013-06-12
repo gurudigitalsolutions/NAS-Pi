@@ -20,6 +20,11 @@ class modbtguru extends PiNASModule
 		$this->ModuleCode = "btguru";
 		$this->MenuTitle = "BitTorrent";
 		
+		$this->Description = "The btguru module lets you search various torrent indexes, and monitor the Transmission BitTorrent client.";
+		$this->Author = "Brian Murphy";
+		$this->Version = "v13.06.12";
+		$this->AuthorURL = "http://www.gurudigitalsolutions.com";
+		
 		$this->AddSubMenu("settings", "Settings", true, array("admin", "btgurusettings"));
 		
 		$this->AddSubAuth("update-settings", array("admin", "btgurusettings"));

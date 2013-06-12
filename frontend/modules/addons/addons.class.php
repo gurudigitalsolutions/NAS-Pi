@@ -12,6 +12,11 @@ class modAddOns extends PiNASModule
 	{
 		$this->ModuleCode = "addons";
 		$this->MenuTitle = "Add Ons";
+		
+		$this->Description = "Easily add and remove NAS-Pi Add Ons.";
+		$this->Author = "Brian Murphy";
+		$this->Version = "v13.06.12";
+		$this->AuthorURL = "http://www.gurudigitalsolutions.com";
  
 	}
  
@@ -32,6 +37,7 @@ class modAddOns extends PiNASModule
 			$template = file_get_contents(MODULEPATH."/addons/templates/main.html");
 			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
 			$AddOnIconTmp = file_get_contents(MODULEPATH."/addons/templates/addon-icon.html");
+			$AuthorLinkTmp = file_get_contents(MODULEPATH."/addons/templates/addon-authorlink.html");
 			
 			$fulladdon = "";
 			foreach($Modules as $emkey=>$emval)
@@ -39,6 +45,8 @@ class modAddOns extends PiNASModule
 				$taot = $EachAddOnTmp;
 				$taot = str_replace("[ADDONCODE]", $emkey, $taot);
 				$taot = str_replace("[TITLE]", $emval->MenuTitle, $taot);
+				$taot = str_replace("[VERSION]", $emval->Version, $taot);
+				$taot = str_replace("[DESCRIPTION]", $emval->Description, $taot);
 				
 				if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$emkey.".png"))
 				{
@@ -48,6 +56,15 @@ class modAddOns extends PiNASModule
 				else
 				{
 					$taot = str_replace("[MODULEICON]", $emkey, $taot);
+				}
+				
+				if($emval->AuthorURL == "") { $taot = str_replace("[AUTHOR]", $emval->Author, $taot); }
+				else
+				{
+					$tauth = $AuthorLinkTmp;
+					$tauth = str_replace("[AUTHOR]", $emval->Author, $tauth);
+					$tauth = str_replace("[AUTHORURL]", $emval->AuthorURL, $tauth);
+					$taot = str_replace("[AUTHOR]", $tauth, $taot);
 				}
 				$fulladdon = $fulladdon.$taot;
 			}

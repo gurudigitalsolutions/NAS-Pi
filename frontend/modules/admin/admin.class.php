@@ -19,6 +19,11 @@ class modAdmin extends PiNASModule
 		$this->ModuleCode = "admin";
 		$this->MenuTitle = "Admin";
 		
+		$this->Description = "This Add On is used to administrate NAS-Pi.";
+		$this->Author = "Brian Murphy";
+		$this->Version = "v00.01.01";
+		$this->AuthorURL = "http://www.gurudigitalsolutions.com";
+		
 		//$this->AddSubMenu("sources", "Sources", true, array("admin", "filesource"));
 		//$this->AddSubMenu("browse", "Browse");
 		

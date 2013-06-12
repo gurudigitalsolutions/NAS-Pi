@@ -18,6 +18,11 @@ class modUsers extends PiNASModule
 		$this->ModuleCode = "users";
 		$this->MenuTitle = "Users";
 		
+		$this->Description = "This module provides user accounts, along with a way to manage them.";
+		$this->Author = "Brian Murphy";
+		$this->Version = "v13.03.05";
+		$this->AuthorURL = "http://www.gurudigitalsolutions.com";
+		
 		$this->AuthRequired = true;
 		$this->AllowGroups = array("user", "admin");
 		
