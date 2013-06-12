@@ -52,7 +52,7 @@ function install_dependencies
 		[[ $? = 1 ]]&& need="$need$dep "
 	done
 
-	[[ -n $need ]] && echo -e "${E_DEP[0]}$need\n" && exit ${E_DEP[1]}
+	[[ -n $need ]] && apt-get install $need#echo -e "${E_DEP[0]}$need\n" && exit ${E_DEP[1]}
 }
 
 #
