@@ -21,16 +21,7 @@ SITE="/etc/apache2/sites-available/nas-pi"
 ETC="/etc/naspi"
 INIT="/etc/init.d/naspid"
 BIN="/usr/bin/naspid"
-FUSE="\
-# Set the maximum number of FUSE mounts allowed to non-root users.
-# The default is 1000.
-#
-#mount_max = 1000
-
-# Allow non-root users to specify the 'allow_other' or 'allow_root'
-# mount options.
-#
-user_allow_other"
+FUSE="/etc/fuse.conf"
 
 BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 E_ROOT=("\nYou must run this script as root.\n" "10")
@@ -77,9 +68,41 @@ function install_dependencies
 	fi
 }
 
+#
+#
+#
+function compare_files
+{
+	if [[ $(diff -q $1 $2 2>/dev/null) ]]; then
+		
+		echo "$2 may need to be configured, do that now?"
+		echo -n " [y]es [n]o [m]ove to .old ? "
+		read response
+		
+		case $response in
+			
+			[y,Y]|[y,Y][e,E][s,S])
+				cat $1 > $2
+				$3;$4;$5
+				;;
+
+			m|M)
+				mv $2 $2.old
+				cat $1 > $2
+				$3;$4;$5
+				;;				
+		esac	
+	fi
+}
+
+#
+#
+#
 function create_naspi_user
 {
-	useradd -M -r -s /bin/bash -U naspi
+	if [[ -z $(cat /etc/group | grep $USER) ]]; then
+		useradd -M -r -s /bin/bash -U $USER
+	fi
 }
 
 #
@@ -88,7 +111,6 @@ function create_naspi_user
 function configure_apache
 {
 	if [[ ! -e $SITE ]]; then
-		echo "Creating $SITE"
 		cp backend${SITE} $SITE
 		a2ensite nas-pi
 	fi
@@ -98,9 +120,10 @@ function configure_apache
 		a2dissite 000-default
 	
 	elif [[ -e /etc/apache2/sites-enabled/000-default ]]; then
-		echo -e "\nNOTICE: 000-default is already configured"
-		echo "Answering no will require you to configure your own NaneVirtualHost file"
-		echo -n "Would you like to disable 000-default y/n? "
+		echo -e "\nNOTICE: 000-default is already configured and or installed NAS-Pi"
+		echo "requires \, in order for that to work with other sites you will"
+		echo "to use NamedVirtualHost for other sites once NAS-Pi is installed"
+		echo -n "Disable 000-default [y]es [n]o ? "
 		read configure
 	
 		case $configure in
@@ -116,27 +139,7 @@ function configure_apache
 		esac
 	fi
 
-
-	
-	if [[ $(diff -q backend${SITE} $SITE 2>/dev/null) ]]; then
-		echo "$SITE is modified, would you like to overwrite?"
-		echo -n " y=overwrite/n=do nothing/m=move to .old? "
-		read OVERWRITE
-		
-		case $OVERWRITE in
-			y|Y|yes|YES)
-				cat backend${SITE} > ${SITE}
-				a2ensite nas-pi
-				service apache2 restart
-				;;
-
-			m|M)
-				mv $SITE $SITE.old
-				a2ensite nas-pi
-				service apache2 restart
-				;;				
-		esac	
-	fi
+	compare_files "backend${SITE}" "$SITE" "a2ensite nas-pi"
 }
 
 #
@@ -157,7 +160,7 @@ function place_files
 	chmod 755 "$WWW"/modules/files/sources/sourcedata
 	
 	if [[ ! -e /var/www/nas-pi ]]; then
-		ln -s /usr/share/naspi/public_html /var/www/nas-pi
+		ln -s $WWW/public_html /var/www/nas-pi
 	fi
 }
 
@@ -166,7 +169,12 @@ function place_files
 #
 function configure_fuse
 {
-	echo "$FUSE" > /etc/fuse.conf
+	
+	if [[ ! -e $FUSE ]]; then
+		cp "backend${FUSE}" "${FUSE}"
+	else
+		compare_files "backend${FUSE}" "${FUSE}"
+	fi
 }
 
 
@@ -195,7 +203,7 @@ function create_empty_directories
 function place_backend_files
 {
 	echo "Placing backend files"
-	[[ -e $ETC ]]|| mkdir -p -m 755 $ETC
+	[[ -e $ETC ]] || mkdir -p -m 755 $ETC
 	if [[ ! -e $WWW/log ]]; then
 		mkdir -p -m 775 $WWW/log
 		chown "naspi":"naspi" $WWW/logs
