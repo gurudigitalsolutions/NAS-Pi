@@ -130,7 +130,6 @@ function configure_apache
 			y|Y|yes|YES)
 				a2dissite 000-default
 				a2ensite nas-pi
-				service apache2 restart
 				;;
 			*)
 				a2ensite nas-pi
@@ -228,6 +227,7 @@ configure_apache
 place_files
 create_empty_directories
 place_backend_files
+service apache2 restart
 service naspid start
 cd $START_DIR
 echo "NAS-Pi has been installed."
