@@ -11,8 +11,6 @@
 
 DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs git curlftpfs netcat-openbsd)
 
-EMPTY_DIR=("$WWW-ROOT/log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
-
 USER="naspid"
 #~ WWWUSER="naspi"
 
@@ -203,10 +201,6 @@ function place_backend_files
 {
 	echo "Placing backend files"
 	[[ -e $ETC ]] || mkdir -p -m 755 $ETC
-	if [[ ! -e $WWW/log ]]; then
-		mkdir -p -m 775 $WWW/log
-		chown "naspi":"naspi" $WWW/logs
-	fi
 	
 	cp -r backend${ETC}/* ${ETC}	
 	cp backend${INIT} ${INIT}
