@@ -18,6 +18,7 @@ ERRORS=$ETC_PATH/errors
 CONFIG=$ETC_PATH/${PROG}.conf
 
 . $ERRORS
+. $CONFIG
 
 error() {
 	echo "ERROR:$@" 1>&2

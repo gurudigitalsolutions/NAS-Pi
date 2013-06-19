@@ -11,7 +11,7 @@
 
 DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs git curlftpfs netcat-openbsd)
 
-USER="naspid"
+USER="naspi"
 #~ WWWUSER="naspi"
 
 WWW="/usr/share/naspi"
@@ -185,12 +185,12 @@ function create_empty_directories
 		
 		if [[ ! -e "$WWW"/${empty} ]];then
 			mkdir -p -m 775 "$WWW"/${empty}
-			chown "naspi":"naspi" "$WWW"/${empty}
+			chown "$USER:$USER" "$WWW"/${empty}
 		fi
 
 	done
 	touch $WWW/log/error.log
-	chown "naspi:naspi" "$WWW/log/error.log"
+	chown "$USER:$USER" "$WWW/log/error.log"
 
 }
 
@@ -222,6 +222,6 @@ place_files
 create_empty_directories
 place_backend_files
 service apache2 restart
-service naspid start
+service naspid restart
 cd $START_DIR
 echo "NAS-Pi has been installed."

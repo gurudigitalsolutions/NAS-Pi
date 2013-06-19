@@ -59,9 +59,7 @@ fi
 
 case $1 in
 	start)
-	set -x
 		trap 'rm $NASPID_LOCK_FILE $CONTROL_FILE 2> /dev/null && exit' EXIT INT
-	set +x
 		. $SRC_PATH/$1.inc
 		;;
 	control)

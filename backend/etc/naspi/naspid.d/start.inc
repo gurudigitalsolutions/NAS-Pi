@@ -7,7 +7,7 @@
 # directs daemon controls based on contorl input
 
 function input() {
-	set -x
+	# set -x
 	case $1 in
 		commit )
 			. $SRC_PATH/$1.inc $2
@@ -36,7 +36,7 @@ function update() {
 	set +x
 }
 
-set -x
+# set -x
 
 RUN=TRUE
 echo "Starting Listener" >> $LOG

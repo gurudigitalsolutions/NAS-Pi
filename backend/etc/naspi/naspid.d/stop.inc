@@ -1,8 +1,16 @@
 #!/bin/bash
-set -x
-PID_2_KILL=$(cat $NASPID_LOCK_FILE)
-rm $NASPID_LOCK_FILE
-kill $PID_2_KILL
-kill $((PID_2_KILL+1))
+# set -x
+
+set -f;IFS=$'\n'
+ps=($(ps -e | grep -e ' naspid$' -e ' nc$'))
+ps=(${ps[@]%%[?|p]*})
+unset IFS;set +f
+
+kill $(echo ${ps[@]% *})
+if [[ $? -eq 0 ]];then
+	rm $NASPID_LOCK_FILE
+fi
+
 export RUN=FALSE
+
 set +x
