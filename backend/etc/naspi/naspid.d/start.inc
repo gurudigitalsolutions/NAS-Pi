@@ -39,15 +39,17 @@ function update() {
 # set -x
 
 RUN=TRUE
+
 echo "Starting Listener" >> $LOG
 echo $PPID >> $NASPID_LOCK_FILE
 
+mkfifo -m 0600 $CONTROL_FILE
+chown "$USER:$USER" $CONTROL_FILE
+
 while [[ $RUN = TRUE ]]; do
-	nc -l $PORT > $CONTROL_FILE
 	INPUT=($(cat $CONTROL_FILE))
-	input ${INPUT[@]} &
-	rm $CONTROL_FILE
-	sleep .5
+	echo "sending ${INPUT[@]}" >> $LOG
+	input ${INPUT[@]}
 done
 
 set +x

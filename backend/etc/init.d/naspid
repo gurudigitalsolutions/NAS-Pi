@@ -22,7 +22,7 @@ CONFIG=$ETC_PATH/${PROG}.conf
 
 error() {
 	echo "ERROR:$@" 1>&2
-	exit $1
+	return $1
 }
 
 start() {
@@ -36,7 +36,6 @@ start() {
 
 stop() {
 	if [ -e "$NASPID_LOCK_FILE" ]; then
-		export RUN=FALSE
 		$PROG_PATH/$PROG stop 2>&1 &
 	else
 		error $E_STOP $M_STOP
@@ -51,16 +50,22 @@ fi
 case "$1" in
 	start)
 		start
-		echo "$PROG started"
-		exit 0
+		if [[ $? -eq 0 ]]; then
+			echo "$PROG started"
+		else
+			echo "$PROG failed to $1"
+		fi
 	;;
 	stop)
 		stop
-		echo "$PROG stopped"
-		exit 0
+		if [[ $? -eq 0 ]]; then
+			echo "$PROG stopped"
+		else
+			echo "$PROG failed to $1" >2 >> $LOG
+		fi
 	;;
 	reload|restart|force-reload)
-		[[ -e $NASPID_LOCK_FILE ]] && stop
+		stop
 		start
 		echo "$PROG restarted" >> $LOG &
 		exit 0
