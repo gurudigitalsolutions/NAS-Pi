@@ -95,6 +95,7 @@ class modAddOns extends PiNASModule
 				
 				
 				$Packages = json_decode($rtext);
+				file_put_contents($addonfile, serialize($Packages));
 			}
 			
 			$template = file_get_contents(MODULEPATH."/addons/templates/main.html");
