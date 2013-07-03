@@ -9,10 +9,15 @@
 PROG=${0##*/}
 SRC_PATH=/etc/naspi/${PROG}.d
 
-# Location of the mount control file
 CONTROL_FILE="/tmp/naspid.control"
+NASPID_LOCK_FILE=/var/lock/${PROG}.lock
 
 . /etc/naspi/errors
+
+if [[ $(id -u) -ne 0 ]]; then
+	echo "$M_ROOT"
+	exit "$E_ROOT"
+fi
 
 CONFIG_SET=FALSE
 CONFIG_PATHS=("/etc/naspi" '~' '~/naspi')
@@ -26,27 +31,9 @@ for EACH_CONFIG in "${CONFIG_PATHS[@]}"; do
 
 done
 
-# Verifies that at least one configuration was set
-
 if [[ $CONFIG_SET = FALSE ]]; then
 	error $E_CONFIG $M_CONFIG
 fi
-
-
-# Includes global functions for use by all sub shells and functions
-#INCLUDES=($(ls $SRC_PATH | grep ".inc"))
-
-#for each_include in ${INCLUDES[@]}; do
-. $SRC_PATH/functions.inc
-#done
-
-# Listens for network input and writes it to control file. This file will
-# be used to send commands to the daemon
-
-#if [[ $# -gt 0 ]]; then
-	#case $1 in
-		#files)
-			
 
 set +x
 # PARSE COMMAND LINE ARGUMENTS FOR THE CORESPONDING FUNCTION
@@ -57,22 +44,102 @@ if [[ -z $1 ]];then
 	echo "Daemon not running"
 fi
 
+#
+#
+#
+function create_missing_directory() {
+	#set -x
+	if [[ ! -e $1 ]] && [[ ! -d $1 ]]; then
+		echo "Created directory: $1"
+		mkdir -p "$1"
+	fi
+	set +x
+}
+
+#
+# Run external script to query web interface for data
+#
+function get_data() {
+	#set -x
+	$GET_DATA $1 $2
+	set +x
+}
+
+#
+#
+#
+function stop_service(){
+
+	# set -x
+	set -f;IFS=$'\n'
+	ps=($(ps -e | grep -e ' naspid$' -e ' cat$'))
+	ps=(${ps[@]%%[?|p]*})
+	unset IFS;set +f
+	
+	kill $(echo ${ps[@]% *})
+	export RUN=FALSE
+	
+	set +x
+}
+
+#
+#
+#
+function input() {
+        # set -x
+        case $1 in
+                commit )
+                        . $SRC_PATH/$1.inc $2
+                        ;;
+                update )
+                        . $SRC_PATH/$1.inc $2
+                        ;;
+                remove )
+                        remove_source
+                        ;;
+                *)
+                        echo "${INPUT[@]}"
+                        #echo $E_CONTROL
+                        #exit
+                        ;;
+        esac
+        set +x
+}
+
+#
+#
+#
+function start_service(){
+	# set -x
+	
+	RUN=TRUE
+	
+	echo "Starting Listener" >> $LOG
+	echo $PPID >> $NASPID_LOCK_FILE
+	
+	mkfifo -m 0600 $CONTROL_FILE
+	chown "$USER:$USER" $CONTROL_FILE
+	
+	while [[ $RUN = TRUE ]]; do
+	        INPUT=($(cat $CONTROL_FILE))
+		echo "sending ${INPUT[@]}" >> $LOG
+		input ${INPUT[@]}
+	done
+
+	set +x
+}
+
+#
+#
+#
 case $1 in
 	start)
-	set -x
-		trap 'rm $NASPID_LOCK_FILE $CONTROL_FILE 2> /dev/null && exit' EXIT INT
-	set +x
-		. $SRC_PATH/$1.inc
-		;;
-	control)
-		. $SRC_PATH/$1.inc ${@:2}
+		trap 'rm $NASPID_LOCK_FILE $CONTROL_FILE && exit' EXIT INT
+		$1_service
 		;;
 	stop)
-		. $SRC_PATH/$1.inc
+		$1_service
 		;;
-	#remove)
-		#remove_source $2
-		#;;
 	*)
 		echo "$BAD_USAGE" 1>&2
 		echo "$USAGE "
