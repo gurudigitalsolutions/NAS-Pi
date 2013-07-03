@@ -1,0 +1,58 @@
+#!/usr/bin/php
+<?///////////////////////////////////////////////////////////////////////////////////
+//
+//	NAS-Pi Add-On Module Packager
+//
+//
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+$Options = ParseCLI();
+
+
+
+
+
+function ParseCLI()
+{
+	if(count($argv) < 3) { return array(); }
+	
+	$opts = array();
+	
+	for($earg = 2; $earg < count($argv); $earg++)
+	{
+		$targ = $argv[$earg];
+		//	Check for simple flags first, then complex
+		//
+		//	.. simple
+		//
+		if($targ == "no-install-dependencies") { $opts["dependencies"] = false; }
+		else if($targ == "only-install-dependencies") { $opts["dependenciesonly"] = true; }
+		else if(strpos($targ, "=") !== false)
+		{
+			$arps = explode("=", $targ, 2);
+			if(count($arps) > 1)
+			{
+				$arps[0] = strtolower(trim($arps[0]));
+				$arps[1] = trim($arps[1]);
+				
+				if($arps[0] == "code") { $opts["code"] = $arps[1]; }
+			}
+		}
+	}
+	
+	return $opts;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+?>

@@ -1,0 +1,230 @@
+<?///////////////////////////////////////////////////////////////////////////////////
+//
+//	NAS-Pi Module Installer
+//
+/////////////////////////////////////////////////////////////////////////////////////
+
+$basecodedir = "/tmp/usr/share/naspi";
+$publichtmldir = $basecodedir."/public_html";
+$modulesdir = $basecodedir."/modules";
+$cmsdir = $basecodedir."/cms";
+$baseconfigdir = "/tmp/usr/share/naspi/addons";
+$modconfdir = $baseconfigdir."/modules";
+
+if(count($argv) < 2)
+{
+	echo "NAS-Pi Module Installer v0.2013.07.02\n";
+	echo "\n";
+	echo "USAGE:\tmodule-installer <module archive> [flags]\n";
+	echo "\n";
+	echo "\tcode=<modcode>\t\t\tUse this as the mode code.\n";
+	exit;
+}
+
+$iam = trim(`whoami`);
+$modfile = $argv[1];
+
+$Options = ParseCLI();
+
+if(!file_exists($modfile)) { echo "The module archive couldn't be found."; exit; }
+$letters = "abcdefghijklmnopqrstuvwxyz";
+$fldr = "naspi";
+for($i = 0; $i < 10; $i++) { $fldr = $fldr.substr($letters, rand(0, strlen($letters) - 1), 1); }
+
+mkdir("/tmp/".$fldr);
+$cpcmd = "cp \"".$modfile."\" \"/tmp/".$fldr."/module.tgz\"";
+`$cpcmd`;
+
+chdir("/tmp/".$fldr);
+`tar xvfz module.tgz`;
+
+$Manifest = ParseManifest();
+if(!array_key_exists("code", $Manifest))
+{
+	if(array_key_exists("code", $Options)) { $Manifest["code"] = $Options["code"]; }
+	else
+	{
+		echo "The manifest file for this module did not specify a Module Code (modcode).\n";
+		echo "The NAS-Pi Module Installer needs to have a code for the module so that it\n";
+		echo "can keep track of the different add-ons that are installed.\n\n";
+		echo "You can either quit the installation, or make up a code.  To abort, type\n";
+		echo "quit\n\n";
+		echo "modcode: ";
+		
+		$inline = strtolower(trim(readline()));
+		if($inline == "quit") { exit; }
+		$Manifest["code"] = $inline;
+	}
+}
+
+if(!file_exists($modconfdir."/".$Manifest["code"]))
+{
+	$cmd = "mkdir \"".$modconfdir."/".$Manifest["code"]."\" -p";
+	`$cmd`;
+}
+
+file_put_contents($modconfdir."/".$Manifest["code"]."/manifest.srl", serialize($Manifest));
+$ptman = "#  This is an automatically generated manifest file\n";
+foreach($Manifest as $ekey=>$eman)
+{
+	if($ekey == "dependencies")
+	{
+		$deps = "";
+		foreach($eman as $edep)
+		{
+			$deps = $deps." ".$edep;
+		}
+		$deps = trim($deps);
+		$ptman = $ptman.$ekey."=".$deps."\n";
+	}
+	else
+	{
+		$ptman = $ptman.$ekey."=".$eman."\n";
+	}
+}
+file_put_contents($modconfdir."/".$Manifest["code"]."/manifest.ini", $ptman);
+
+//	At this point, we have read the manifest, know special details, and have made some
+//	config files and stuff.  Before we start copying files around, we need to install
+//	dependencies.  It would suck to install dependencies later, and possibly overwrite
+//	something.
+
+if(!array_key_exists("dependencies", $Options) || 
+	(array_key_exists("dependencies", $Options) && $Options["dependencies"] == true))
+{
+	if(array_key_exists("dependencies", $Manifest))
+	{
+		$cmd = "sudo apt-get update"; `$cmd`;
+		$cmd = "sudo apt-get install";
+		
+		foreach($Manifest["dependencies"] as $edep)
+		{
+			$cmd = $cmd." ".$edep;
+		}
+		$cmd = $cmd." -y";
+		`$cmd`;
+	}
+}
+//	Now to copy the files
+$CopyLog = array();
+$CopyLog["scripts"] = DoScan("scripts", $publichtmldir."/scripts");
+$CopyLog["modules"] = DoScan("modules", $modulesdir);
+$CopyLog["images"] = DoScan("images", $publichtmldir."/images");
+$CopyLog["stylesheets"] = DoScan("stylesheets", $publichtmldir."/stylesheets");
+$CopyLog["cms"] = DoScan("cms", $cmsdir);
+
+file_put_contents($modconfdir."/".$Manifest["code"]."/copylog.srl", serialize($CopyLog));
+//print_r($CopyLog);
+
+
+
+function DoScan($modfile, $destfldr)
+{
+	echo "Entering ".$modfile."\n";
+	$actions = array();
+	if(!file_exists($destfldr)) { `mkdir $destfldr -p`; }
+	
+	$orig = scandir($modfile);
+	
+	foreach($orig as $enode)
+	{
+		if($enode != "." && $enode != "..")
+		{
+			if(is_dir($modfile."/".$enode))
+			{
+				if(!file_exists($destfldr."/".$enode)) { $tm = "mkdir \"".$destfldr."/".$enode."\" -p"; `$tm`; }
+				$actions[$enode] = DoScan($modfile."/".$enode, $destfldr."/".$enode);
+			}
+			else
+			{
+				if(file_exists($destfldr."/".$enode))
+				{
+					$actions[$enode] = "overwrite";
+					$cpcmd = "cp \"".$modfile."/".$enode."\" \"".$destfldr."/".$enode."\"";
+					`$cpcmd`;
+				}
+				else
+				{
+					$actions[$enode] = "new";
+					$cpcmd = "cp \"".$modfile."/".$enode."\" \"".$destfldr."/".$enode."\"";
+					`$cpcmd`;
+				}
+			}
+			echo $enode."\n";
+		}
+	}
+	
+	return $actions;
+}
+
+function ParseManifest()
+{
+	$manifest = array();
+	$mf = file("manifest");
+	
+	foreach($mf as $eline)
+	{
+		$eline = trim($eline);
+		if(substr($eline, 0, 1) != "#")
+		{
+			$lparts = explode("=", $eline, 2);
+			if(count($lparts) > 1)
+			{
+				$lparts[0] = trim(strtolower($lparts[0]));
+				$lparts[1] = trim($lparts[1]);
+				
+				if($lparts[0] == "modtitle") { $manifest["title"] = $lparts[1]; }
+				else if($lparts[0] == "modcode") { $manifest["code"] = $lparts[1]; }
+				else if($lparts[0] == "author") { $manifest["author"] = $lparts[1]; }
+				else if($lparts[0] == "repoid") { $manifest["repoid"] = $lparts[1]; }
+				else if($lparts[0] == "version") { $manifest["version"] = $lparts[1]; }
+				else if($lparts[0] == "dependencies")
+				{
+					if(strpos($lparts[1], " ") !== false)
+					{
+						$dparts = explode(" ", $lparts[1]);
+						$manifest["dependencies"] = $dparts;
+					}
+					else
+					{
+						$manifest["dependencies"] = array($lparts[1]);
+					}
+				}
+			}
+		}
+	}
+	
+	return $manifest;
+}
+
+function ParseCLI()
+{
+	if(count($argv) < 3) { return array(); }
+	
+	$opts = array();
+	
+	for($earg = 2; $earg < count($argv); $earg++)
+	{
+		$targ = $argv[$earg];
+		//	Check for simple flags first, then complex
+		//
+		//	.. simple
+		//
+		if($targ == "no-install-dependencies") { $opts["dependencies"] = false; }
+		else if($targ == "only-install-dependencies") { $opts["dependenciesonly"] = true; }
+		else if(strpos($targ, "=") !== false)
+		{
+			$arps = explode("=", $targ, 2);
+			if(count($arps) > 1)
+			{
+				$arps[0] = strtolower(trim($arps[0]));
+				$arps[1] = trim($arps[1]);
+				
+				if($arps[0] == "code") { $opts["code"] = $arps[1]; }
+			}
+		}
+	}
+	
+	return $opts;
+}
+?>
