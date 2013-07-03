@@ -5,7 +5,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-define("BASECODEPATH", "/tmp/usr/share/naspi");
+define("BASECODEPATH", "/usr/share/naspi");
 define("PUBLICHTMLPATH", BASECODEPATH."/public_html");
 define("MODULEPATH", BASECODEPATH."/modules");
 define("CMSPATH", BASECODEPATH."/cms");

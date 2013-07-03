@@ -6,7 +6,7 @@
 class modAddOns extends PiNASModule
 {
 
-	public $MandatoryAddOns = array("admin", "users", "files");
+	public $MandatoryAddOns = array("admin", "users", "files", "addons");
 	public $RepoHost = "10.42.0.100";
 	
 	public function Initialize()
@@ -19,6 +19,8 @@ class modAddOns extends PiNASModule
 		$this->Version = "v13.06.12";
 		$this->AuthorURL = "http://www.gurudigitalsolutions.com";
  
+		$this->AddSubMenu("installed", "Installed");
+		$this->AddSubMenu("browse", "Browse");
 	}
  
 	public function Render()

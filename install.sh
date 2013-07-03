@@ -206,8 +206,10 @@ function place_backend_files
 	cp backend${INIT} ${INIT}
 	cp backend${BIN} ${BIN}
 	
+	cp -r backend${WWW}/* ${WWW}
 	chmod 0755 $BIN
 	chmod 0755 $INIT
+	chmod 0755 ${WWW}/pd/pd.php
 	
 	update-rc.d naspid defaults
 }
