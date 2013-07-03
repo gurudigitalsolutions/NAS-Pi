@@ -210,6 +210,7 @@ function place_backend_files
 	chmod 0755 $BIN
 	chmod 0755 $INIT
 	chmod 0755 ${WWW}/pd/pd.php
+	chown naspi:naspi ${WWW}/pd -R
 	
 	update-rc.d naspid defaults
 }

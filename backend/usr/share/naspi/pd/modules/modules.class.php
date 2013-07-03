@@ -12,6 +12,7 @@ class BackendModule
 	public $ModuleVersion = "";
 	public $Author = "";
 	public $Description = "";
+	public $TerminateClient = true;
 	
 	function Initialize()
 	{
