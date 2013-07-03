@@ -9,6 +9,7 @@ class modAddOns extends PiNASModule
 	public $MandatoryAddOns = array("admin", "users", "files", "addons");
 	public $RepoHost = "10.42.0.151:3000";
 	public $RepoPath = "/addons/list";
+	public $ReupdatePeriod = 3600;
 	
 	public function Initialize()
 	{
@@ -82,10 +83,8 @@ class modAddOns extends PiNASModule
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			$rtext = curl_exec($ch);
 			
-			print_r(json_decode($rtext));
-			exit;
-			$Packages = array();
-			$Packages = unserialize($rtext);
+			
+			$Packages = json_decode($rtext);
 			
 			$template = file_get_contents(MODULEPATH."/addons/templates/main.html");
 			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
@@ -96,39 +95,39 @@ class modAddOns extends PiNASModule
 			foreach($Packages as $ek=>$ev)
 			{
 				$taot = $EachAddOnTmp;
-				$taot = str_replace("[ADDONCODE]", $ev->ModuleCode, $taot);
-				$taot = str_replace("[TITLE]", $ev->ModuleTitle, $taot);
-				$taot = str_replace("[VERSION]", $ev->Version, $taot);
-				$taot = str_replace("[DESCRIPTION]", $ev->Description, $taot);
+				$taot = str_replace("[ADDONCODE]", $ev->modcode, $taot);
+				$taot = str_replace("[TITLE]", $ev->title, $taot);
+				$taot = str_replace("[VERSION]", $ev->version, $taot);
+				$taot = str_replace("[DESCRIPTION]", $ev->description, $taot);
 				
-				if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$ev->ModuleCode.".png"))
+				if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$ev->modcode.".png"))
 				{
-					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->ModuleCode, $AddOnIconTmp), $taot);
+					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->modcode, $AddOnIconTmp), $taot);
 					
 				}
 				else
 				{
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 					curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-					curl_setopt($ch, CURLOPT_URL, $this->RepoHost."/images/module-icons/".$ev->ModuleCode.".png");
+					curl_setopt($ch, CURLOPT_URL, $this->RepoHost."/images/module-icons/".$ev->modcode.".png");
 					
 					$raw = curl_exec($ch);
 					
-					$fp = fopen(PUBLICHTMLPATH."/images/module-icons/".$ev->ModuleCode.".png", 'x');
+					$fp = fopen(PUBLICHTMLPATH."/images/module-icons/".$ev->modcode.".png", 'x');
 					fwrite($fp, $raw);
 					fclose($fp);
 					
-					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->ModuleCode, $AddOnIconTmp), $taot);
+					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->modcode, $AddOnIconTmp), $taot);
 				}
 				
-				if($ev->Author->URL == "") { $taot = str_replace("[AUTHOR]", $ev->Author->URL, $taot); }
+				/*if($ev->Author->URL == "") { $taot = str_replace("[AUTHOR]", $ev->author->URL, $taot); }
 				else
 				{
 					$tauth = $AuthorLinkTmp;
 					$tauth = str_replace("[AUTHOR]", $ev->Author->AuthorName, $tauth);
 					$tauth = str_replace("[AUTHORURL]", $ev->Author->URL, $tauth);
 					$taot = str_replace("[AUTHOR]", $tauth, $taot);
-				}
+				}*/
 				$fulladdon = $fulladdon.$taot;
 			}
 			
