@@ -79,12 +79,23 @@ class modAddOns extends PiNASModule
 		}
 		else if($RequestVars["sub"] == "browse")
 		{
-			$ch = curl_init($this->RepoHost.$this->RepoPath);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$rtext = curl_exec($ch);
+			$Packages = array();
+			$ch = curl_init();
 			
-			
-			$Packages = json_decode($rtext);
+			$addonfile = MODULEPATH."/addons/data/availableaddons.srl";
+			if(file_exists($addonfile) && time() - filemtime($addonfile) < $this->ReupdatePeriod)
+			{
+				$Packages = unserialize(file_get_contents($addonfile));
+			}
+			else
+			{
+				$ch = curl_init($this->RepoHost.$this->RepoPath);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				$rtext = curl_exec($ch);
+				
+				
+				$Packages = json_decode($rtext);
+			}
 			
 			$template = file_get_contents(MODULEPATH."/addons/templates/main.html");
 			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
