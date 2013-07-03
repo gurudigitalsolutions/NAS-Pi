@@ -109,7 +109,7 @@ class modAddOns extends PiNASModule
 				{
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 					curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-					curl_setopt($ch, CURLOPT_URL, $this->RepoHost."/images/module-icons/".$ev->modcode.".png");
+					curl_setopt($ch, CURLOPT_URL, $this->RepoHost.$ev->iconurl);
 					
 					$raw = curl_exec($ch);
 					
@@ -120,6 +120,7 @@ class modAddOns extends PiNASModule
 					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->modcode, $AddOnIconTmp), $taot);
 				}
 				
+				$taot = str_replace("[AUTHOR]", $ev->displayname, $taot);
 				/*if($ev->Author->URL == "") { $taot = str_replace("[AUTHOR]", $ev->author->URL, $taot); }
 				else
 				{
