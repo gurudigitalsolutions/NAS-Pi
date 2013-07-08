@@ -207,7 +207,7 @@ function place_backend_files
 	cp -r backend${ETC}/* ${ETC}	
 	cp backend${INIT} ${INIT}
 	cp backend${BIN} ${BIN}
-	cp backend${PDINIT} ${INIT}
+	cp backend${PDINIT} ${PDINIT}
 	
 	cp -r backend${WWW}/* ${WWW}
 	chmod 0755 $BIN
