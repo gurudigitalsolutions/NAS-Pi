@@ -11,7 +11,7 @@
 PROG="pd.php"
 PROG_PATH="/usr/share/naspi/pd"
 RUN_PATH="/var/lock"
-export NASPID_LOCK_FILE=$RUN_PATH/${PROG}.lock
+export NASPIPD_LOCK_FILE=$RUN_PATH/${PROG}.lock
 ETC_PATH="/etc/naspi"
 ERRORS=$ETC_PATH/errors
 CONFIG=$ETC_PATH/${PROG}.conf
@@ -24,16 +24,17 @@ error() {
 }
 
 start() {
-	if [ -e "$NASPID_LOCK_FILE" ]; then
+	if [ -e "$NASPIPD_LOCK_FILE" ]; then
 		error $E_START $M_START
 	else
 		$PROG_PATH/$PROG start 2>&1 &
-		touch "$NASPID_LOCK_FILE"
+		touch "$NASPIPD_LOCK_FILE"
 	fi
 }
 
 stop() {
-	if [ -e "$NASPID_LOCK_FILE" ]; then
+	if [ -e "$NASPIPD_LOCK_FILE" ]; then
+		rm "$NASPIPD_LOCK_FILE"
 		$PROG_PATH/$PROG stop 2>&1 &
 	else
 		error $E_STOP $M_STOP
