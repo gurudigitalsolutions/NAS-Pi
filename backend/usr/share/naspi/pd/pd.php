@@ -13,14 +13,25 @@ define("MODULECONFIGPATH", BASECODEPATH."/addons/modules");
 
 $sockDir = "/tmp/naspi/pd";
 $sockFile = "pd.sock";
-$ModulesPath = "/home/guru/Code/NAS-Pi/backend/usr/bin/pd/modules";
+$ModulesPath = "/home/guru/Code/NAS-Pi/backend/usr/share/naspi/pd/modules";
 
 $Version = "0.2013.07.02";
+$Options = ParseCLI($argv);
+
+pcntl_signal(SIGINT, "SafeExit");
+pcntl_signal(SIGTERM, "SafeExit");
+pcntl_signal(SIGHUP, "SafeExit");
+pcntl_signal(SIGQUIT, "SafeExit");
+
 $Modules = array();
 LoadModules();
 
 if(!file_exists($sockDir)) { `mkdir $sockDir -p`; }
-if(file_exists($sockDir."/".$sockFile)) { `rm $sockDir."/".$sockFile`; }
+if(file_exists($sockDir."/".$sockFile)) 
+{
+	$cmd = "rm ".$sockDir."/".$sockFile;
+	`$cmd`;
+}
 
 $socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
 
@@ -57,9 +68,51 @@ socket_close($socket);
 
 
 
-function ParseCLI()
+function ParseCLI($arguments)
 {
+	if(count($arguments) == 1) { return array(); }
 	
+	if($arguments[1] == "stop")
+	{
+		//	The init.d script is trying to tell the daemon to stop running.
+		$cmd = "ps -u root | grep pd.php";
+		$res = trim(`$cmd`);
+		$rlines = explode("\n", $res);
+		
+		$mpid = getmypid();
+		
+		foreach($rlines as $erl)
+		{
+			$psparts = explode(" ", trim($erl));
+			
+			if($psparts[0] == $mpid)
+			{
+				//	This is the daemon stop script.  We don't need to kill that.
+			}
+			else
+			{
+				//	This is a different running instance of the daemon.  We need
+				//	to kill it.
+				
+				$kcmd = "kill -9 ".$psparts[0];
+				`$kcmd`;
+			}
+			
+		}
+		
+		exit;
+	}
+	elseif($arguments[1] == "start")
+	{
+		//	The init.d script is trying to start the daemon.
+		echo "argv[1]: start\n";
+	}
+	else
+	{
+		echo "argv[1]: not recognized\n";
+	}
+	
+	return array();
 }
 
 function DoConnection($client)
@@ -148,6 +201,7 @@ function LoadModules()
 function ImportModules($path)
 {
 	global $Modules;
+	//echo "ImportModules: ".$path."\n";
 	
 	$stuff = scandir($path);
 	foreach($stuff as $efile)
@@ -185,5 +239,29 @@ function ImportModules($path)
 			}
 		}
 	}
+}
+
+function SafeExit($sig)
+{
+	echo "SafeExit Starting...\n";
+	switch ($sig) {
+		case SIGINT:
+			echo "SafeExit: SIGINT\n";
+			break;
+		case SIGTERM:
+			echo "SafeExit: SIGTERM\n";
+			break;
+		case SIGHUP:
+			echo "SafeExit: SIGHUB\n";
+			break;
+		case SIGQUIT:
+			echo "SafeExit: SIGQUIT\n";
+			break;
+		default:
+			echo "SafeExit: Unknown: ".$sig."\n";
+			break;
+	}
+	
+	exit(0);
 }
 ?>

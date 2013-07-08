@@ -19,6 +19,8 @@ SITE="/etc/apache2/sites-available/nas-pi"
 ETC="/etc/naspi"
 INIT="/etc/init.d/naspid"
 BIN="/usr/bin/naspid"
+PDINIT="/etc/init.d/naspi-pd"
+PDBIN="/usr/share/naspi/pd/pd.php"
 FUSE="/etc/fuse.conf"
 
 BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -205,6 +207,7 @@ function place_backend_files
 	cp -r backend${ETC}/* ${ETC}	
 	cp backend${INIT} ${INIT}
 	cp backend${BIN} ${BIN}
+	cp backend${PDINIT} ${INIT}
 	
 	cp -r backend${WWW}/* ${WWW}
 	chmod 0755 $BIN
@@ -213,6 +216,7 @@ function place_backend_files
 	chown naspi:naspi ${WWW}/pd -R
 	
 	update-rc.d naspid defaults
+	update-rc.d naspi-pd defaults
 }
 
 #

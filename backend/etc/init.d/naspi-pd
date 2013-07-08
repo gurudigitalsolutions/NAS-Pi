@@ -1,0 +1,77 @@
+#!/bin/bash 
+### BEGIN INIT INFO
+# Provides:             naspi-pd
+# Required-Start:       $remote_fs dbus udev
+# Required-Stop:        $remote_fs dbus udev
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    NAS-Pi PHP Backend Daemon
+# Description:          Handles administration of your Raspberry Pi using NAS-Pi.
+### END INIT INFO
+PROG="pd.php"
+PROG_PATH="/usr/share/naspi/pd"
+RUN_PATH="/var/lock"
+export NASPID_LOCK_FILE=$RUN_PATH/${PROG}.lock
+ETC_PATH="/etc/naspi"
+ERRORS=$ETC_PATH/errors
+CONFIG=$ETC_PATH/${PROG}.conf
+
+. $ERRORS
+. $CONFIG
+
+error() {
+	echo "ERROR:$@" 1>&2
+	return $1
+}
+
+start() {
+	if [ -e "$NASPID_LOCK_FILE" ]; then
+		error $E_START $M_START
+	else
+		$PROG_PATH/$PROG start 2>&1 &
+		touch "$NASPID_LOCK_FILE"
+	fi
+}
+
+stop() {
+	if [ -e "$NASPID_LOCK_FILE" ]; then
+		$PROG_PATH/$PROG stop 2>&1 &
+	else
+		error $E_STOP $M_STOP
+	fi
+}
+
+
+if [ "$(id -u)" != "0" ]; then
+	error $E_ROOT $M_ROOT
+fi
+
+case "$1" in
+	start)
+		start
+		if [[ $? -eq 0 ]]; then
+			echo "$PROG started"
+		else
+			echo "$PROG failed to $1"
+		fi
+	;;
+	stop)
+		stop
+		if [[ $? -eq 0 ]]; then
+			echo "$PROG stopped"
+		else
+			echo "$PROG failed to $1" >2 >> $LOG
+		fi
+	;;
+	reload|restart|force-reload)
+		stop
+		start
+		echo "$PROG restarted" >> $LOG &
+		exit 0
+		;;
+	**)
+		error $E_USAGE $M_USAGE
+		;;
+esac
+
+:
