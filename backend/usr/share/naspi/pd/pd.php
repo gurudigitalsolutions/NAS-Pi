@@ -119,7 +119,7 @@ function DoConnection($client)
 				}
 				else
 				{
-					$msg = "Module not loaded";
+					$msg = "FAIL Module not loaded";
 				}
 				//$msg = "Piping ".count($modargs)." arguments to mod ".$modcode."\n";
 				
