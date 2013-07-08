@@ -10,6 +10,7 @@
 ### END INIT INFO
 PROG="pd.php"
 PROG_PATH="/usr/share/naspi/pd"
+LOG="/usr/share/naspi/pd/run.log"
 RUN_PATH="/var/lock"
 export NASPIPD_LOCK_FILE=$RUN_PATH/${PROG}.lock
 ETC_PATH="/etc/naspi"
