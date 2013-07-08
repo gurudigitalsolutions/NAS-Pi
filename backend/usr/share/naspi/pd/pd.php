@@ -13,7 +13,7 @@ define("MODULECONFIGPATH", BASECODEPATH."/addons/modules");
 
 $sockDir = "/tmp/naspi/pd";
 $sockFile = "pd.sock";
-$ModulesPath = "/home/guru/Code/NAS-Pi/backend/usr/share/naspi/pd/modules";
+$ModulesPath = "/usr/share/naspi/pd/modules";
 
 $Version = "0.2013.07.02";
 $Options = ParseCLI($argv);
