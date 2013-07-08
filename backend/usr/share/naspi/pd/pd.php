@@ -33,6 +33,7 @@ if(file_exists($sockDir."/".$sockFile))
 	`$cmd`;
 }
 
+echo "Creating Unix Socket for the pd daemon\n";
 $socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
 
 socket_bind($socket, $sockDir."/".$sockFile);
@@ -66,7 +67,7 @@ while($KeepRunning)
 //socket_close($client);
 socket_close($socket);
 
-
+echo "NAS-Pi pd daemon exiting\n";
 
 function ParseCLI($arguments)
 {
