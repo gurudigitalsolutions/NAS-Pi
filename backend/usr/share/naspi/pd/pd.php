@@ -18,10 +18,10 @@ $ModulesPath = "/usr/share/naspi/pd/modules";
 $Version = "0.2013.07.02";
 $Options = ParseCLI($argv);
 
-pcntl_signal(SIGINT, "SafeExit");
-pcntl_signal(SIGTERM, "SafeExit");
-pcntl_signal(SIGHUP, "SafeExit");
-pcntl_signal(SIGQUIT, "SafeExit");
+//pcntl_signal(SIGINT, "SafeExit");
+//pcntl_signal(SIGTERM, "SafeExit");
+//pcntl_signal(SIGHUP, "SafeExit");
+//pcntl_signal(SIGQUIT, "SafeExit");
 
 $Modules = array();
 LoadModules();
