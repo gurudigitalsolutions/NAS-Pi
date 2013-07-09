@@ -231,7 +231,7 @@ place_backend_files
 service apache2 restart
 service naspid restart
 #service naspi-pd restart
-service naspi-pd stop
+#service naspi-pd stop
 service naspi-pd start
 cd $START_DIR
 echo "NAS-Pi has been installed."
