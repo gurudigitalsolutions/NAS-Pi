@@ -641,14 +641,36 @@ class modFiles extends PiNASModule
 		$byuuid = "";
 		$bydev = "";
 		
+		/*$fnd = array();
+		if($this->Device != "")
+		{
+			$fnd = $this->GetBlocks($this->Device.":");
+		}
+		else if($this->Label != "") { $fnd = $this->GetBlocks("LABEL=\"".$this->Label."\""); }
+		else if($this->UUID != "") { $fnd = $this->GetBlocks("UUID=\"".$this->UUID."\""); }
+		
+		if(count($fnd) > 0)
+		{
+			if($this->UUID == "") { $this->UUID = $fnd[0]["uuid"]; }
+			if($this->Label == "") { $this->Label = $fnd[0]["label"]; }
+			if($this->Device == "") { $this->Device = $fnd[0]["device"]; }
+		}*/
+		
 		$uuiddr = scandir("/dev/disk/by-uuid");
 		foreach($uuiddr as $eui)
 		{
 			if($eui != "." && $eui != "..")
 			{
+				$fnd = array();
+				$fnd = $this->GetBlocks("UUID=\"".$this->UUID."\"");
+				
 				$teach = $nslocaleat;
 				$teach = str_replace("[FIELDNAME]", "uuid", $teach);
 				$teach = str_replace("[VALUE]", $eui, $teach);
+				
+				$teach = str_replace("[UUID]", $eui, $teach);
+				$teach = str_replace("[LABEL]", $fnd[0]["label"], $teach);
+				$teach = str_replace("[DEVICE]", $fnd[0]["device"], $teach);
 				$byuuid = $byuuid.$teach;
 			}
 		}
@@ -658,9 +680,17 @@ class modFiles extends PiNASModule
 		{
 			if($eui != "." && $eui != "..")
 			{
+				$fnd = array();
+				$fnd = $this->GetBlocks("LABEL=\"".$eui."\"");
+				
 				$teach = $nslocaleat;
 				$teach = str_replace("[FIELDNAME]", "label", $teach);
 				$teach = str_replace("[VALUE]", $eui, $teach);
+				
+				$teach = str_replace("[LABEL]", $eui, $teach);
+				$teach = str_replace("[DEVICE]", $fnd[0]["device"], $teach);
+				$teach = str_replace("[UUID]", $fnd[0]["uuid"], $teach);
+				
 				$bylabel = $bylabel.$teach;
 			}
 		}
@@ -672,9 +702,17 @@ class modFiles extends PiNASModule
 			$dprts = explode(":", $ed);
 			if(substr($dprts[0], 0, 5) == "/dev/")
 			{
+				$fnd = array();
+				$fnd = $this->GetBlocks($dprts[0].":");
+				
 				$teach = $nslocaleat;
 				$teach = str_replace("[FIELDNAME]", "device", $teach);
 				$teach = str_replace("[VALUE]", $dprts[0], $teach);
+				
+				$teach = str_replace("[DEVICE]", $dprts[0], $teach);
+				$teach = str_replace("[UUID]", $fnd[0]["uuid"], $teach);
+				$teach = str_replace("[LABEL]", $fnd[0]["label"], $teach);
+				
 				$bydev = $bydev.$teach;
 			}
 		}
@@ -684,6 +722,43 @@ class modFiles extends PiNASModule
 		$nslocalt = str_replace("[EACHDEVICE]", $bydev, $nslocalt);
 		
 		return $nslocalt;
+	}
+	
+	public function GetBlocks($search)
+	{
+		$search = str_replace("\"", "\\\"", $search);
+		$search = "\"".$search."\"";
+		$blkcmd = `/sbin/blkid | grep $search`;
+
+		$parts = explode("\n", trim($blkcmd));
+		$toret = array();
+		
+		foreach($parts as $epart)
+		{
+			if(substr($epart, 0, 12) != "/dev/mmcblk0")
+			{
+				//	We aren't going to list the SD card as a device for this
+				$tblock = array();
+				
+				$devpts = explode(" ", $epart);
+				$devpts[0] = str_replace(":", "", $devpts[0]);
+				
+				$tblock["device"] = $devpts[0];
+				
+				for($ebp = 1; $ebp < count($devpts); $ebp++)
+				{
+					$kvprts = explode("=", $devpts[$ebp]);
+					
+					$tblock[strtolower($kvprts[0])] = str_replace("\"", "", $kvprts[1]);
+					
+				}
+				
+				$toret[] = $tblock;
+			}
+		}
+		
+		
+		return $toret;
 	}
 }
 

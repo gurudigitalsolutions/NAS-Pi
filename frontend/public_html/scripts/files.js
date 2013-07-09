@@ -28,3 +28,9 @@ function ConfirmDeleteSource(sourcecode)
 	}
 }
 
+function SetLocalSourceValues(uuid, label, device)
+{
+	document.getElementById("newsource_uuid").value = uuid;
+	document.getElementById("newsource_label").value = label;
+	document.getElementById("newsource_device").value = device;
+}
