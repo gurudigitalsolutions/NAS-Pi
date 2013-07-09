@@ -19,7 +19,7 @@
 #
 #-----------------------------------------------------------------------
 
-DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs git curlftpfs netcat-openbsd expect)
+DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs git curlftpfs netcat-openbsd)
 
 APACHE_USER="naspi"
 INSTALL_DIR="/usr/share/naspi"
@@ -31,6 +31,7 @@ LOG="/var/log/naspid.log"
 ETC="/etc/naspi"
 INIT="/etc/init.d/naspid"
 BIN="/usr/bin/naspid"
+FSTAB="/etc/fstab.d/"
 
 PDINIT="/etc/init.d/naspi-pd"
 PDBIN="/usr/share/naspi/pd/pd.php"
@@ -42,7 +43,7 @@ ERRORS=$INSTALL_DIR/errors
 
 ENVARS=$ETC/envars
 
-EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
+EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" ")
 
 #-----------------------------------------------------------------------
 #
@@ -168,7 +169,7 @@ function configure_apache
 				;;
 			*)
 				a2ensite nas-pi
-				echo "Manually configure apache2's sites-avalible"
+				echo "Manually configure apache2\'s sites-avalible"
 				;;
 		esac
 	fi
@@ -203,7 +204,6 @@ function place_files
 	
 	chown -R "naspi:naspi" "$INSTALL_DIR"
 	
-	#chmod 777 "$INSTALL_DIR"/modules/btguru/settings.cfg
 	chmod 777 "$INSTALL_DIR"/modules/users/groups.txt
 	chmod 755 "$INSTALL_DIR"/modules/files/sources/sourcedata
 	
@@ -235,24 +235,7 @@ function place_backend_files ()
 	echo "  [ PLACING BACKEND FILES ]"
 	
 	[[ -e $ETC ]] || mkdir -p -m 755 $ETC
-	
-#	TODO
-
-	#set -f;IFS=$n
-	#list=($(ls backend${ETC} -R) $(ls backend${INSTALL_DIR})
-	#list=($list[@] backend${INIT} backend${BIN} backend${PDINIT}
-	#unset IFS;set +f
-	#
-	#for each in ${list[@]};do
-		#if [[ X$(echo $each|grep :) != X ]];then
-			#path=${each%:}
-		#elif [[ $each != naspid.conf ]]||[[ ;then
-			#if [[ -f $path/$each ]]
-				#echo "cp $path/$each ${path#$BASE/backend}/$each"
-		#fi
-	#done
-	
-#	TODO	
+	[[ -e $FSTAB ]] || mkdir -p -m 755 $FSTAB
 
 	cp -r backend${ETC}/* ${ETC}	
 	cp backend${INIT} ${INIT}
@@ -279,33 +262,43 @@ function place_backend_files ()
 function set_envars() {
 	#set -x
 	HEAD="\
-# This file is created during installation. Please make certain of what 
-# you are changing when modifying this file"
+	# This file is created during installation. Please make certain of what 
+	# you are changing when modifying this file"
 
 	BODY="
-# Base install directory
-INSTALL_DIR=$INSTALL_DIR
+	# Base install directory
+	INSTALL_DIR=$INSTALL_DIR
 
-# Location of error code file
-ERRORS=$ERRORS
-# Non-root user error code
-E_ROOT=(${E_ROOT[0]} \"${E_ROOT[1]}\")
+	# Location of error code file
+	ERRORS=$ERRORS
+	# Non-root user error code
+	E_ROOT=(${E_ROOT[0]} \"${E_ROOT[1]}\")
 
-# Location of log file
-LOG=$LOG
+	# Location of log file
+	LOG=$LOG
 
-# Apache2 Virtual Host name
-SITE=$SITE
-# User site runs as
-APACHE_USER=$APACHE_USER
+	# Apache2 Virtual Host name
+	SITE=$SITE
+	# User site runs as
+	APACHE_USER=$APACHE_USER
 
-# Array of dependancies
-DEPENDENCIES=(${DEPENDENCIES[@]})"
+	# Array of dependancies
+	DEPENDENCIES=(${DEPENDENCIES[@]})"
 
 	echo -e "$HEAD\n$BODY" > $ENVARS
 	set +x
 }
 
+#
+# Create an original backup of fstab
+#
+function fstab_backup() {
+	#set -x
+	if [[ ! -f $FSTAB/fstab.orignial ]]; then
+		cat /etc/fstab > $FSTAB/fstab.orignial
+	fi
+	set +x
+}
 #
 # Run each function
 #

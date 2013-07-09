@@ -24,14 +24,14 @@ error() {
 }
 
 start() {
-	echo 'rm "/tmp/naspi/pd/pd.sock"' >> $LOG
 	rm "/tmp/naspi/pd/pd.sock"
-	$DAEMON_PATH/$DAEMON_SCRIPT start 2>&1 &
+	#$DAEMON_PATH/$DAEMON_SCRIPT start 2>&1 &
+	$DAEMON_PATH/$DAEMON_SCRIPT start &
 }
 
 stop() {
-	echo "$DAEMON_PATH/$DAEMON_SCRIPT stop 2>&1 &" >> $LOG
-	$DAEMON_PATH/$DAEMON_SCRIPT stop 2>&1 &
+	#$DAEMON_PATH/$DAEMON_SCRIPT stop 2>&1 &
+	$DAEMON_PATH/$DAEMON_SCRIPT stop &
 }
 
 
