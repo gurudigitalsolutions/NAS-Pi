@@ -116,7 +116,7 @@ class FileSourceSMB extends FileSource
 			}
 		}
 		
-		$toret = ExtraTemplate;
+		$toret = $ExtraTemplate;
 		$fullshares = "";
 		foreach($Shares as $esh)
 		{
