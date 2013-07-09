@@ -43,15 +43,15 @@ class FileSource
 	function InitBasicFormElements()
 	{
 		$this->FormElements = array(
-							array(
+							/*array(
 							"fieldname"=>"title",
 							"fieldtype"=>"text",
 							"fieldtitle"=>"Title",
-							"fieldmap"=>"Title"),
+							"fieldmap"=>"Title"),*/
 							array(
 							"fieldname"=>"sourcecode",
 							"fieldtype"=>"text",
-							"fieldtitle"=>"Code",
+							"fieldtitle"=>"Code/Title",
 							"fieldmap"=>"SourceCode"),
 							array(
 							"fieldname"=>"enabled",

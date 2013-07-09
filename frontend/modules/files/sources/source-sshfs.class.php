@@ -27,7 +27,7 @@ class FileSourceSSHFS extends FileSource
 		$this->RemotePath = $RequestVars["remotepath"];
 		$this->Username = $RequestVars["username"];
 		$this->Password = $RequestVars["password"];
-		$this->Title = $RequestVars["title"];
+		//$this->Title = $RequestVars["title"];
 		$this->SourceCode = $RequestVars["sourcecode"];
 		if(array_key_exists("enabled", $RequestVars)) { $this->Enabled = true; } else { $this->Enabled = false; }
 		
@@ -38,8 +38,9 @@ class FileSourceSSHFS extends FileSource
 		if($this->RemotePath == "") { $this->RemotePath = "/"; }
 		if($this->Username == "") { return false; }
 		if($this->Password == "") { return false; }
-		if($this->Title == "") { return false; }
+		//if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
+		$this->Title = $this->SourceCode;
 		//if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
 		
 		return true;

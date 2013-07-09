@@ -35,8 +35,9 @@ class FileSourceBIND extends FileSource
 			if(strlen($this->OriginalPath) == 1) { return false; }
 			$this->OriginalPath = substr($this->OriginalPath, 1);
 		}
-		if($this->Title == "") { return false; }
+		//if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
+		$this->Title = $this->SourceCode;
 		//if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
 		
 		return true;

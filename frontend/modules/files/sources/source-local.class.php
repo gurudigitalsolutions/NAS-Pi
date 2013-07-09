@@ -24,7 +24,7 @@ class FileSourceLocal extends FileSource
 		global $RequestVars;
 		
 
-		$this->Title = $RequestVars["title"];
+		//$this->Title = $RequestVars["title"];
 		$this->SourceCode = $RequestVars["sourcecode"];
 		$this->FSType = "device";
 		$this->UUID = $RequestVars["uuid"];
@@ -32,12 +32,12 @@ class FileSourceLocal extends FileSource
 		$this->Device = $RequestVars["device"];
 		if(array_key_exists("enabled", $RequestVars)) { $this->Enabled = true; } else { $this->Enabled = false; }
 		
-		if($this->Title == "") { return false; }
+		//if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
 		if($this->UUID == ""
 		&& $this->Label == ""
 		&& $this->Device == "") { return false; }
-		
+		$this->Title = $this->SourceCode;
 		//if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
 		
 		$fnd = array();
