@@ -82,7 +82,7 @@ class modAddons extends BackendModule
 		$JobDir = $ModulesPath."/addons/data/installjobs";
 		if(!file_exists($JobDir."/".$jobid)) { return "FAIL Job not found."; }
 		
-		$flines = file($JobDir."/".$jobid;
+		$flines = file($JobDir."/".$jobid);
 		$lstat = "";
 		foreach($flines as $efl)
 		{
