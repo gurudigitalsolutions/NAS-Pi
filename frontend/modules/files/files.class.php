@@ -662,7 +662,7 @@ class modFiles extends PiNASModule
 			if($eui != "." && $eui != "..")
 			{
 				$fnd = array();
-				$fnd = $this->GetBlocks("UUID=\"".$this->UUID."\"");
+				$fnd = $this->GetBlocks("UUID=\"".$eui."\"");
 				
 				$teach = $nslocaleat;
 				$teach = str_replace("[FIELDNAME]", "uuid", $teach);
@@ -735,8 +735,8 @@ class modFiles extends PiNASModule
 		
 		foreach($parts as $epart)
 		{
-			if(substr($epart, 0, 12) != "/dev/mmcblk0")
-			{
+			//if(substr($epart, 0, 12) != "/dev/mmcblk0")
+			//{
 				//	We aren't going to list the SD card as a device for this
 				$tblock = array();
 				
@@ -754,7 +754,7 @@ class modFiles extends PiNASModule
 				}
 				
 				$toret[] = $tblock;
-			}
+			//}
 		}
 		
 		
