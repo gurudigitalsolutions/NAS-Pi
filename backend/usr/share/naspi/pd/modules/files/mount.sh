@@ -296,18 +296,14 @@ function save_fstab() {
 #
 # checks if the source is mounted
 #
-function check_mount_status() {
+function check_status() {
 	#set -x
-	Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
-	set +x
-}
-
-#
-# checks if the source is enabled
-#
-function check_enabled_status() {
-	#set -x
-	Enabled=$(get_data $1 $Source Enabled)
+	if [[ $1 == mount ]];then
+		Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
+	elif [[ $1 == enabled ]]; then
+		Enabled=$(get_data $1 $Source Enabled)
+	fi
+	
 	set +x
 }
 
@@ -330,46 +326,38 @@ function mount_by_type() {
 #
 function unmount_by_type() {
 	#set -x
-	if [[ $FSType = sshfs ]]; then
+	if [[ $FSType = sshfs ]]&&[[ $1 == unmount ]]; then
 		fusermount -u $MOUNT_PATH/$Source
+	elif [[ $FSType = sshfs ]]&&[[ $1 == mount ]]; then 	
+		SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
+		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
 	else
-		umount "$MOUNT_PATH/$Source"
+		$1 "$MOUNT_PATH/$Source"
 	fi
-	set +x
-}
-
-#
-# mount unmounted sources if the source has been enabled
-#
-function source_mount() {
-	#set -x
-	create_missing_directory "$MOUNT_PATH/$Source"
-	Attempt=0
-	until [[ X$Mounted != X ]]||[[ $Attempt = $RETRIES ]];do
-		mount_by_type
-		check_mount_status
-		((Attempt++))
-		sleep $RETRY_INTERVAL
-	done
-	success_fail "Mounted"
-
+	
 	set +x
 }
 
 #
 # unmount mounted sources if the source has been disabled
 #
-function source_unmount() {
+function mount_control() {
 	#set -x
+	if [[ $1 == unmount ]];then
+		Test='[[ X$Mounted == X ]]'
+	elif [[ $1 == mount ]];then
+		Test='[[ X$Mounted != X ]]'
+		create_missing_directory "$MOUNT_PATH/$Source"
+	fi
+	
 	Attempt=0
-	until [[ X$Mounted == X ]]||[[ $Attempt = $RETRIES ]];do
-		unmount_by_type
-		check_mount_status
+	until $Test||[[ $Attempt = $RETRIES ]];do
+		$1_by_type
+		check_status mount
 		((Attempt++))
 		sleep $RETRY_INTERVAL
 	done
-	success_fail "Unmounted"
-
+	
 	set +x
 }
 
@@ -379,7 +367,8 @@ function source_unmount() {
 function success_fail() {
 	#set -x
 	if [[ $Attempt = $RETRIES ]];then
-		log "$E_MOUNT" "$M_MOUNT" "$1"
+		log "$E_MOUNT" "$M_MOUNT"
+		
 	else
 		log "$1 $Source successfully"
 	fi
@@ -394,18 +383,20 @@ function success_fail() {
 #
 function update_status() {
 	#set -x
-	check_mount_status
-	#set -x
-	check_enabled_status
+	check_status mount
+	check_status enabled
 
 	#set -x
 	if [[ X$Enabled == X1 ]]&&[[ X$Mounted == X ]];then
-		source_mount
+		mount_control mount
+		success_fail "Mounted"
 	elif [[ X$Enabled == X1 ]]&&[[ X$Mounted != X ]];then
-		source_unmount
-		source_mount
+		mount_control unmount
+		mount_control mount
+		success_fail "Remounted"
 	elif [[ X$Enabled = X ]]&&[[ X$Mounted != X ]];then
-		source_unmount
+		mount_control unmount
+		success_fail "Unmounted"
 	fi
 
 	set +x
@@ -419,9 +410,6 @@ function update_status() {
 #
 #-----------------------------------------------------------------------
 #set -x
-echo $FSType
-export FSType=$(get_data $Source FSType)
-
 case $1 in
 	save)
 		save_fstab
