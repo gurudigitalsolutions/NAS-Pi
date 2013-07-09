@@ -289,7 +289,7 @@ INSTALL_DIR=$INSTALL_DIR
 # Location of error code file
 ERRORS=$ERRORS
 # Non-root user error code
-E_ROOT=(${E_ROOT[0]} "${E_ROOT[1]}")
+E_ROOT=(${E_ROOT[0]} \""${E_ROOT[1]}"\")
 
 # Location of log file
 LOG=$LOG
