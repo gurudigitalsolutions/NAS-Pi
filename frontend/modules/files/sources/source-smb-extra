@@ -1,0 +1,8 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn smbclient -L //[REMOTEHOST]/ -U [USERNAME]
+set pass "[PASSWORD]"
+expect {
+	password: { send "$pass\r"; exp_continue}
+	eof exit
+}

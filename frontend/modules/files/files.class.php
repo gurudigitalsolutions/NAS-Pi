@@ -105,7 +105,7 @@ class modFiles extends PiNASModule
 				$mitemplate = str_replace("[EACHVAR]", $ttleach, $mitemplate);
 				$mitemplate = str_replace("[SOURCETYPE]", $tsrc->FSType, $mitemplate);
 				
-				$mitemplate = str_replace("[EXTRASOURCEINFO]", $tsrc->ExtraSourceInfo(), $mitemplate);
+				$mitemplate = str_replace("[EXTRAINFO]", $tsrc->ExtraSourceInfo(), $mitemplate);
 				/*
 				foreach($props as $ekey=>$eval)
 				{

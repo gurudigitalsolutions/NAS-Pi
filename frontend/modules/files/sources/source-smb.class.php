@@ -54,17 +54,21 @@ class FileSourceSMB extends FileSource
 	
 	function ExtraSourceInfo()
 	{
-		$expct = "spawn smbclient -L //".$this->RemoteHost."/ -U ".$this->Username."\n";
-		$expct = $expct."set pass \"".$this->Password."\"\n".
-					"expect {\n".
-					"	password: { send \"$pass\\r\" ; exp_continue}\n".
-					"	eof exit\n".
-					"}";
+		if($this->RemoteHost == "" || $this->Username == "" || $this->Password == "") { return ""; }
 		
-		$cmd = "echo ".$expct." | /usr/bin/expect -f";
-		$res = trim(`$cmd`);
+		$exfile = file_get_contents(MODULEPATH."/files/sources/source-smb-extra");
+		$exfile = str_replace("[USERNAME]", $this->Username, $exfile);
+		$exfile = str_replace("[PASSWORD]", $this->Password, $exfile);
+		$exfile = str_replace("[REMOTEHOST]", $this->RemoteHost, $exfile);
 		
-		return $res;
+		file_put_contents("/tmp/naspi/source-smb-extra", $exfile);
+		`chmod u+x /tmp/naspi/source-smb-extra`;
+		$res = `./tmp/naspi/source-smb-extra`;
+		
+		return trim($res);
+		
+		
+		return $expct;
 	}
 }
 
