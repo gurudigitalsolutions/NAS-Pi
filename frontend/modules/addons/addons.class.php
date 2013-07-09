@@ -117,6 +117,24 @@ class modAddOns extends PiNASModule
 		{
 			$toret = $this->BuildFullRepo();
 		}
+		else if($RequestVars["sub"] == "explore")
+		{
+			$toret = $this->ExploreAddOns();
+		}
+		else if($RequestVars["sub"] == "availableaddons")
+		{
+			echo json_encode($this->AvailablePackages());
+			exit;
+		}
+		else if($RequestVars["sub"] == "installedaddons")
+		{
+			echo json_encode($this->InstalledPackages());
+			exit;
+		}
+		else if($RequestVars["sub"] == "gettemplate")
+		{
+			$this->GetBrowserFormatting();
+		}
 		else
 		{
 			$toret = "No idea what you are trying to do :(";
@@ -404,6 +422,54 @@ class modAddOns extends PiNASModule
 		
 		
 		return str_replace("[EACHADDON]", $fulladdon, $MainTemp);
+	}
+	
+	function ExploreAddOns()
+	{
+		$MainTemp = file_get_contents(MODULEPATH."/addons/templates/main.html");
+		
+		return $MainTemp;
+	}
+	
+	function GetBrowserFormatting()
+	{
+		global $RequestVars;
+		
+		if($RequestVars['template'] == "table")
+		{
+			echo file_get_contents(MODULEPATH."/addons/templates/browser-table.html");
+			exit;
+		}
+		else if($RequestVars['template'] == "tablerow")
+		{
+			echo file_get_contents(MODULEPATH."/addons/templates/browser-tablerow.html");
+			exit;
+		}
+		else if($RequestVars['template'] == "zoom")
+		{
+			echo file_get_contents(MODULEPATH."/addons/templates/browser-zoom.html");
+			exit;
+		}
+		else if($RequestVars["template"] == "screenshot")
+		{
+			echo file_get_contents(MODULEPATH."/addons/templates/screenshot-each.html");
+			exit;
+		}
+		else if($RequestVars["template"] == "installlink")
+		{
+			echo file_get_contents(MODULEPATH."/addons/templates/browser-install.html");
+			exit;
+		}
+		else if($RequestVars["template"] == "uninstalllink")
+		{
+			echo file_get_contents(MODULEPATH."/addons/templates/browser-uninstall.html");
+			exit;
+		}
+		else
+		{
+			echo "Dunno :(";
+			exit;
+		}
 	}
 }
  
