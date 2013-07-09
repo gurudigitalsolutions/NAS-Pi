@@ -174,7 +174,7 @@ function configure_apache
 function create_empty_directories() {
 	#set -x
 	for empty in ${EMPTY_DIR[@]};do
-		if [[ ! e $LOCATION/$empty ]]; then
+		if [[ ! -e $LOCATION/$empty ]]; then
 			mkdir -p -m 755 $LOCATION/$empty
 			chown $APACHE_USER:$APACHE_USER $LOCATION/$empty
 		fi
@@ -194,7 +194,7 @@ function place_files
 	
 	chown -R "naspi:naspi" "$LOCATION"
 	
-	chmod 777 "$LOCATION"/modules/btguru/settings.cfg
+	#chmod 777 "$LOCATION"/modules/btguru/settings.cfg
 	chmod 777 "$LOCATION"/modules/users/groups.txt
 	chmod 755 "$LOCATION"/modules/files/sources/sourcedata
 	
