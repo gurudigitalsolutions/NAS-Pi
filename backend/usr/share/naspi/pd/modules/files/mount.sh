@@ -147,7 +147,7 @@ function write_device_fstab() {
 	local UUID=$(get_data $1 UUID)
 	local Source_Code=$(get_data $1 SourceCode)
 
-	echo "UUID=$UUID \
+	echo -e "UUID=$UUID \
 	$MOUNT_PATH/$Source_Code \
 	$DEVICE_DEFAULTS" \
 	> $FSTAB_DIR/$1.fstab
@@ -190,7 +190,7 @@ function write_sshfs_fstab() {
 	echo "$Password" \
 	> $CREDENTIALS/$1.sshfs
 	
-	echo "sshfs $Username@$Remote_Host:$Remote_Path \
+	echo -e "sshfs $Username@$Remote_Host:$Remote_Path \
 	-p $REMOTE_PORT \
 	-o password_stdin \
 	-o allow_other \
@@ -214,7 +214,7 @@ function write_ftp_fstab() {
 	echo -e  "machine $Remote_Host\nlogin $Username\npassword $Password" \
 	> $HOME/.netrc
 	
-	echo "curlftpfs#$Username:$Password@$Remote_Host \
+	echo -e "curlftpfs#$Username:$Password@$Remote_Host \
 	$MOUNT_PATH/$Source_Code \
 	$FTP_DEFAULTS"\
 	> $FSTAB_DIR/$1.fstab
@@ -225,11 +225,11 @@ function write_ftp_fstab() {
 # Create fstab for bind mounts
 #
 function write_bind_fstab() {
-	#set -x
-	local TARGET=$(get_data $1 Target)
+	set -x
+	local Target=$(get_data $1 Target)
 	local Source_Code=$(get_data $1 SourceCode)
 	
-	echo "$TARGET \
+	echo -e "$Target \
 	$Source_Code \
 	$BIND_DEFAULTS" \
 	> $FSTAB_DIR/$1.fstab
@@ -262,21 +262,11 @@ function create_fstab() {
 function save_fstab() {
 	#set -x
 	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
-
-	if [[ $FSType = device ]]; then
-		write_device_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = smb ]]; then
-		write_smb_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = sshfs ]]; then
-		write_sshfs_fstab $Source
+	
+	write_$FSType_fstab $Source
+	if [[ $FSType == ssshfs ]]; then
 		log "$Write_Log-sshfs.sh"
-	elif [[ $FSType = ftp ]]; then
-		write_ftp_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = bind ]]; then
-		write_bind_fstab $Source
+	else
 		log "$Write_Log.fstab"
 	fi
 
