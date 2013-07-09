@@ -25,21 +25,25 @@ error() {
 }
 
 start() {
-	if [ -e "$NASPIPD_LOCK_FILE" ]; then
-		error $E_START $M_START
-	else
-		$PROG_PATH/$PROG start 2>&1 &
-		touch "$NASPIPD_LOCK_FILE"
-	fi
+	#if [ -e "$NASPIPD_LOCK_FILE" ]; then
+	#	error $E_START $M_START
+	#else
+	#	$PROG_PATH/$PROG start 2>&1 &
+	#	touch "$NASPIPD_LOCK_FILE"
+	#fi
+	
+	$PROG_PATH/$PROG start 2>&1 &
 }
 
 stop() {
-	if [ -e "$NASPIPD_LOCK_FILE" ]; then
-		rm "$NASPIPD_LOCK_FILE"
-		$PROG_PATH/$PROG stop 2>&1 &
-	else
-		error $E_STOP $M_STOP
-	fi
+	#if [ -e "$NASPIPD_LOCK_FILE" ]; then
+	#	rm "$NASPIPD_LOCK_FILE"
+	#	$PROG_PATH/$PROG stop 2>&1 &
+	#else
+	#	error $E_STOP $M_STOP
+	#fi
+	
+	$PROG_PATH/$PROG stop 2>&1 &
 }
 
 
@@ -50,19 +54,19 @@ fi
 case "$1" in
 	start)
 		start
-		if [[ $? -eq 0 ]]; then
-			echo "$PROG started"
-		else
-			echo "$PROG failed to $1"
-		fi
+		#if [[ $? -eq 0 ]]; then
+		#	echo "$PROG started"
+		#else
+		#	echo "$PROG failed to $1"
+		#fi
 	;;
 	stop)
 		stop
-		if [[ $? -eq 0 ]]; then
-			echo "$PROG stopped"
-		else
-			echo "$PROG failed to $1" >2 >> $LOG
-		fi
+		#if [[ $? -eq 0 ]]; then
+		#	echo "$PROG stopped"
+		#else
+		#	echo "$PROG failed to $1" >2 >> $LOG
+		#fi
 	;;
 	reload|restart|force-reload)
 		stop
