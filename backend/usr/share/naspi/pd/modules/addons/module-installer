@@ -4,12 +4,13 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-$basecodedir = "/tmp/usr/share/naspi";
+$basecodedir = "/usr/share/naspi";
 $publichtmldir = $basecodedir."/public_html";
 $modulesdir = $basecodedir."/modules";
 $cmsdir = $basecodedir."/cms";
-$baseconfigdir = "/tmp/usr/share/naspi/addons";
+$baseconfigdir = "/usr/share/naspi/addons";
 $modconfdir = $baseconfigdir."/modules";
+$downloadsdir = "/tmp/naspi/downloads";
 
 if(count($argv) < 2)
 {
@@ -22,21 +23,14 @@ if(count($argv) < 2)
 }
 
 $iam = trim(`whoami`);
-$modfile = $argv[1];
+$modcode = $argv[1];
+$modfile = $downloadsdir."/".$modcode."/".$modcode.".tgz";
+$moddir = $downloadsdir."/".$modcode;
 
 $Options = ParseCLI();
 
 if(!file_exists($modfile)) { echo "The module archive couldn't be found."; exit; }
-$letters = "abcdefghijklmnopqrstuvwxyz";
-$fldr = "naspi";
-for($i = 0; $i < 10; $i++) { $fldr = $fldr.substr($letters, rand(0, strlen($letters) - 1), 1); }
-
-mkdir("/tmp/".$fldr);
-$cpcmd = "cp \"".$modfile."\" \"/tmp/".$fldr."/module.tgz\"";
-`$cpcmd`;
-
-chdir("/tmp/".$fldr);
-`tar xvfz module.tgz`;
+chdir($moddir);
 
 $Manifest = ParseManifest();
 if(!array_key_exists("code", $Manifest))
@@ -62,6 +56,8 @@ if(!file_exists($modconfdir."/".$Manifest["code"]))
 	$cmd = "mkdir \"".$modconfdir."/".$Manifest["code"]."\" -p";
 	`$cmd`;
 }
+
+echo "Creating local manifest files\n";
 
 file_put_contents($modconfdir."/".$Manifest["code"]."/manifest.srl", serialize($Manifest));
 $ptman = "#  This is an automatically generated manifest file\n";
@@ -89,6 +85,8 @@ file_put_contents($modconfdir."/".$Manifest["code"]."/manifest.ini", $ptman);
 //	dependencies.  It would suck to install dependencies later, and possibly overwrite
 //	something.
 
+echo "Installing dependencies\n";
+
 if(!array_key_exists("dependencies", $Options) || 
 	(array_key_exists("dependencies", $Options) && $Options["dependencies"] == true))
 {
@@ -107,11 +105,11 @@ if(!array_key_exists("dependencies", $Options) ||
 }
 //	Now to copy the files
 $CopyLog = array();
-$CopyLog["scripts"] = DoScan("scripts", $publichtmldir."/scripts");
-$CopyLog["modules"] = DoScan("modules", $modulesdir);
-$CopyLog["images"] = DoScan("images", $publichtmldir."/images");
-$CopyLog["stylesheets"] = DoScan("stylesheets", $publichtmldir."/stylesheets");
-$CopyLog["cms"] = DoScan("cms", $cmsdir);
+echo "Copying scripts\n"; $CopyLog["scripts"] = DoScan("scripts", $publichtmldir."/scripts");
+echo "Copying modules\n"; $CopyLog["modules"] = DoScan("modules", $modulesdir);
+echo "Copying images\n"; $CopyLog["images"] = DoScan("images", $publichtmldir."/images");
+echo "Copying stylesheets\n"; $CopyLog["stylesheets"] = DoScan("stylesheets", $publichtmldir."/stylesheets");
+echo "Copying cms\n"; $CopyLog["cms"] = DoScan("cms", $cmsdir);
 
 file_put_contents($modconfdir."/".$Manifest["code"]."/copylog.srl", serialize($CopyLog));
 //print_r($CopyLog);
@@ -159,6 +157,8 @@ function DoScan($modfile, $destfldr)
 
 function ParseManifest()
 {
+	echo "Parsing manifest\n";
+	
 	$manifest = array();
 	$mf = file("manifest");
 	
@@ -178,6 +178,8 @@ function ParseManifest()
 				else if($lparts[0] == "author") { $manifest["author"] = $lparts[1]; }
 				else if($lparts[0] == "repoid") { $manifest["repoid"] = $lparts[1]; }
 				else if($lparts[0] == "version") { $manifest["version"] = $lparts[1]; }
+				else if($lparts[0] == "authorrepousername") { $manifest["authorrepousername"] = $lparts[1]; }
+				else if($lparts[0] == "description") { $manifest["description"] = $lparts[1]; }
 				else if($lparts[0] == "dependencies")
 				{
 					if(strpos($lparts[1], " ") !== false)
