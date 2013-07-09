@@ -169,6 +169,19 @@ function configure_apache
 }
 
 #
+# Creates and modifies the permissions of frontend folders
+#
+function create_empty_directories() {
+	#set -x
+	for empty in ${EMPTY_DIR[@]};do
+		if [[ ! -e $LOCATION/$empty ]]; then
+			mkdir -p -m 755 $LOCATION/$empty
+			chown $APACHE_USER:$APACHE_USER $LOCATION/$empty
+		fi
+	done
+}
+
+#
 # Places all the frontend files into the install location
 #
 function place_files
@@ -181,7 +194,7 @@ function place_files
 	
 	chown -R "naspi:naspi" "$LOCATION"
 	
-	chmod 777 "$LOCATION"/modules/btguru/settings.cfg
+	#chmod 777 "$LOCATION"/modules/btguru/settings.cfg
 	chmod 777 "$LOCATION"/modules/users/groups.txt
 	chmod 755 "$LOCATION"/modules/files/sources/sourcedata
 	

@@ -30,9 +30,9 @@ fi
 #
 # Creates the error log if missing
 #
-if [[ ! -e $LOG ]]; then
+#if [[ ! -e $LOG ]]; then
 	touch $LOG
-fi
+#fi
 
 #
 # sources each of the 3 configuration file locations
@@ -52,9 +52,9 @@ done
 #
 # Checks that a configuration was set
 #
-if [[ $CONFIG_SET = FALSE ]]; then
-	log $E_CONFIG $M_CONFIG
-fi
+#if [[ $CONFIG_SET = FALSE ]]; then
+	#log $E_CONFIG $M_CONFIG
+#fi
 
 set +x
 
