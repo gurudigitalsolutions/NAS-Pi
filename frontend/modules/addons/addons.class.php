@@ -45,6 +45,7 @@ class modAddOns extends PiNASModule
 			$AuthorLinkTmp = file_get_contents(MODULEPATH."/addons/templates/addon-authorlink.html");
 			
 			$fulladdon = "";
+			$addonlist = DaemonModuleCommand("addons", "list");
 			foreach($Modules as $emkey=>$emval)
 			{
 				$taot = $EachAddOnTmp;
@@ -74,6 +75,7 @@ class modAddOns extends PiNASModule
 				$fulladdon = $fulladdon.$taot;
 			}
 			
+			$fulladdon = $fulladdon."<br />".$addonlist;
 			$template = str_replace("[EACHADDON]", $fulladdon, $template);
 			$toret = $template;
 		}
