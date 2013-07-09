@@ -262,28 +262,28 @@ function place_backend_files ()
 function set_envars() {
 	#set -x
 	HEAD="\
-# This file is created during installation. Please make certain of what 
-# you are changing when modifying this file"
+	# This file is created during installation. Please make certain of what 
+	# you are changing when modifying this file"
 
 	BODY="
-# Base install directory
-INSTALL_DIR=$INSTALL_DIR
+	# Base install directory
+	INSTALL_DIR=$INSTALL_DIR
 
-# Location of error code file
-ERRORS=$ERRORS
-# Non-root user error code
-E_ROOT=(${E_ROOT[0]} \"${E_ROOT[1]}\")
+	# Location of error code file
+	ERRORS=$ERRORS
+	# Non-root user error code
+	E_ROOT=(${E_ROOT[0]} \"${E_ROOT[1]}\")
 
-# Location of log file
-LOG=$LOG
+	# Location of log file
+	LOG=$LOG
 
-# Apache2 Virtual Host name
-SITE=$SITE
-# User site runs as
-APACHE_USER=$APACHE_USER
+	# Apache2 Virtual Host name
+	SITE=$SITE
+	# User site runs as
+	APACHE_USER=$APACHE_USER
 
-# Array of dependancies
-DEPENDENCIES=(${DEPENDENCIES[@]})"
+	# Array of dependancies
+	DEPENDENCIES=(${DEPENDENCIES[@]})"
 
 	echo -e "$HEAD\n$BODY" > $ENVARS
 	set +x
