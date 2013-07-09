@@ -227,11 +227,6 @@ function create_empty_directories ()
 #
 function place_backend_files
 {
-	echo "[CREATING APACHE2 ERROR LOG]"
-	
-	touch $LOCATION/log/error.log
-	chown "$APACHE_USER:$APACHE_USER" "$LOCATION/log/error.log"
-	
 	echo "[PLACING BACKEND FILES]"
 	
 	[[ -e $ETC ]] || mkdir -p -m 755 $ETC
