@@ -31,7 +31,6 @@ fi
 #
 # sources each of the 3 configuration file locations
 #
-CONFIG_SET=FALSE
 CONFIG_PATHS=("/etc/naspi" '~' '~/naspi')
 
 #set -x
@@ -51,19 +50,11 @@ set +x
 #set -x
 . $ERRORS
 set +x
-#
-#
-#
-SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
-
-if [[ ! -x "$SOURCE_DATA"/sourcedata ]]; then
-	log "${E_SOURCE[0]}" "${E_SOURCE[1]}"
-	exit ${E_SOURCE[1]}
-fi
 
 #
 # Creates the error log if missing
 #
+#set -x
 if [[ ! -e $LOG ]]; then
 	touch $LOG
 fi
@@ -83,25 +74,39 @@ set +x
 #
 function log() {
 	#set -x
-	
 	if [[ $# -eq 1 ]]; then
 		echo $1 >> $LOG
-	
-	# Log error messages if logging is enabled
 	elif [[ $# -ge 2 ]] && [[ $E_LOGGING == TRUE ]];then
-		echo "[ERROR $1]: ${@:2}" >> $LOG
+		echo "[ ERROR $1 ]: ${@:2}" >> $LOG
 	fi
 	
 	set +x
 }
 
 #
-# Checks that a configuration was set
+# Checks for the sourcedata script. Sourcedata is used to obtain all
+# necessary information for a given source
 #
-if [[ $CONFIG_SET = FALSE ]]; then
+#set -x
+SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
+
+if [[ ! -x "$SOURCE_DATA"/sourcedata ]]; then
+	log "${E_SOURCE[0]}" "${E_SOURCE[1]}"
+	exit ${E_SOURCE[1]}
+fi
+
+set +x
+
+#
+# Checks that at least one configuration was sourced
+#
+#set -x
+if [[ $CONFIG_SET != TRUE ]]; then
 	log "${E_CONFIG[0]}" "${E_CONFIG[1]}"
 	exit ${E_CONFIG[0]}
 fi
+
+set +x
 
 #
 # Create a directory if not already present
@@ -119,7 +124,6 @@ function create_missing_directory() {
 # Run external script to query frontend for source information
 #
 function get_data() {
-	
 	#set -x
 	"$SOURCE_DATA"/./sourcedata $1 $2
 	set +x
@@ -427,5 +431,7 @@ case $1 in
 		update_status
 		;;
 	*)
-		log "${E_USAGE[0]}" "${E_USAGE[1]}"
-		exit "${E_USAGE[0]}"
+		log "${E_ARGS[0]}" "${E_ARGS[1]}"
+		exit "${E_ARGS[0]}"
+		;;
+esac

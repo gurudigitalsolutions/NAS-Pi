@@ -1,16 +1,17 @@
 # These are the default error messages for NASPID
 
-# Userid error
-E_ROOT=(3 "Must be run as root")
-# Usage error
-E_USAGE=(4 "Improper usage. [ $0 {save} <Source> ]")
-# Missing source files
-E_SOURCE=(5 "Missing source files")
-# Missing config files
-E_CONFIG=(6 "Missing or unset configuration")
-# Empty data error
-E_DATA=(7 "Empty data found")
-# Disconnected device error
-E_DEVICE=(8 "Device not connected")
-# Mounting error
 E_MOUNT=(2 "Failed to mount")
+
+E_ROOT=(3 "Must be run as root")
+
+E_ARGS=(4 "Improper usage. [ $0 {save} <Source> ]")
+
+E_SOURCE=(5 "Missing source files")
+
+E_CONFIG=(6 "Missing or unset configuration")
+
+E_DATA=(7 "Empty data found")
+
+E_DEVICE=(8 "Device not connected")
+
+E_USAGE=(9 "USAGE: [ $0 {stop|start|restart|reload}]")

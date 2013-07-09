@@ -19,8 +19,8 @@ CONFIG=/etc/$PROG/${PROG}.conf
 . $ERRORS
 
 error() {
-	echo "ERROR:$@"
-	return $1
+	echo "[ ERROR $1 ] ${@:2}"
+	exit "$1"
 }
 
 start() {
@@ -47,35 +47,23 @@ stop() {
 }
 
 
-if [ "$(id -u)" != "0" ]; then
-	error $E_ROOT $M_ROOT
+if [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]; then
+	error "${E_ROOT[0]}" "${E_ROOT[1]}"
 fi
 
 case "$1" in
 	start)
 		start
-		#if [[ $? -eq 0 ]]; then
-		#	echo "$PROG started"
-		#else
-		#	echo "$PROG failed to $1"
-		#fi
-	;;
+		;;
 	stop)
 		stop
-		#if [[ $? -eq 0 ]]; then
-		#	echo "$PROG stopped"
-		#else
-		#	echo "$PROG failed to $1" >2 >> $LOG
-		#fi
-	;;
-	reload|restart|force-reload)
+		;;
+	reload|restart)
 		stop
 		start
-		echo "$PROG restarted" >> $LOG &
-		exit 0
 		;;
 	**)
-		error $E_USAGE $M_USAGE
+		error "${E_USAGE[0]}" "$E_USAGE[1]}"
 		;;
 esac
 
