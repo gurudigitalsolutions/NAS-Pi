@@ -19,7 +19,7 @@
 #
 #-----------------------------------------------------------------------
 
-DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs git curlftpfs netcat-openbsd)
+DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs curlftpfs netcat-openbsd unzip)
 
 APACHE_USER="naspi"
 INSTALL_DIR="/usr/share/naspi"
@@ -43,7 +43,7 @@ ERRORS=$INSTALL_DIR/errors
 
 ENVARS=$ETC/envars
 
-EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" ")
+EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
 
 #-----------------------------------------------------------------------
 #
@@ -58,7 +58,7 @@ START_DIR=$(pwd)
 
 cd $BASE
 
-. $ERRORS
+. backend/$ERRORS
 
 #
 # Test user and group id for root
@@ -133,8 +133,8 @@ function compare_files
 #
 function create_naspi_user
 {
-	echo "  [ CREATING APACHE2 SYSTEM USER ]"
 	if [[ -z $(cat /etc/group | grep $APACHE_USER) ]]; then
+		echo "  [ CREATING APACHE2 SYSTEM USER ]"
 		useradd -M -r -s /bin/bash -U $APACHE_USER
 	fi
 }
@@ -156,10 +156,10 @@ function configure_apache
 		a2dissite 000-default
 	
 	elif [[ -e /etc/apache2/sites-enabled/000-default ]]; then
-		echo -e "\nNOTICE: 000-default is already configured and or installed NAS-Pi"
-		echo "requires \, in order for that to work with other sites you will"
-		echo "to use NamedVirtualHost for other sites once NAS-Pi is installed"
-		echo -n "Disable 000-default [y]es [n]o ? "
+		echo -e "\n  [ NOTICE ]\n 000-default is already configured and installed on apache2."
+		echo "NAS-Pi requires / in a virtualhost. In order for NAS-Pi to work with other sites you will"
+		echo "to use a NamedVirtualHost for other sites or alternate IPs once NAS-Pi is installed"
+		echo -n " [ DISABLE? ] 000-default [y]es [n]o ? "
 		read configure
 	
 		case $configure in
@@ -232,7 +232,7 @@ function configure_fuse
 #
 function place_backend_files ()
 {
-	echo "  [ PLACING BACKEND FILES ]"
+	echo "  [ PLACING BACKEND FILES IN /etc and /usr ]"
 	
 	[[ -e $ETC ]] || mkdir -p -m 755 $ETC
 	[[ -e $FSTAB ]] || mkdir -p -m 755 $FSTAB
@@ -243,7 +243,7 @@ function place_backend_files ()
 	cp backend${PDINIT} ${PDINIT}
 	cp -r backend${INSTALL_DIR}/* ${INSTALL_DIR}
 
-	echo "  [ ADJUSTING OWNERSHIPS OF BACKEND FILES ]"
+	echo "  [ ADJUSTING OWNERSHIPS ]"
 	
 	chmod 0755 $BIN
 	chmod 0755 $INIT
@@ -262,28 +262,28 @@ function place_backend_files ()
 function set_envars() {
 	#set -x
 	HEAD="\
-	# This file is created during installation. Please make certain of what 
-	# you are changing when modifying this file"
+# This file is created during installation. Please make certain of what 
+# you are changing when modifying this file"
 
 	BODY="
-	# Base install directory
-	INSTALL_DIR=$INSTALL_DIR
+# Base install directory
+INSTALL_DIR=$INSTALL_DIR
 
-	# Location of error code file
-	ERRORS=$ERRORS
-	# Non-root user error code
-	E_ROOT=(${E_ROOT[0]} \"${E_ROOT[1]}\")
+# Location of error code file
+ERRORS=$ERRORS
+# Non-root user error code
+E_ROOT=(${E_ROOT[0]} \"${E_ROOT[1]}\")
 
-	# Location of log file
-	LOG=$LOG
+# Location of log file
+LOG=$LOG
 
-	# Apache2 Virtual Host name
-	SITE=$SITE
-	# User site runs as
-	APACHE_USER=$APACHE_USER
+# Apache2 Virtual Host name
+SITE=$SITE
+# User site runs as
+APACHE_USER=$APACHE_USER
 
-	# Array of dependancies
-	DEPENDENCIES=(${DEPENDENCIES[@]})"
+# Array of dependancies
+DEPENDENCIES=(${DEPENDENCIES[@]})"
 
 	echo -e "$HEAD\n$BODY" > $ENVARS
 	set +x
