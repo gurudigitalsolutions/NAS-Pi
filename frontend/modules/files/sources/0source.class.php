@@ -74,8 +74,8 @@ class FileSource
 		//$cntrl = "/home/media/naspi/mount-naspid control ".$this->SourceCode;
 		//$cntrl = "/etc/naspi/control update ".$this->SourceCode;
 		
-		$res = DaemonModuleCommand("files", "fstab ".$this->SourceCode);
-		$res = DaemonModuleCommand("files", "status ".$this->SourceCode);
+		$res = DaemonModuleCommand("files", "save ".$this->SourceCode);
+		//$res = DaemonModuleCommand("files", "status ".$this->SourceCode);
 		/*$cntrl = "/usr/bin/naspid control commit ".$this->SourceCode;
 		$cntrlout = `$cntrl`;
 		error_log($cntrlout);
