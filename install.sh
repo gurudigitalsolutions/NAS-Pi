@@ -78,7 +78,7 @@ fi
 #
 function install_dependencies
 {
-	echo "[CHECKING DEPENDANCIES]"
+	echo "  [ CHECKING DEPENDANCIES ]"
 	for dep in ${DEPENDENCIES[@]}; do
 
 		dpkg -s $dep 2>/dev/null >/dev/null
@@ -132,7 +132,7 @@ function compare_files
 #
 function create_naspi_user
 {
-	echo "[CREATING APACHE2 SYSTEM USER]"
+	echo "  [ CREATING APACHE2 SYSTEM USER ]"
 	if [[ -z $(cat /etc/group | grep $APACHE_USER) ]]; then
 		useradd -M -r -s /bin/bash -U $APACHE_USER
 	fi
@@ -143,7 +143,7 @@ function create_naspi_user
 #
 function configure_apache
 {
-	echo "[CONFIGURING APACHE2]"
+	echo "  [ CONFIGURING APACHE2 ]"
 	
 	if [[ ! -e $SITE ]]; then
 		cp backend${SITE} $SITE
@@ -181,7 +181,7 @@ function configure_apache
 #
 function create_empty_directories() {
 	#set -x
-	echo "[CREATING FRONTEND FOLDERS]"
+	echo "  [ CREATING FRONTEND FOLDERS ]"
 	for empty in ${EMPTY_DIR[@]};do
 		if [[ ! -e $INSTALL_DIR/$empty ]]; then
 			mkdir -p -m 755 $INSTALL_DIR/$empty
@@ -195,7 +195,7 @@ function create_empty_directories() {
 #
 function place_files
 {
-	echo "[PLACING FRONTEND FILES INTO $INSTALL_DIR/]"
+	echo "  [ PLACING FRONTEND FILES INTO $INSTALL_DIR/ ]"
 	
 	cp -r frontend/cms "$INSTALL_DIR"
 	cp -r frontend/modules "$INSTALL_DIR"
@@ -208,7 +208,7 @@ function place_files
 	chmod 755 "$INSTALL_DIR"/modules/files/sources/sourcedata
 	
 	if [[ ! -e /var/www/nas-pi ]]; then
-		echo "[LINKING $INSTALL_DIR/public_html to /var/www/nas-pi]"
+		echo "  [ LINKING $INSTALL_DIR/public_html to /var/www/nas-pi ]"
 		ln -s $INSTALL_DIR/public_html /var/www/nas-pi
 	fi
 }
@@ -218,7 +218,7 @@ function place_files
 #
 function configure_fuse
 {
-	echo "[CONFIGURING FUSE]"
+	echo "  [ CONFIGURING FUSE ]"
 	
 	if [[ ! -e $FUSE ]]; then
 		cp "backend${FUSE}" "${FUSE}"
@@ -232,7 +232,7 @@ function configure_fuse
 #
 function place_backend_files ()
 {
-	echo "[PLACING BACKEND FILES]"
+	echo "  [ PLACING BACKEND FILES ]"
 	
 	[[ -e $ETC ]] || mkdir -p -m 755 $ETC
 	
@@ -260,14 +260,14 @@ function place_backend_files ()
 	cp backend${PDINIT} ${PDINIT}
 	cp -r backend${INSTALL_DIR}/* ${INSTALL_DIR}
 
-	echo "[ADJUSTING OWNERSHIPS OF BACKEND FILES]"
+	echo "  [ ADJUSTING OWNERSHIPS OF BACKEND FILES ]"
 	
 	chmod 0755 $BIN
 	chmod 0755 $INIT
 	chmod 0755 ${INSTALL_DIR}/pd/pd.php
 	chown naspi:naspi ${INSTALL_DIR}/pd -R
 	
-	echo "[UPDATING INIT DAEMON]"
+	echo "  [ UPDATING INIT DAEMON ]"
 	
 	update-rc.d naspid defaults
 	update-rc.d naspi-pd defaults
@@ -319,4 +319,4 @@ set_envars
 service apache2 restart
 service naspid restart
 cd $START_DIR
-echo "[NAS-Pi SUCCESSFULLY INSTALLED]"
+echo "  [ NAS-Pi SUCCESSFULLY INSTALLED ]"
