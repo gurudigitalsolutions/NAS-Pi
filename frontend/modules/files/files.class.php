@@ -591,6 +591,8 @@ class modFiles extends PiNASModule
 	{
 		$formtemplate = file_get_contents(MODULEPATH."/files/templates/newsource-form.html");
 		$eachrow = file_get_contents(MODULEPATH."/files/templates/newsource-eachelement.html");
+		$nslocalt = file_get_contents(MODULEPATH."/files/templates/newsource-local-helper.html");
+		$nslocaleat = file_get_contents(MODULEPATH."/files/templates/newsource-local-each.html");
 		
 		$so = "";
 		if($sourcetype == "smb") { $so = new FileSourceSMB(); }
@@ -617,6 +619,10 @@ class modFiles extends PiNASModule
 		
 		$formtemplate = str_replace("[SOURCETYPE]", $sourcetype, $formtemplate);
 		$formtemplate = str_replace("[EACHELEMENT]", $ttlrows, $formtemplate);
+		
+		if($sourcetype == "local") { $formtemplate = str_replace("[SOURCEHELPER]", $this->BuildLocalNewSourceHelper(), $formtemplate); }
+		else { $formtemplate = str_replace("[SOURCEHELPER]", "", $formtemplate); }
+		
 		return $formtemplate;
 	}
 	
@@ -624,6 +630,60 @@ class modFiles extends PiNASModule
 	{
 		$mtcmd = "file -bi \"".$fullpath."\"";
 		return trim(`$mtcmd`);
+	}
+	
+	public function BuildLocalNewSourceHelper()
+	{
+		$nslocalt = file_get_contents(MODULEPATH."/files/templates/newsource-local-helper.html");
+		$nslocaleat = file_get_contents(MODULEPATH."/files/templates/newsource-local-each.html");
+		
+		$bylabel = "";
+		$byuuid = "";
+		$bydev = "";
+		
+		$uuiddr = scandir("/dev/disk/by-uuid");
+		foreach($uuiddr as $eui)
+		{
+			if($eui != "." && $eui != "..")
+			{
+				$teach = $nslocaleat;
+				$teach = str_replace("[FIELDNAME]", "uuid", $teach);
+				$teach = str_replace("[VALUE]", $eui. $teach);
+				$byuuid = $byuuid.$teach;
+			}
+		}
+		
+		$labeldr = scandir("/dev/disk/by-label");
+		foreach($labeldr as $eui)
+		{
+			if($eui != "." && $eui != "..")
+			{
+				$teach = $nslocaleat;
+				$teach = str_replace("[FIELDNAME]", "label", $teach);
+				$teach = str_replace("[VALUE]", $eui, $teach);
+				$bylabel = $bylabel.$teach;
+			}
+		}
+		
+		$devs = trim(`blkid`);
+		$devlin = explode("\n", $devs);
+		foreach($devlin as $ed)
+		{
+			$dprts = explode(":", $ed);
+			if(substr($dprts[0], 0, 5) == "/dev/")
+			{
+				$teach = $nslocaleat;
+				$teach = str_replace("[FIELDNAME]", "device", $teach);
+				$teach = str_replace("[VALUE]", $dprts[0], $teach);
+				$bydev = $bydev.$teach;
+			}
+		}
+		
+		$nslocalt = str_replace("[EACHUUID]", $byuuid, $nslocalt);
+		$nslocalt = str_replace("[EACHLABEL]", $bylabel, $nslocalt);
+		$nslocalt = str_replace("[EACHDEVICE]", $bydev, $nslocalt);
+		
+		return $nslocalt;
 	}
 }
 

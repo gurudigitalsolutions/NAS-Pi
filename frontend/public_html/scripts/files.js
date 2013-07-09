@@ -27,3 +27,4 @@ function ConfirmDeleteSource(sourcecode)
 		document.location = "/?module=files&sub=deletesource&sourcecode="+sourcecode;
 	}
 }
+
