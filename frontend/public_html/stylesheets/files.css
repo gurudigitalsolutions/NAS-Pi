@@ -53,3 +53,12 @@
 	font-size: 1.2em;
 	font-weight: bold;
 }
+
+.files_newsource_local_column
+{
+	border-style: solid;
+	border-left-width: 2px;
+	border-top-width: 0px;
+	border-bottom-width: 0px;
+	border-right-width: 0px;
+}
