@@ -1,13 +1,24 @@
-<form method="post" action="/">
-	<input type="hidden" name="module" value="files" />
-	<input type="hidden" name="sub" value="addsource" />
-	<input type="hidden" name="sourcetype" value="[SOURCETYPE]" />
-	
-	<table border="0">
-		[EACHELEMENT]
-		<tr>
-			<td>&nbsp;</td>
-			<td><input type="submit" value="Add Source"></td>
-		</tr>
-	</table>
-</form>
+<table border="0">
+	<tr>
+		<td valign="top">
+			<form method="post" action="/">
+				<input type="hidden" name="module" value="files" />
+				<input type="hidden" name="sub" value="addsource" />
+				<input type="hidden" name="sourcetype" value="[SOURCETYPE]" />
+				
+				<table border="0">
+					[EACHELEMENT]
+					<tr>
+						<td>&nbsp;</td>
+						<td><input type="submit" value="Add Source"></td>
+					</tr>
+				</table>
+			</form>
+		</td>
+		<td valign="top">
+			<div class="files_newsource_helper" id="files_newsource_helper">
+				&nbsp;
+			</div>
+		</td>
+	</tr>
+</table>

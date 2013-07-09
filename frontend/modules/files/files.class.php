@@ -610,6 +610,7 @@ class modFiles extends PiNASModule
 			$trow = str_replace("[FIELDTYPE]", $eel["fieldtype"], $trow);
 			$trow = str_replace("[FIELDTITLE]", $eel["fieldtitle"], $trow);
 			$trow = str_replace("[FIELDVALUE]", "", $trow);
+			$trow = str_replace("[SOURCECODE]", "newsource", $trow);
 			
 			$ttlrows = $ttlrows.$trow;
 		}
