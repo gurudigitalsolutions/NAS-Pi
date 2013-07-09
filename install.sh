@@ -43,7 +43,7 @@ ERRORS=$INSTALL_DIR/errors
 
 ENVARS=$ETC/envars
 
-EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" ")
+EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
 
 #-----------------------------------------------------------------------
 #
