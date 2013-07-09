@@ -1,6 +1,7 @@
 #!/bin/bash
 #set -x
-# Includes configuration files, if they exist
+
+# Sources configuration files in /etc/naspi/naspi.d/ , if they exist
 # The package defaults, then the global configuration, and last
 # in the user directory.  The last read config file overwrites all
 # other variables allowing more user end tweaks.  Be careful on the user's
@@ -11,14 +12,31 @@ SRC_PATH=/etc/naspi/${PROG}.d
 
 CONTROL_FILE="/tmp/naspid.control"
 NASPID_LOCK_FILE=/var/lock/${PROG}.lock
-
+ERROR_FILE=/usr/share/naspi/errors
+#
+# Source the errors file
+#
 . /etc/naspi/errors
 
-if [[ $(id -u) -ne 0 ]]; then
-	echo "$M_ROOT"
-	exit "$E_ROOT"
+#
+# Test user and group id for root
+#
+if [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]; then
+	echo -e "${E_ROOT[0]}"
+	exit "${E_ROOT[1]}"
 fi
 
+
+#
+# Creates the error log if missing
+#
+if [[ ! -e $LOG ]]; then
+	touch $LOG
+fi
+
+#
+# sources each of the 3 configuration file locations
+#
 CONFIG_SET=FALSE
 CONFIG_PATHS=("/etc/naspi" '~' '~/naspi')
 
@@ -31,11 +49,15 @@ for EACH_CONFIG in "${CONFIG_PATHS[@]}"; do
 
 done
 
+#
+# Checks that a configuration was set
+#
 if [[ $CONFIG_SET = FALSE ]]; then
-	error $E_CONFIG $M_CONFIG
+	log $E_CONFIG $M_CONFIG
 fi
 
 set +x
+
 # PARSE COMMAND LINE ARGUMENTS FOR THE CORESPONDING FUNCTION
 #set -x
 
@@ -57,11 +79,43 @@ function create_missing_directory() {
 }
 
 #
-# Run external script to query web interface for data
+# Run external script to query frontend for source information
 #
 function get_data() {
+	
 	#set -x
-	$GET_DATA $1 $2
+	if [[ -x "$LOCATION"/modules/files/sources/sourcedata ]]; then
+		"$LOCATION"/modules/files/sources/./sourcedata $1 $2
+	else
+		log $E_SOURCE $M_SOURCE
+	fi
+	
+	set +x
+}
+
+#
+#
+#
+function log() {
+
+	#set -x
+	# Log any messages
+	if [[ $# -eq 1 ]]; then
+		echo $1 >> $LOG
+	
+	# Log error messages if logging is enabled
+	elif [[ $# -ge 2 ]] && [[ $E_LOGGING == TRUE ]];then
+		
+		# If mount error then include the mount's name
+		if [[ $# -eq 3 ]] && [[ $1 -eq 10 ]]; then
+			echo "[ERROR $1]: $2 $3" >> $LOG
+		
+		# Log the error code and message to log file
+		elif [[ $# -eq 2 ]]; then
+			echo "[ERROR $1]: $2" >> $LOG
+		fi
+	fi
+	
 	set +x
 }
 
@@ -88,7 +142,7 @@ function stop_service(){
 function input() {
         # set -x
         case $1 in
-                commit )
+                mount )
                         . $SRC_PATH/$1.inc $2
                         ;;
                 update )
@@ -118,7 +172,7 @@ function start_service(){
 	echo $PPID >> $NASPID_LOCK_FILE
 	
 	mkfifo -m 0600 $CONTROL_FILE
-	chown "$USER:$USER" $CONTROL_FILE
+	chown "$APACHE_USER:$APACHE_USER" $CONTROL_FILE
 	
 	while [[ $RUN = TRUE ]]; do
 	        INPUT=($(cat $CONTROL_FILE))
@@ -128,6 +182,10 @@ function start_service(){
 
 	set +x
 }
+
+# Creates any non-existant directories
+create_missing_directory $FSTAB_DIR
+create_missing_directory $HOME/$CREDENTIALS
 
 #
 #
