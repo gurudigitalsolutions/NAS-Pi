@@ -17,8 +17,9 @@ ENVARS=/etc/$PROG/envars
 #
 # Source the errors file
 #
+#set -x
 . $ENVARS
-
+set +x
 #
 # Test user and group id for root
 #
@@ -33,6 +34,7 @@ fi
 CONFIG_SET=FALSE
 CONFIG_PATHS=("/etc/naspi" '~' '~/naspi')
 
+#set -x
 for EACH_CONFIG in "${CONFIG_PATHS[@]}"; do
 	
 	if [[ -f $EACH_CONFIG/$PROG.conf ]]; then
@@ -41,12 +43,14 @@ for EACH_CONFIG in "${CONFIG_PATHS[@]}"; do
 	fi
 
 done
+set +x
 
 #
 # Source the errors file
 #
-. $ERROR_FILE
-
+#set -x
+. $ERRORS
+set +x
 #
 #
 #
@@ -166,13 +170,12 @@ function write_smb_fstab() {
 	local Username=$(get_data $1 Username)
 	local Password=$(get_data $1 Password)
 	
-	echo "username=$Username\npassword=$Password" \
-	> $HOME/$CREDENTIALS/$1.smb
-	
-	echo "//$Remote_Host${Remote_Path// /\\040} \
+	echo -e "username=$Username\npassword=$Password" \
+	> $CREDENTIALS/$1.smb
+
+	echo -e "//$Remote_Host/${Remote_Path#/} \
 	$MOUNT_PATH/$Source_Code \
-	$SMB_DEFAULTS$HOME/$CREDENTIALS/$1.smb \
-	0 0" \
+	$SMB_DEFAULTS$CREDENTIALS/$1.smb" \
 	> $FSTAB_DIR/$1.fstab
 	set +x
 }
@@ -190,7 +193,7 @@ function write_sshfs_fstab() {
 	local Password=$(get_data $1 Password)
 	
 	echo "$Password" \
-	> $HOME/$CREDENTIALS/$1.sshfs
+	> $CREDENTIALS/$1.sshfs
 	
 	echo "sshfs $Username@$Remote_Host:$Remote_Path \
 	-p $REMOTE_PORT \
@@ -282,7 +285,7 @@ function update_fstab() {
 		log "$Write_Log.fstab"
 	fi
 
-	set -x
+	#set -x
 	create_fstab
 
 	set +x
@@ -320,7 +323,7 @@ function check_enabled_status() {
 # mounts source using methods based on filesystem type
 #
 function mount_by_type() {
-	#set -x
+	 #set -x
 	if [[ $FSType = sshfs ]]; then
 		SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
 		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
@@ -423,7 +426,7 @@ function update_status() {
 #	Determines which functions to call based on command line arguments
 #
 #-----------------------------------------------------------------------
- set -x
+#set -x
 echo $FSType
 export FSType=$(get_data $Source FSType)
 
