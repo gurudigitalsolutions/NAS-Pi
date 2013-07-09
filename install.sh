@@ -37,8 +37,8 @@ PDBIN="/usr/share/naspi/pd/pd.php"
 FUSE="/etc/fuse.conf"
 
 BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-E_ROOT=("\nYou must run this script as root.\n" "10")
-E_DEP=("\nYou have unmet dependancies.\nUse apt-get install " "11")
+
+ERRORS=$INSTALL_DIR/errors
 
 ENVARS=$ETC/envars
 
@@ -57,12 +57,14 @@ START_DIR=$(pwd)
 
 cd $BASE
 
+. $ERRORS
+
 #
 # Test user and group id for root
 #
 if [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]; then
-	echo -e "${E_ROOT[0]}"
-	exit "${E_ROOT[1]}"
+	echo "[ERROR $E_ROOT[0]}] ${E_ROOT[1]}"
+	exit "${E_ROOT[0]}"
 fi
 
 #-----------------------------------------------------------------------
@@ -283,6 +285,11 @@ function set_envars() {
 	BODY="
 # Base install directory
 INSTALL_DIR=$INSTALL_DIR
+
+# Location of error code file
+ERRORS=$ERRORS
+# Non-root user error code
+E_ROOT=(${E_ROOT[0]} "${E_ROOT[1]}")
 
 # Location of log file
 LOG=$LOG

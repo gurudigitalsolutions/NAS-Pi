@@ -9,16 +9,15 @@
 #
 #-----------------------------------------------------------------------
 
-local Source=$2
+Source=$2
 
 PROG=naspi
-ERROR_FILE=/usr/share/naspi/errors
-SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
+ENVARS=/etc/$PROG/envars
 
 #
 # Source the errors file
 #
-. $ERROR_FILE
+. $ENVARS
 
 #
 # Test user and group id for root
@@ -26,14 +25,6 @@ SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
 if [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]; then
 	echo -e "${E_ROOT[0]}"
 	exit "${E_ROOT[1]}"
-fi
-
-
-#
-# Creates the error log if missing
-#
-if [[ ! -e $LOG ]]; then
-	touch $LOG
 fi
 
 #
@@ -50,6 +41,28 @@ for EACH_CONFIG in "${CONFIG_PATHS[@]}"; do
 	fi
 
 done
+
+#
+# Source the errors file
+#
+. $ERROR_FILE
+
+#
+#
+#
+SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
+
+if [[ ! -x "$SOURCE_DATA"/sourcedata ]]; then
+	log ${E_SOURCE[0]} ${E_SOURCE[1]}
+	exit ${E_SOURCE[1]}
+fi
+
+#
+# Creates the error log if missing
+#
+if [[ ! -e $LOG ]]; then
+	touch $LOG
+fi
 
 set +x
 
@@ -75,12 +88,12 @@ function log() {
 	elif [[ $# -ge 2 ]] && [[ $E_LOGGING == TRUE ]];then
 		
 		# If mount error then include the mount's name
-		if [[ $# -eq 3 ]] && [[ $1 -eq 10 ]]; then
+		if [[ $1 -eq 10 ]]; then
 			echo "[ERROR $1]: $2 $3" >> $LOG
 		
 		# Log the error code and message to log file
-		elif [[ $# -eq 2 ]]; then
-			echo "[ERROR $1]: $2" >> $LOG
+		else 
+			echo "[ERROR $1]: ${@:2}" >> $LOG
 		fi
 	fi
 	
@@ -113,12 +126,7 @@ function create_missing_directory() {
 function get_data() {
 	
 	#set -x
-	if [[ -x "$SOURCE_DATA"/sourcedata ]]; then
-		"$SOURCE_DATA"/./sourcedata $1 $2
-	else
-		log $E_SOURCE $M_SOURCE
-	fi
-	
+	"$SOURCE_DATA"/./sourcedata $1 $2
 	set +x
 }
 
@@ -239,7 +247,7 @@ function create_fstab() {
 		cat /etc/fstab > $FSTAB_DIR/fstab.orignial
 	fi
 	
-	if [[ -f $FSTAB_DIR/*.fstab ]]; then
+	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
 		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > $FSTAB_DIR/fullstab
 	else
 		cp $FSTAB_DIR/fstab.orignial $FSTAB_DIR/fullstab
@@ -273,7 +281,8 @@ function update_fstab() {
 		write_bind_fstab $Source
 		log "$Write_Log.fstab"
 	fi
-	
+
+	set -x
 	create_fstab
 
 	set +x
@@ -391,9 +400,14 @@ function success_fail() {
 function update_status() {
 	#set -x
 	check_mount_status
+	#set -x
 	check_enabled_status
 
+	#set -x
 	if [[ X$Enabled == X1 ]]&&[[ X$Mounted == X ]];then
+		source_mount
+	elif [[ X$Enabled == X1 ]]&&[[ X$Mounted != X ]];then
+		source_unmount
 		source_mount
 	elif [[ X$Enabled = X ]]&&[[ X$Mounted != X ]];then
 		source_unmount
@@ -409,17 +423,8 @@ function update_status() {
 #	Determines which functions to call based on command line arguments
 #
 #-----------------------------------------------------------------------
-
-FSType=$(get_data $Source FSType)
+ set -x
+echo $FSType
+export FSType=$(get_data $Source FSType)
 
 update_$1 $2
-
-#case $1 in
-	#fstab)
-		#update_fstab
-		#;;
-	#status)
-		#update_status
-		#;;
-#esac
-
