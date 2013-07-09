@@ -24,25 +24,13 @@ error() {
 }
 
 start() {
-	#if [ -e "$NASPIPD_LOCK_FILE" ]; then
-	#	error $E_START $M_START
-	#else
-	#	$DAEMON_PATH/$PROG start 2>&1 &
-	#	touch "$NASPIPD_LOCK_FILE"
-	#fi
-	
+	echo 'rm "/tmp/naspi/pd/pd.sock"' >> $LOG
 	rm "/tmp/naspi/pd/pd.sock"
 	$DAEMON_PATH/$DAEMON_SCRIPT start 2>&1 &
 }
 
 stop() {
-	#if [ -e "$NASPIPD_LOCK_FILE" ]; then
-	#	rm "$NASPIPD_LOCK_FILE"
-	#	$DAEMON_PATH/$DAEMON_SCRIPT stop 2>&1 &
-	#else
-	#	error $E_STOP $M_STOP
-	#fi
-	
+	echo "$DAEMON_PATH/$DAEMON_SCRIPT stop 2>&1 &" >> $LOG
 	$DAEMON_PATH/$DAEMON_SCRIPT stop 2>&1 &
 }
 
