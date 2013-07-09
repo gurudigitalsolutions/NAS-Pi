@@ -48,7 +48,7 @@ class modAddOns extends PiNASModule
 			$AddOnIconTmp = file_get_contents(MODULEPATH."/addons/templates/addon-icon.html");
 			$AuthorLinkTmp = file_get_contents(MODULEPATH."/addons/templates/addon-authorlink.html");
 			$AddOnOptionsTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each-installedoptions.html");
-			$AddOnUninstallTmp = file_get_contents(MODULEPATH."/addons/templates/add-each-uninstalllink.html");
+			$AddOnUninstallTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each-uninstalllink.html");
 			
 			$fulladdon = "";
 			$addonlist = DaemonModuleCommand("addons", "list");
