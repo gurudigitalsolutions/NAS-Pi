@@ -43,6 +43,8 @@ class modAddOns extends PiNASModule
 			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
 			$AddOnIconTmp = file_get_contents(MODULEPATH."/addons/templates/addon-icon.html");
 			$AuthorLinkTmp = file_get_contents(MODULEPATH."/addons/templates/addon-authorlink.html");
+			$AddOnOptionsTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each-installedoptions.html");
+			$AddOnUninstallTmp = file_get_contents(MODULEPATH."/addons/templates/add-each-uninstalllink.html");
 			
 			$fulladdon = "";
 			$addonlist = DaemonModuleCommand("addons", "list");
@@ -75,6 +77,26 @@ class modAddOns extends PiNASModule
 					$tauth = str_replace("[AUTHORURL]", "http://".$this->RepoHost."/users/".$tMan["username"], $tauth);
 					$taot = str_replace("[AUTHOR]", $tauth, $taot);
 				}
+				
+				$uninsttm = "";
+				if($this->IsAddonMandatory($eao))
+				{
+					$uninsttm = "[Can't Uninstall]";
+				}
+				else
+				{
+					$uninsttm = $AddOnUninstallTmp;
+					$uninsttm = str_replace("[MODULECODE]", $eao, $uninsttm);
+					$uninsttm = str_replace("[TITLE]", $tMan["title"], $uninsttm);
+				}
+				
+				$optstm = $AddOnOptionsTmp;
+				$optstm = str_replace("[MODULECODE]", $eao, $optstm);
+				$optstm = str_replace("[TITLE]", $tMan["title"], $optstm);
+				$optstm = str_replace("[MODULEURL]", "http://".$this->RepoHost."/addons/".$tMan["repoid"], $optstm);
+				$optstm = str_replace("[UNINSTALLLINK]", $uninsttm, $optstm);
+				
+				$taot = str_replace("[ADDONOPTIONS]", $optstm, $taot);
 				
 				$fulladdon = $fulladdon.$taot;
 			}
@@ -233,6 +255,16 @@ class modAddOns extends PiNASModule
 		}
 		
 		return $manifest;
+	}
+	
+	public function IsAddonMandatory($modcode)
+	{
+		foreach($this->MandatoryAddOns as $ema)
+		{
+			if(strtolower($modcode) == strtolower($ema)) { return true; }
+		}
+		
+		return false;
 	}
 }
  
