@@ -61,14 +61,70 @@ class FileSourceSMB extends FileSource
 		$exfile = str_replace("[PASSWORD]", $this->Password, $exfile);
 		$exfile = str_replace("[REMOTEHOST]", $this->RemoteHost, $exfile);
 		
-		file_put_contents("/tmp/naspi/source-smb-extra", $exfile);
-		`chmod u+x /tmp/naspi/source-smb-extra`;
-		$res = `./tmp/naspi/source-smb-extra`;
+		file_put_contents("/tmp/source-smb-extra", $exfile);
+		`chmod u+x /tmp/source-smb-extra`;
+		$res = `/tmp/source-smb-extra`;
+		`rm /tmp/source-smb-extra`;
 		
-		return trim($res);
+		$res = trim($res);
+		$resparts = explode("\n", $res);
 		
+		$step = 0;
+		$Shares = array();
+		$Servers = array();
+		foreach($resparts as $elin)
+		{
+			$elin = trim($elin);
+			if($step == 0)
+			{
+				if(subst($elin, 0, 10) == "--------- ") { $step = 1; }
+				
+			}
+			else if($step == 1)
+			{
+				if(substr($elin, 0, 7) == "Domain=") { $step = 2; }
+				else
+				{
+					$sharename = substr($elin, 0, strpos($elin, " "));
+					$type = trim(substr($elin, strlen($sharename)));
+					$type = substr($type, 0, strpos($type, " "));
+					$comment = trim(substr($elin, 0, strlen($sharename)));
+					$comment = trim(substr($comment, 0, strlen($type)));
+					$Shares[] = array("sharename"=>$sharename,
+										"type"=>$type,
+										"comment"=>$comment);
+				}
+			}
+			else if($step == 2)
+			{
+				if(substr($elin, 0, 10) == "--------- ") { $step = 3; }
+			}
+			else if($step == 3)
+			{
+				if($elin == "") { $step = 4; }
+				else
+				{
+					$server = trim(substr($elin, 0, strpos($elin, " ")));
+					$comment = trim(substr($elin, strlen($server)));
+					
+					$Servers[] = array("server"=>$server, "comment"=>$comment);
+				}
+			}
+		}
 		
-		return $expct;
+		$toret = "";
+		foreach($Shares as $esh)
+		{
+			$toret = $toret.$esh["sharename"]." || ".$esh["type"]." || ".$esh["comment"]."<br />";
+		}
+		$toret = $toret."<hr />";
+		foreach($Servers as $esh
+		{
+			$toret = $toret.$esh["server"]." || ".$esh["comment"]."<br />";
+		}
+		
+		return $toret;
+
 	}
 }
 
