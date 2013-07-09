@@ -37,3 +37,13 @@
 {
 	background: #DDDDFF;
 }
+
+.files_newsource_local_eachrow
+{
+	background: #FFFFFF;
+}
+
+.files_newsource_local_eachrow:hover
+{
+	background: #DDDDFF;
+}

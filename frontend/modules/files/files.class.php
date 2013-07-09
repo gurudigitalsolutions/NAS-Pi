@@ -648,7 +648,7 @@ class modFiles extends PiNASModule
 			{
 				$teach = $nslocaleat;
 				$teach = str_replace("[FIELDNAME]", "uuid", $teach);
-				$teach = str_replace("[VALUE]", $eui. $teach);
+				$teach = str_replace("[VALUE]", $eui, $teach);
 				$byuuid = $byuuid.$teach;
 			}
 		}
@@ -665,7 +665,7 @@ class modFiles extends PiNASModule
 			}
 		}
 		
-		$devs = trim(`blkid`);
+		$devs = trim(`/sbin/blkid`);
 		$devlin = explode("\n", $devs);
 		foreach($devlin as $ed)
 		{
