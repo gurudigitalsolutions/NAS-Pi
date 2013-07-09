@@ -8,6 +8,8 @@
 
 class modAddons extends BackendModule
 {
+	public $RepoHost = "10.42.0.151:3000";
+	
 	function Initialize()
 	{
 		$this->Code = "addons";
@@ -28,6 +30,7 @@ class modAddons extends BackendModule
 		if($arguments[0] == "list") { return $this->ListInstalledModules(); }
 		else if($arguments[0] == "install") { return $this->LaunchInstaller($arguments); }
 		else if($arguments[0] == "installprogress") { return $this->InstallerProgress($arguments); }
+		else if($arguments[0] == "downloadicon") { return $this->DownloadIcon($arguments); }
 		return ":) Process successfully completed";
 	}
 	
@@ -104,5 +107,16 @@ class modAddons extends BackendModule
 		}
 		
 		return $jobid;
+	}
+	
+	function DownloadIcon($arguments)
+	{
+		if(count($arguments) < 2) { return "FAIL No modcode specified"; }
+		
+		$instcmd = "wget -O ".PUBLICHTMLPATH."/images/module-icons/".$arguments[1].".png http://".$this->RepoHost."/addons/icon/".$arguments[1];
+		
+		exec(sprintf("%s > %s 2>&1 & echo $! >> %s", $instcmd, "/tmp/naspi/downicon-".$arguments[1], "/tmp/naspi/downicon-".$argument[1].".pid"));
+
+		return ":) Downloading icon";
 	}
 }

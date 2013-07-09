@@ -351,7 +351,7 @@ class modAddOns extends PiNASModule
 			}
 			else
 			{
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				/*curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
 				curl_setopt($ch, CURLOPT_URL, $this->RepoHost.$ev->iconurl);
 				
@@ -359,9 +359,12 @@ class modAddOns extends PiNASModule
 				
 				$fp = fopen(PUBLICHTMLPATH."/images/module-icons/".$ev->modcode.".png", 'x');
 				fwrite($fp, $raw);
-				fclose($fp);
+				fclose($fp);*/
 				
-				$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->modcode, $AddOnIconTmp), $taot);
+				DaemonModuleCommand("addons", "downloadicon ".$ev->modcode);
+				$taot = str_replace("[MODULEICON]", $ev->modcode, $taot);
+				
+				//$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->modcode, $AddOnIconTmp), $taot);
 			}
 			
 			$optstm = $AddOnOptionsTmp;
