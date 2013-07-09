@@ -16,12 +16,12 @@ cd $1
 
 wget -O $1.tgz ${REPOURL}/addons/download/$1
 
-echo "Download complete"
+echo "::STATUS:: Download complete"
 
 tar xvfz $1.tgz
 
-echo "Extraction Complete"
+echo "::STATUS:: Extraction Complete"
 
 /usr/share/naspi/pd/modules/addons/module-installer $1
 
-echo "Installation complete"
+echo "::STATUS:: Installation complete"

@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?///////////////////////////////////////////////////////////////////////////////////
 //
 //	NAS-Pi Module Installer
@@ -57,7 +58,7 @@ if(!file_exists($modconfdir."/".$Manifest["code"]))
 	`$cmd`;
 }
 
-echo "Creating local manifest files\n";
+echo "::STATUS:: Creating local manifest files\n";
 
 file_put_contents($modconfdir."/".$Manifest["code"]."/manifest.srl", serialize($Manifest));
 $ptman = "#  This is an automatically generated manifest file\n";
@@ -85,15 +86,18 @@ file_put_contents($modconfdir."/".$Manifest["code"]."/manifest.ini", $ptman);
 //	dependencies.  It would suck to install dependencies later, and possibly overwrite
 //	something.
 
-echo "Installing dependencies\n";
+
 
 if(!array_key_exists("dependencies", $Options) || 
 	(array_key_exists("dependencies", $Options) && $Options["dependencies"] == true))
 {
 	if(array_key_exists("dependencies", $Manifest))
 	{
-		$cmd = "sudo apt-get update"; `$cmd`;
-		$cmd = "sudo apt-get install";
+		echo "::STATUS:: Updating apt\n";
+		$cmd = "apt-get update"; `$cmd`;
+		
+		echo "::STATUS:: Installing dependencies\n";
+		$cmd = "apt-get install";
 		
 		foreach($Manifest["dependencies"] as $edep)
 		{
@@ -105,11 +109,11 @@ if(!array_key_exists("dependencies", $Options) ||
 }
 //	Now to copy the files
 $CopyLog = array();
-echo "Copying scripts\n"; $CopyLog["scripts"] = DoScan("scripts", $publichtmldir."/scripts");
-echo "Copying modules\n"; $CopyLog["modules"] = DoScan("modules", $modulesdir);
-echo "Copying images\n"; $CopyLog["images"] = DoScan("images", $publichtmldir."/images");
-echo "Copying stylesheets\n"; $CopyLog["stylesheets"] = DoScan("stylesheets", $publichtmldir."/stylesheets");
-echo "Copying cms\n"; $CopyLog["cms"] = DoScan("cms", $cmsdir);
+echo "::STATUS:: Copying scripts\n"; $CopyLog["scripts"] = DoScan("scripts", $publichtmldir."/scripts");
+echo "::STATUS:: Copying modules\n"; $CopyLog["modules"] = DoScan("modules", $modulesdir);
+echo "::STATUS:: Copying images\n"; $CopyLog["images"] = DoScan("images", $publichtmldir."/images");
+echo "::STATUS:: Copying stylesheets\n"; $CopyLog["stylesheets"] = DoScan("stylesheets", $publichtmldir."/stylesheets");
+echo "::STATUS:: Copying cms\n"; $CopyLog["cms"] = DoScan("cms", $cmsdir);
 
 file_put_contents($modconfdir."/".$Manifest["code"]."/copylog.srl", serialize($CopyLog));
 //print_r($CopyLog);
@@ -118,7 +122,7 @@ file_put_contents($modconfdir."/".$Manifest["code"]."/copylog.srl", serialize($C
 
 function DoScan($modfile, $destfldr)
 {
-	echo "Entering ".$modfile."\n";
+	//echo "Entering ".$modfile."\n";
 	$actions = array();
 	if(!file_exists($destfldr)) { `mkdir $destfldr -p`; }
 	
