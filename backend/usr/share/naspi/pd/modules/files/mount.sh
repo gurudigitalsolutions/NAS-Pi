@@ -125,6 +125,10 @@ function get_data() {
 	set +x
 }
 
+set -f
+IFS=$'\n'
+
+Attributes=($(get_data $Source))
 #-----------------------------------------------------------------------
 #
 #	Update Fstab
@@ -297,7 +301,7 @@ function check_status() {
 	if [[ $1 == mount ]];then
 		Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
 	elif [[ $1 == enabled ]]; then
-		Enabled=$(get_data $1 $Source Enabled)
+		Enabled=$(get_data $Source Enabled)
 	fi
 	
 	set +x
