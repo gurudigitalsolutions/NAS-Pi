@@ -380,7 +380,7 @@ class modAddOns extends PiNASModule
 		}
 		
 		
-		return $toret;
+		return str_replace("[EACHADDON]", $fulladdon, $MainTemp);
 	}
 }
  
