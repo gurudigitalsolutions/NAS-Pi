@@ -37,6 +37,8 @@ echo "Creating Unix Socket for the pd daemon\n";
 $socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
 
 socket_bind($socket, $sockDir."/".$sockFile);
+$spermcmd = "chown naspi:naspi ".$sockDir."/".$sockFile;
+`$spermcmd`;
 socket_listen($socket);
 
 socket_select($temp = array($socket), $temp = null, $temp = null, 20);
