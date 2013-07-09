@@ -135,7 +135,7 @@ class modAddOns extends PiNASModule
 			$AddOnIconTmp = file_get_contents(MODULEPATH."/addons/templates/addon-icon.html");
 			$AuthorLinkTmp = file_get_contents(MODULEPATH."/addons/templates/addon-authorlink.html");
 			$AddOnOptionsTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each-notinstalledoptions.html");
-			
+			$EachScreenshotTmp = file_get_contents(MODULEPATH."/addons/templates/screenshot-each.html");
 			
 			$fulladdon = "";
 			foreach($Packages as $ek=>$ev)
@@ -186,7 +186,9 @@ class modAddOns extends PiNASModule
 					$allss = "";
 					foreach($ev->screenshots as $ess)
 					{
-						$allss = $allss.$ess."<br />";
+						$tss = $EachScreenshotTmp;
+						$tss = str_replace("[SCREENSHOTURL]", $this->RepoHost.$ess, $tss);
+						$allss = $allss.$tss;
 					}
 					$optstm = str_replace("[SCREENSHOTS]", $allss, $optstm);
 				}
