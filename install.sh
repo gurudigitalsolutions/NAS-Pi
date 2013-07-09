@@ -28,7 +28,7 @@ E_ROOT=("\nYou must run this script as root.\n" "10")
 E_DEP=("\nYou have unmet dependancies.\nUse apt-get install " "11")
 
 
-EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
+EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" "addons/modules" "addons/modules/admin" "addons/modules/users" "addons/modules/files" "addons/modules/addons" )
 
 #####################################################################################
 echo "NAS-Pi Installer"
