@@ -233,6 +233,7 @@ class modAddOns extends PiNASModule
 					$lparts[1] = trim($lparts[1]);
 					
 					if($lparts[0] == "modtitle") { $manifest["title"] = $lparts[1]; }
+					else if($lparts[0] == "title") { $manifest["title"] = $lparts[1]; }
 					else if($lparts[0] == "modcode") { $manifest["code"] = $lparts[1]; }
 					else if($lparts[0] == "author") { $manifest["author"] = $lparts[1]; }
 					else if($lparts[0] == "repoid") { $manifest["repoid"] = $lparts[1]; }
