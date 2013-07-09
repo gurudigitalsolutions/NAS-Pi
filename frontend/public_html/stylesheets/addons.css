@@ -2,3 +2,11 @@
 {
 	display: none;
 }
+
+.addons_header
+{
+	background: #000000;
+	color: #FFFFFF;
+	font-size: 1.2em;
+	font-weight: bold;
+}
