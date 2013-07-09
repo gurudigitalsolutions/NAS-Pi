@@ -9,7 +9,10 @@
 #	www.gurudigitalsolutions.com
 #
 #-----------------------------------------------------------------------
-
+#
+# 	TODO make the /etc/naspi/naspi.conf reflect any changes a user
+# 	may make to the installation variables on this install script
+#	
 #-----------------------------------------------------------------------
 #
 # Set Installation variables
@@ -201,36 +204,33 @@ function configure_fuse
 	fi
 }
 
-
-#
-# Creates all necessary install directories
-#
-function create_empty_directories ()
-{	
-	echo "[CREATING EMPTY FRONTEND DIRECTORIES]"
-	
-	for empty in ${EMPTY_DIR[@]}; do
-		
-		if [[ ! -e "$LOCATION"/${empty} ]];then
-			echo "creating $LOCATION/${empty}"
-			mkdir -p -m 775 "$LOCATION"/${empty}
-			chown "$APACHE_USER:$APACHE_USER" "$LOCATION"/${empty}
-		fi
-
-	done
-
-
-}
-
 #
 # Places all backend files and create apache error log
 #
-function place_backend_files
+function place_backend_files ()
 {
 	echo "[PLACING BACKEND FILES]"
 	
 	[[ -e $ETC ]] || mkdir -p -m 755 $ETC
 	
+#	TODO
+
+	#set -f;IFS=$n
+	#list=($(ls backend${ETC} -R) $(ls backend${LOCATION})
+	#list=($list[@] backend${INIT} backend${BIN} backend${PDINIT}
+	#unset IFS;set +f
+	#
+	#for each in ${list[@]};do
+		#if [[ X$(echo $each|grep :) != X ]];then
+			#path=${each%:}
+		#elif [[ $each != naspid.conf ]]||[[ ;then
+			#if [[ -f $path/$each ]]
+				#echo "cp $path/$each ${path#$BASE/backend}/$each"
+		#fi
+	#done
+	
+#	TODO	
+
 	cp -r backend${ETC}/* ${ETC}	
 	cp backend${INIT} ${INIT}
 	cp backend${BIN} ${BIN}
