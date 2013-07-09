@@ -29,6 +29,7 @@ class modAddons extends BackendModule
 		
 		if($arguments[0] == "list") { return $this->ListInstalledModules(); }
 		else if($arguments[0] == "install") { return $this->LaunchInstaller($arguments); }
+		else if($arguments[0] == "list-installing") { return $this->ListInstalling($arguments); }
 		else if($arguments[0] == "installprogress") { return $this->InstallerProgress($arguments); }
 		else if($arguments[0] == "downloadicon") { return $this->DownloadIcon($arguments); }
 		return ":) Process successfully completed";
@@ -61,7 +62,8 @@ class modAddons extends BackendModule
 		
 		if(count($arguments) < 2) { return "FAIL No Module Code was specified."; }
 		$modcode = $arguments[1];
-		$jobid = $this->CreateJobID();
+		//$jobid = $this->CreateJobID();
+		$jobid = $modcode;
 		
 		$JobDir = $ModulesPath."/addons/data/installjobs";
 		if(!file_exists($JobDir))
@@ -75,6 +77,38 @@ class modAddons extends BackendModule
 		exec(sprintf("%s > %s 2>&1 & echo $! >> %s", $instcmd, $JobDir."/".$jobid, $JobDir."/".$jobid.".pid"));
 		
 		return ":) ".$jobid;
+	}
+	
+	function ListInstalling($arguments)
+	{
+		global $ModulesPath;
+		$JobDir = $ModulesPath."/addons/data/installjobs";
+		
+		$ActiveJobs = "";
+		$jobs = scandir($JobDir);
+		foreach($jobs as $ejob)
+		{
+			if($ejob != "." && $ejob != "..")
+			{
+				if(substr($ejob, strlen($ejob) - 4) != ".pid")
+				{
+					$tcmd = "tail ".$JobDir."/".$ejob." -n 1";
+					$res = trim(`$tcmd`);
+					
+					if($res == "::STATUS:: Installation complete")
+					{
+						unlink($JobDir."/".$ejob);
+						unlink($JobDir."/".$ejob.".pid");
+					}
+					else
+					{
+						$ActiveJobs = $ActiveJobs." ".$ejob;
+					}
+				}
+			}
+		}
+		
+		return trim($ActiveJobs);
 	}
 	
 	function InstallerProgress($arguments)

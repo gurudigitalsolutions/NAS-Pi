@@ -131,6 +131,13 @@ class modAddOns extends PiNASModule
 			echo json_encode($this->InstalledPackages());
 			exit;
 		}
+		else if($RequestVars["sub"] == "listinstalling")
+		{
+			$res = DaemonModuleCommand("addons", "list-installing");
+			$irprt = explode(" ", $res);
+			echo json_encode($irprt);
+			exit;
+		}
 		else if($RequestVars["sub"] == "gettemplate")
 		{
 			$this->GetBrowserFormatting();

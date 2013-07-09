@@ -59,6 +59,9 @@ function InitPackageBrowser()
 	Browser.screenshotTemplate = Browser.LoadTemplate("screenshot");
 	Browser.installlinkTemplate = Browser.LoadTemplate("installlink");
 	Browser.uninstalllinkTemplate = Browser.LoadTemplate("uninstalllink");
+	
+	Browser.QueryActiveInstalls();
+	
 	Browser.Render();
 }
 
@@ -73,6 +76,7 @@ function AddOnBrowser()
 	this.uninstalllinkTemplate = "";
 	
 	this.PermanentAddOns = Array("addons", "users", "admin", "files");
+	this.ActiveInstalls = Array();
 	
 	this.Render = function()
 	{
@@ -207,6 +211,23 @@ function AddOnBrowser()
 		}
 		
 		return false;
+	}
+	
+	this.QueryActiveInstalls()
+	{
+		if (window.XMLHttpRequest)
+		{// code for IE7+, Firefox, Chrome, Opera, Safari
+			lnxhr = new XMLHttpRequest();
+		}
+		else
+		{// code for IE6, IE5
+			lnxhr = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		lnxhr.open("GET", "/?module=addons&sub=listinstalling, false);
+		lnxhr.send(null);
+
+		this.ActiveInstalls = eval("("+lnxhr.responseText+")");
 	}
 }
 
