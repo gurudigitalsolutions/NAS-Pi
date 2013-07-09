@@ -27,3 +27,10 @@ function ConfirmDeleteSource(sourcecode)
 		document.location = "/?module=files&sub=deletesource&sourcecode="+sourcecode;
 	}
 }
+
+function SetLocalSourceValues(uuid, label, device)
+{
+	document.getElementById("newsource_uuid").value = uuid;
+	document.getElementById("newsource_label").value = label;
+	document.getElementById("newsource_device").value = device;
+}
