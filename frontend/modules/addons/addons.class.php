@@ -113,6 +113,10 @@ class modAddOns extends PiNASModule
 		{
 			$toret = $this->BuildRemoteAddons();
 		}
+		else if($RequestVars["sub"] == "list")
+		{
+			$toret = $this->BuildFullRepo();
+		}
 		else
 		{
 			$toret = "No idea what you are trying to do :(";
@@ -272,6 +276,60 @@ class modAddOns extends PiNASModule
 		$toret = $template;
 		
 		curl_close($ch);
+		
+		return $toret;
+	}
+	
+	function InstalledPackages()
+	{
+		$addonlist = DaemonModuleCommand("addons", "list");
+		$addonnames = explode(" ", $addonlist);
+		
+		$Packages = array();
+		foreach($addonnames as $eao)
+		{
+			$Packages[$eao] = $this->ParseManifest($eao);
+		}
+		
+		return $Packages;
+	}
+	
+	function AvailablePackages()
+	{
+		$Packages = array();
+		$ch = curl_init();
+		
+		$addonfile = MODULEPATH."/addons/data/availableaddons.srl";
+		if(file_exists($addonfile) && time() - filemtime($addonfile) < $this->ReupdatePeriod)
+		{
+			$Packages = unserialize(file_get_contents($addonfile));
+		}
+		else
+		{
+			$ch = curl_init($this->RepoHost.$this->RepoPath);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$rtext = curl_exec($ch);
+			
+			
+			$Packages = json_decode($rtext);
+			file_put_contents($addonfile, serialize($Packages));
+		}
+		
+		return $Packages;
+	}
+	
+	function BuildFullRepo()
+	{
+		$toret = "";
+		$PackagesAvailable = $this->AvailablePackages();
+		$PackagesInstalled = $this->InstalledPackages();
+		
+		print_r($PackagesAvailable);
+		echo "\n\n\n\n";
+		print_r($PackagesInstalled);
+		
+		exit;
+		
 		
 		return $toret;
 	}
