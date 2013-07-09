@@ -46,7 +46,31 @@ class modAddOns extends PiNASModule
 			
 			$fulladdon = "";
 			$addonlist = DaemonModuleCommand("addons", "list");
-			foreach($Modules as $emkey=>$emval)
+			
+			$addonprts = explode(" ", $addonlist);
+			foreach($addonprts as $eao)
+			{
+				$tMan = $this->ParseManifest($eao);
+				$taot = $EachAddOnTmp;
+				$taot = str_replace("[ADDONCODE]", $eao, $taot);
+				$taot = str_replace("[TITLE]", $tMan["title"], $taot);
+				$taot = str_replace("[VERSION]", $tMan["version"], $taot);
+				$taot = str_replace("[DESCRIPTION]", $tMan["description"], $taot);
+				
+				if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$eao.".png"))
+				{
+					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $eao, $AddOnIconTmp), $taot);
+					
+				}
+				else
+				{
+					$taot = str_replace("[MODULEICON]", $eao, $taot);
+				}
+				
+				$fulladdon = $fulladdon.$taot;
+			}
+			
+			/*foreach($Modules as $emkey=>$emval)
 			{
 				$taot = $EachAddOnTmp;
 				$taot = str_replace("[ADDONCODE]", $emkey, $taot);
@@ -74,8 +98,8 @@ class modAddOns extends PiNASModule
 				}
 				$fulladdon = $fulladdon.$taot;
 			}
-			
-			$fulladdon = $fulladdon."<br />".$addonlist;
+			*/
+			//$fulladdon = $fulladdon."<br />".$addonlist;
 			$template = str_replace("[EACHADDON]", $fulladdon, $template);
 			$toret = $template;
 		}
@@ -160,6 +184,45 @@ class modAddOns extends PiNASModule
 		return $toret;
 	}
  
+	public function ParseManifest($modcode)
+	{
+		$manifest = array();
+		$mf = file(MODULECONFIGPATH."/".$modcode."/manifest.ini");
+		
+		foreach($mf as $eline)
+		{
+			$eline = trim($eline);
+			if(substr($eline, 0, 1) != "#")
+			{
+				$lparts = explode("=", $eline, 2);
+				if(count($lparts) > 1)
+				{
+					$lparts[0] = trim(strtolower($lparts[0]));
+					$lparts[1] = trim($lparts[1]);
+					
+					if($lparts[0] == "modtitle") { $manifest["title"] = $lparts[1]; }
+					else if($lparts[0] == "modcode") { $manifest["code"] = $lparts[1]; }
+					else if($lparts[0] == "author") { $manifest["author"] = $lparts[1]; }
+					else if($lparts[0] == "repoid") { $manifest["repoid"] = $lparts[1]; }
+					else if($lparts[0] == "version") { $manifest["version"] = $lparts[1]; }
+					else if($lparts[0] == "dependencies")
+					{
+						if(strpos($lparts[1], " ") !== false)
+						{
+							$dparts = explode(" ", $lparts[1]);
+							$manifest["dependencies"] = $dparts;
+						}
+						else
+						{
+							$manifest["dependencies"] = array($lparts[1]);
+						}
+					}
+				}
+			}
+		}
+		
+		return $manifest;
+	}
 }
  
 ?>
