@@ -19,7 +19,7 @@
 #
 #-----------------------------------------------------------------------
 
-DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs git curlftpfs netcat-openbsd)
+DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs git curlftpfs netcat-openbsd expect)
 
 APACHE_USER="naspi"
 INSTALL_DIR="/usr/share/naspi"
