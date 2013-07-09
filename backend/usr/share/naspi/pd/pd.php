@@ -70,6 +70,7 @@ while($KeepRunning)
 		socket_listen($socket);
 	}
 
+	$myID = pcntl_waitpid(-1, $status, WNOHANG);
 }
 
 //socket_close($client);
