@@ -9,10 +9,10 @@
 #	www.gurudigitalsolutions.com
 #
 #-----------------------------------------------------------------------
-#
-# 	TODO make the /etc/naspi/naspi.conf reflect any changes a user
-# 	may make to the installation variables on this install script
-#	
+
+
+
+
 #-----------------------------------------------------------------------
 #
 # Set Installation variables
@@ -25,6 +25,9 @@ APACHE_USER="naspi"
 INSTALL_DIR="/usr/share/naspi"
 
 SITE="/etc/apache2/sites-available/nas-pi"
+
+LOG="/var/log/naspid.log"
+
 ETC="/etc/naspi"
 INIT="/etc/init.d/naspid"
 BIN="/usr/bin/naspid"
@@ -73,6 +76,7 @@ fi
 #
 function install_dependencies
 {
+	echo "[CHECKING DEPENDANCIES]"
 	for dep in ${DEPENDENCIES[@]}; do
 
 		dpkg -s $dep 2>/dev/null >/dev/null
@@ -126,6 +130,7 @@ function compare_files
 #
 function create_naspi_user
 {
+	echo "[CREATING APACHE2 SYSTEM USER]"
 	if [[ -z $(cat /etc/group | grep $APACHE_USER) ]]; then
 		useradd -M -r -s /bin/bash -U $APACHE_USER
 	fi
@@ -174,6 +179,7 @@ function configure_apache
 #
 function create_empty_directories() {
 	#set -x
+	echo "[CREATING FRONTEND FOLDERS]"
 	for empty in ${EMPTY_DIR[@]};do
 		if [[ ! -e $INSTALL_DIR/$empty ]]; then
 			mkdir -p -m 755 $INSTALL_DIR/$empty
@@ -200,6 +206,7 @@ function place_files
 	chmod 755 "$INSTALL_DIR"/modules/files/sources/sourcedata
 	
 	if [[ ! -e /var/www/nas-pi ]]; then
+		echo "[LINKING $INSTALL_DIR/public_html to /var/www/nas-pi]"
 		ln -s $INSTALL_DIR/public_html /var/www/nas-pi
 	fi
 }
@@ -269,22 +276,25 @@ function place_backend_files ()
 #
 function set_envars() {
 	#set -x
-	HEAD='
-	# This file is created during installation. Please make certain of what 
-	# you are changing when modifying this file
-	'
-	BODY='
-	# Base install directory
-	INSTALL_DIR=$INSTALL_DIR
+	HEAD="\
+# This file is created during installation. Please make certain of what 
+# you are changing when modifying this file"
 
-	# Apache2 Virtual Host name
-	SITE=$SITE
-	# User site runs as
-	APACHE_USER=$APACHE_USER
+	BODY="
+# Base install directory
+INSTALL_DIR=$INSTALL_DIR
 
-	# Array of dependancies
-	DEPENDENCIES=(${DEPENDENCIES[@]})
-	'
+# Location of log file
+LOG=$LOG
+
+# Apache2 Virtual Host name
+SITE=$SITE
+# User site runs as
+APACHE_USER=$APACHE_USER
+
+# Array of dependancies
+DEPENDENCIES=(${DEPENDENCIES[@]})"
+
 	echo -e "$HEAD\n$BODY" > $ENVARS
 	set +x
 }
