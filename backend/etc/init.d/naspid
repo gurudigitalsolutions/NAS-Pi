@@ -17,62 +17,62 @@ ETC_PATH="/etc/naspi"
 ERRORS=$ETC_PATH/errors
 CONFIG=$ETC_PATH/${PROG}.conf
 
-. $ERRORS
-. $CONFIG
+#. $ERRORS
+#. $CONFIG
 
-error() {
-	echo "ERROR:$@" 1>&2
-	return $1
-}
+#error() {
+	#echo "ERROR:$@" 1>&2
+	#return $1
+#}
 
-start() {
-	if [ -e "$NASPID_LOCK_FILE" ]; then
-		error $E_START $M_START
-	else
-		$PROG_PATH/$PROG start 2>&1 &
-		touch "$NASPID_LOCK_FILE"
-	fi
-}
+#start() {
+	#if [ -e "$NASPID_LOCK_FILE" ]; then
+		#error $E_START $M_START
+	#else
+		#$PROG_PATH/$PROG start 2>&1 &
+		#touch "$NASPID_LOCK_FILE"
+	#fi
+#}
 
-stop() {
-	if [ -e "$NASPID_LOCK_FILE" ]; then
-		$PROG_PATH/$PROG stop 2>&1 &
-	else
-		error $E_STOP $M_STOP
-	fi
-}
+#stop() {
+	#if [ -e "$NASPID_LOCK_FILE" ]; then
+		#$PROG_PATH/$PROG stop 2>&1 &
+	#else
+		#error $E_STOP $M_STOP
+	#fi
+#}
 
 
-if [ "$(id -u)" != "0" ]; then
-	error $E_ROOT $M_ROOT
-fi
+#if [ "$(id -u)" != "0" ]; then
+	#error $E_ROOT $M_ROOT
+#fi
 
-case "$1" in
-	start)
-		start
-		if [[ $? -eq 0 ]]; then
-			echo "$PROG started"
-		else
-			echo "$PROG failed to $1"
-		fi
-	;;
-	stop)
-		stop
-		if [[ $? -eq 0 ]]; then
-			echo "$PROG stopped"
-		else
-			echo "$PROG failed to $1" >2 >> $LOG
-		fi
-	;;
-	reload|restart|force-reload)
-		stop
-		start
-		echo "$PROG restarted" >> $LOG &
-		exit 0
-		;;
-	**)
-		error $E_USAGE $M_USAGE
-		;;
-esac
+#case "$1" in
+	#start)
+		#start
+		#if [[ $? -eq 0 ]]; then
+			#echo "$PROG started"
+		#else
+			#echo "$PROG failed to $1"
+		#fi
+	#;;
+	#stop)
+		#stop
+		#if [[ $? -eq 0 ]]; then
+			#echo "$PROG stopped"
+		#else
+			#echo "$PROG failed to $1" >2 >> $LOG
+		#fi
+	#;;
+	#reload|restart|force-reload)
+		#stop
+		#start
+		#echo "$PROG restarted" >> $LOG &
+		#exit 0
+		#;;
+	#**)
+		#error $E_USAGE $M_USAGE
+		#;;
+#esac
 
 :
