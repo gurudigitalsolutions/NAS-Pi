@@ -13,7 +13,7 @@ local Source=$2
 
 PROG=naspi
 ERROR_FILE=/usr/share/naspi/errors
-SOURCE_DATA="$LOCATION"/modules/files/sources
+SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
 
 #
 # Source the errors file

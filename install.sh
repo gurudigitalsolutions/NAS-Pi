@@ -37,6 +37,7 @@ BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 E_ROOT=("\nYou must run this script as root.\n" "10")
 E_DEP=("\nYou have unmet dependancies.\nUse apt-get install " "11")
 
+ENVARS=$ETC/envars
 
 EMPTY_DIR=("log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
 
@@ -264,6 +265,31 @@ function place_backend_files ()
 }
 
 #
+# Creates an envars file for minimal configuration sourcing
+#
+function set_envars() {
+	#set -x
+	HEAD='
+	# This file is created during installation. Please make certain of what 
+	# you are changing when modifying this file
+	'
+	BODY='
+	# Base install directory
+	INSTALL_DIR=$INSTALL_DIR
+
+	# Apache2 Virtual Host name
+	SITE=$SITE
+	# User site runs as
+	APACHE_USER=$APACHE_USER
+
+	# Array of dependancies
+	DEPENDENCIES=(${DEPENDENCIES[@]})
+	'
+	echo -e "$HEAD\n$BODY" > $ENVARS
+	set +x
+}
+
+#
 # Run each function
 #
 install_dependencies
@@ -272,6 +298,7 @@ configure_apache
 place_files
 create_empty_directories
 place_backend_files
+set_envars
 service apache2 restart
 service naspid restart
 cd $START_DIR

@@ -8,19 +8,18 @@
 # Short-Description:    NAS-Pi PHP Backend Daemon
 # Description:          Handles administration of your Raspberry Pi using NAS-Pi.
 ### END INIT INFO
-PROG="pd.php"
-PROG_PATH="/usr/share/naspi/pd"
-LOG="/usr/share/naspi/pd/run.log"
-RUN_PATH="/var/lock"
-export NASPIPD_LOCK_FILE=$RUN_PATH/${PROG}.lock
-ETC_PATH="/etc/naspi"
-ERRORS=$ETC_PATH/errors
-CONFIG=$ETC_PATH/${PROG}.conf
+PROG="naspi"
+INSTALL_DIR="/usr/share/$PROG"
+DAEMON_SCRIPT="pd.php"
+DAEMON_PATH="$INSTALL_DIR/pd"
+LOG="/var/log/naspid.log"
+ERRORS="$INSTALL_DIR"/errors
+CONFIG=/etc/$PROG/${PROG}.conf
 
 . $ERRORS
 
 error() {
-	echo "ERROR:$@" 1>&2
+	echo "ERROR:$@"
 	return $1
 }
 
@@ -28,23 +27,23 @@ start() {
 	#if [ -e "$NASPIPD_LOCK_FILE" ]; then
 	#	error $E_START $M_START
 	#else
-	#	$PROG_PATH/$PROG start 2>&1 &
+	#	$DAEMON_PATH/$PROG start 2>&1 &
 	#	touch "$NASPIPD_LOCK_FILE"
 	#fi
 	
 	rm "/tmp/naspi/pd/pd.sock"
-	$PROG_PATH/$PROG start 2>&1 &
+	$DAEMON_PATH/$DAEMON_SCRIPT start 2>&1 &
 }
 
 stop() {
 	#if [ -e "$NASPIPD_LOCK_FILE" ]; then
 	#	rm "$NASPIPD_LOCK_FILE"
-	#	$PROG_PATH/$PROG stop 2>&1 &
+	#	$DAEMON_PATH/$DAEMON_SCRIPT stop 2>&1 &
 	#else
 	#	error $E_STOP $M_STOP
 	#fi
 	
-	$PROG_PATH/$PROG stop 2>&1 &
+	$DAEMON_PATH/$DAEMON_SCRIPT stop 2>&1 &
 }
 
 
