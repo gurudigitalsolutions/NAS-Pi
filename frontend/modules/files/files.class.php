@@ -80,6 +80,7 @@ class modFiles extends PiNASModule
 					$teach = str_replace("[FIELDTITLE]", $eval["fieldtitle"], $teach);
 					$teach = str_replace("[FIELDTYPE]", $eval["fieldtype"], $teach);
 					$teach = str_replace("[FIELDNAME]", $eval["fieldname"], $teach);
+					$teach = str_replace("[SOURCECODE]", $SourceCode, $teach);
 					//echo $eval["fieldmap"]."<br />\n";
 					
 					if(is_bool($tsrc->{$eval["fieldmap"]}))

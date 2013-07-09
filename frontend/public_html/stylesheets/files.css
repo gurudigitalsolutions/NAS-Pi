@@ -27,3 +27,13 @@
 {
 	font-weight: bold;
 }
+
+.files_smbextra_tablerow
+{
+	background: #FFFFFF;
+}
+
+.files_smbextra_tablerow:hover
+{
+	background: #DDDDFF;
+}

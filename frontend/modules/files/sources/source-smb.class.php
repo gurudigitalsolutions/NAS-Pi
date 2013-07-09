@@ -124,6 +124,7 @@ class FileSourceSMB extends FileSource
 			$tSh = str_replace("[SHARENAME]", $esh["sharename"], $tSh);
 			$tSh = str_replace("[TYPE]", $esh["type"], $tSh);
 			$tSh = str_replace("[COMMENT]", $esh["comment"], $tSh);
+			$tSh = str_replace("[SOURCECODE]", $this->SourceCode, $tSh);
 			
 			$fullshares = $fullshares.$tSh;
 			
