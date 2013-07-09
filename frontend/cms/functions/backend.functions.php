@@ -20,18 +20,18 @@ function DaemonRawCommand($command)
 	
 	socket_write($socket, $command, strlen($command));
 	
-	return "Wrote to socket.";
-	
 	$toret = "";
-	$KeepReading = true;
+	/*$KeepReading = true;
 	while($KeepReading)
 	{
 		$buffer = socket_read($socket, 2048, PHP_NORMAL_READ);
-		if(strlen($buffer) == 0) { $KeepReading = false; break; }
-		else if($buffer === false) { $KeepReading = false; break; }
-		
-		$toret = $toret.$buffer;
-	}
+		if(strlen($buffer) == 0) { $KeepReading = false; }
+		else if($buffer === false) { $KeepReading = false; }
+		else { $toret = $toret.$buffer; }
+	}*/
+	
+	$buffer = socket_read($socket, 2048, PHP_NORMAL_READ);
+	$toret = trim($buffer);
 	
 	socket_close($socket);
 	return $toret;
