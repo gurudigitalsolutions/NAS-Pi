@@ -187,7 +187,7 @@ class modAddOns extends PiNASModule
 					foreach($ev->screenshots as $ess)
 					{
 						$tss = $EachScreenshotTmp;
-						$tss = str_replace("[SCREENSHOTURL]", $this->RepoHost.$ess, $tss);
+						$tss = str_replace("[SCREENSHOTURL]", "http://".$this->RepoHost.$ess, $tss);
 						$allss = $allss.$tss;
 					}
 					$optstm = str_replace("[SCREENSHOTS]", $allss, $optstm);
