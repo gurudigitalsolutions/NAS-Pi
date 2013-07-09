@@ -25,3 +25,32 @@
 {
 	display: none;
 }
+
+.addons_screenshotpane
+{
+	float: right;
+	width: 350px;
+}
+
+.addons_headerbox_icon
+{
+	float: left;
+	width: 100px;
+}
+
+.addons_headerbox_title
+{
+	font-size: 1.4em;
+	font-weight: bold;
+}
+
+.addons_headerbox_version
+{
+	font-size: 0.9em;
+}
+
+.addons_headerbox_nav
+{
+	font-size: 1.2em;
+	font-weight: bold;
+}
