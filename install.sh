@@ -297,7 +297,10 @@ LOG=$LOG
 # Apache2 Virtual Host name
 SITE=$SITE
 # User site runs as
-APACHE_USER=$APACHE_USER"
+APACHE_USER=$APACHE_USER
+
+# Array of dependancies
+DEPENDENCIES=(${DEPENDENCIES[@]})"
 
 	echo -e "$HEAD\n$BODY" > $ENVARS
 	set +x

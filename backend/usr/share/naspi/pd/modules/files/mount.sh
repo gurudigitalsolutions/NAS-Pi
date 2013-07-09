@@ -57,7 +57,7 @@ set +x
 SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
 
 if [[ ! -x "$SOURCE_DATA"/sourcedata ]]; then
-	log ${E_SOURCE[0]} ${E_SOURCE[1]}
+	log "${E_SOURCE[0]}" "${E_SOURCE[1]}"
 	exit ${E_SOURCE[1]}
 fi
 
@@ -74,7 +74,7 @@ set +x
 #
 #	Common Script Functions
 #
-#	functions used by update_fstab and update_status
+#	functions used by save_fstab and update_status
 #
 #-----------------------------------------------------------------------
 
@@ -82,23 +82,14 @@ set +x
 # Logs messages and errors, if enabled, to file
 #
 function log() {
-
 	#set -x
-	# Log any messages
+	
 	if [[ $# -eq 1 ]]; then
 		echo $1 >> $LOG
 	
 	# Log error messages if logging is enabled
 	elif [[ $# -ge 2 ]] && [[ $E_LOGGING == TRUE ]];then
-		
-		# If mount error then include the mount's name
-		if [[ $1 -eq 10 ]]; then
-			echo "[ERROR $1]: $2 $3" >> $LOG
-		
-		# Log the error code and message to log file
-		else 
-			echo "[ERROR $1]: ${@:2}" >> $LOG
-		fi
+		echo "[ERROR $1]: ${@:2}" >> $LOG
 	fi
 	
 	set +x
@@ -264,7 +255,7 @@ function create_fstab() {
 # Checks the file system type of source and creates/updates an fstab 
 # entry
 #
-function update_fstab() {
+function save_fstab() {
 	#set -x
 	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
 
@@ -430,4 +421,11 @@ function update_status() {
 echo $FSType
 export FSType=$(get_data $Source FSType)
 
-update_$1 $2
+case $1 in
+	save)
+		save_fstab
+		update_status
+		;;
+	*)
+		log "${E_USAGE[0]}" "${E_USAGE[1]}"
+		exit "${E_USAGE[0]}"

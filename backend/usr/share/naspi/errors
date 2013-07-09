@@ -3,7 +3,7 @@
 # Userid error
 E_ROOT=(3 "Must be run as root")
 # Usage error
-E_USAGE=(4 "Usage: $0 {fstab|status} <Source>")
+E_USAGE=(4 "Improper usage. [ $0 {save} <Source> ]")
 # Missing source files
 E_SOURCE=(5 "Missing source files")
 # Missing config files
