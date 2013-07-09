@@ -67,6 +67,15 @@ class modAddOns extends PiNASModule
 					$taot = str_replace("[MODULEICON]", $eao, $taot);
 				}
 				
+				if($tMan["username"] == "") { $taot = str_replace("[AUTHOR]", $tMan["author"], $taot); }
+				else
+				{
+					$tauth = $AuthorLinkTmp;
+					$tauth = str_replace("[AUTHOR]", $tMan["author"], $tauth);
+					$tauth = str_replace("[AUTHORURL]", "http://".$this->RepoHost."/users/".$tMan["username"], $tauth);
+					$taot = str_replace("[AUTHOR]", $tauth, $taot);
+				}
+				
 				$fulladdon = $fulladdon.$taot;
 			}
 			
@@ -205,6 +214,8 @@ class modAddOns extends PiNASModule
 					else if($lparts[0] == "author") { $manifest["author"] = $lparts[1]; }
 					else if($lparts[0] == "repoid") { $manifest["repoid"] = $lparts[1]; }
 					else if($lparts[0] == "version") { $manifest["version"] = $lparts[1]; }
+					else if($lparts[0] == "authorrepousername") { $manifest["username"] = $lparts[1]; }
+					else if($lparts[0] == "description") { $manifest["description"] = $lparts[1]; }
 					else if($lparts[0] == "dependencies")
 					{
 						if(strpos($lparts[1], " ") !== false)
