@@ -61,9 +61,9 @@ class modAddons extends BackendModule
 		$jobid = $this->CreateJobID();
 		
 		$JobDir = $ModulesPath."/addons/data/installjobs";
-		if(!file_exists($JobsDir))
+		if(!file_exists($JobDir))
 		{
-			$cmd = "mkdir \"".$JobsDir."\" -p";
+			$cmd = "mkdir \"".$JobDir."\" -p";
 			`$cmd`;
 		}
 		

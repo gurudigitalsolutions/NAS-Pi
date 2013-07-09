@@ -13,3 +13,5 @@ mkdir /tmp/naspi/downloads -p
 cd /tmp/naspi/downloads
 
 wget -O $1 ${REPOURL}/addons/downloads/$1
+
+echo "Download complete"
