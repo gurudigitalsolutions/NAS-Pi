@@ -84,6 +84,7 @@ function ParseCLI($arguments)
 	if($arguments[1] == "stop")
 	{
 		//	The init.d script is trying to tell the daemon to stop running.
+		echo "argv[1]: stop\n";
 		$cmd = "ps -u root | grep pd.php";
 		$res = trim(`$cmd`);
 		$rlines = explode("\n", $res);
