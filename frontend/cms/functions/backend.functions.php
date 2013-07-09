@@ -20,6 +20,8 @@ function DaemonRawCommand($command)
 	
 	socket_write($socket, $command, strlen($command));
 	
+	return "Wrote to socket.";
+	
 	$toret = "";
 	$KeepReading = true;
 	while($KeepReading)

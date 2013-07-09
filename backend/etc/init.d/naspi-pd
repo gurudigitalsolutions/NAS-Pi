@@ -32,6 +32,7 @@ start() {
 	#	touch "$NASPIPD_LOCK_FILE"
 	#fi
 	
+	rm "/tmp/naspi/pd/pd.sock"
 	$PROG_PATH/$PROG start 2>&1 &
 }
 
