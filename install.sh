@@ -169,7 +169,7 @@ function configure_apache
 				;;
 			*)
 				a2ensite nas-pi
-				echo "Manually configure apache2's sites-avalible"
+				echo "Manually configure apache2\'s sites-avalible"
 				;;
 		esac
 	fi
