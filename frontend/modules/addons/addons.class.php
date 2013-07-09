@@ -324,11 +324,60 @@ class modAddOns extends PiNASModule
 		$PackagesAvailable = $this->AvailablePackages();
 		$PackagesInstalled = $this->InstalledPackages();
 		
-		print_r($PackagesAvailable);
-		echo "\n\n\n\n";
-		print_r($PackagesInstalled);
+		$MainTemp = file_get_contents(MODULEPATH."/addons/templates/main.html");
+		$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
+		$AddOnIconTmp = file_get_contents(MODULEPATH."/addons/templates/addon-icon.html");
+		$AuthorLinkTmp = file_get_contents(MODULEPATH."/addons/templates/addon-authorlink.html");
+		$AddOnOptionsTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each-notinstalledoptions.html");
+		$EachScreenshotTmp = file_get_contents(MODULEPATH."/addons/templates/screenshot-each.html");
 		
-		exit;
+		$fulladdon = "";
+		$usedcodes = array();
+		foreach($PackagesAvailable as $ek=>$ev)
+		{
+			$usedcodes[$ev->modcode] = true;
+			$taot = $EachAddOnTmp;
+			$taot = str_replace("[ADDONCODE]", $ev->modcode, $taot);
+			$taot = str_replace("[TITLE]", $ev->title, $taot);
+			$taot = str_replace("[VERSION]", $ev->version, $taot);
+			$taot = str_replace("[DESCRIPTION]", $ev->shortdesc, $taot);
+			
+			$taot = str_replace("[AUTHOR]", $ev->displayname, $taot);
+			
+			$optstm = $AddOnOptionsTmp;
+			$optstm = str_replace("[MODULECODE]", $ev->modcode, $optstm);
+			$optstm = str_replace("[TITLE]", $ev->title, $optstm);
+			$optstm = str_replace("[DESCRIPTION]", $ev->description, $optstm);
+			
+			if(count($ev->screenshots) > 0)
+			{
+				$allss = "";
+				foreach($ev->screenshots as $ess)
+				{
+					$tss = $EachScreenshotTmp;
+					$tss = str_replace("[SCREENSHOTURL]", "http://".$this->RepoHost.$ess, $tss);
+					$allss = $allss.$tss;
+				}
+				$optstm = str_replace("[SCREENSHOTS]", $allss, $optstm);
+			}
+			else
+			{
+				$optstm = str_replace("[SCREENSHOTS]", "No screenshots available", $optstm);
+			}
+			
+			$taot = str_replace("[ADDONOPTIONS]", $optstm, $taot);
+			
+			if(array_key_exists($ev->modcode, $PackagesInstalled))
+			{
+				$taot = str_replace("[INSTALLEDSTYLE]", ".addons_row_installed", $taot);
+			}
+			else
+			{
+				$taot = str_replace("[INSTALLEDSTYLE]", ".addons_row_uninstalled", $taot);
+			}
+			
+			$fulladdon = $fulladdon.$taot;
+		}
 		
 		
 		return $toret;
