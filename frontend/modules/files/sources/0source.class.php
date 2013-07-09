@@ -65,6 +65,11 @@ class FileSource
 		return true;
 	}
 	
+	function ExtraSourceInfo()
+	{
+		return "";
+	}
+	
 	function Save()
 	{
 		file_put_contents(MODULEPATH."/files/sources/data/".$this->SourceCode, serialize($this));

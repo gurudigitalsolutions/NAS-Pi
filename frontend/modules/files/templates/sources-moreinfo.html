@@ -1,15 +1,24 @@
 <div class="files_sources_moreinfo">
-	<form method="post" action="/">
-		<input type="hidden" name="module" value="files" />
-		<input type="hidden" name="sub" value="addsource" />
-		<input type="hidden" name="sourcetype" value="[SOURCETYPE]" />
-		
-		<table border="0">
-			[EACHVAR]
-			<tr>
-				<td>&nbsp;</td>
-				<td><input type="submit" value="Save" /></td>
-			</tr>
-		</table>
-	</form>
+	<table border="0">
+		<tr>
+			<td valign="top">
+				<form method="post" action="/">
+					<input type="hidden" name="module" value="files" />
+					<input type="hidden" name="sub" value="addsource" />
+					<input type="hidden" name="sourcetype" value="[SOURCETYPE]" />
+					
+					<table border="0">
+						[EACHVAR]
+						<tr>
+							<td>&nbsp;</td>
+							<td><input type="submit" value="Save" /></td>
+						</tr>
+					</table>
+				</form>
+			</td>
+			<td valign="top">
+				[EXTRAINFO]
+			</td>
+		</tr>
+	</table>
 </div>

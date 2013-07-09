@@ -51,6 +51,21 @@ class FileSourceSMB extends FileSource
 		$this->AddFormElement("username", "text", "Username", "Username");
 		$this->AddFormElement("password", "password", "Password", "Password");
 	}
+	
+	function ExtraSourceInfo()
+	{
+		$expct = "spawn smbclient -L //".$this->RemoteHost."/ -U ".$this->Username."\n";
+		$expct = $expct."set pass \"".$this->Password."\"\n".
+					"expect {\n".
+					"	password: { send \"$pass\\r\" ; exp_continue}\n".
+					"	eof exit\n".
+					"}";
+		
+		$cmd = "echo ".$expct." | /usr/bin/expect -f";
+		$res = trim(`$cmd`);
+		
+		return $res;
+	}
 }
 
 ?>
