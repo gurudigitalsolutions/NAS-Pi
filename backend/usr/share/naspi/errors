@@ -1,32 +1,18 @@
 # These are the default error messages for NASPID
 
-# Daemon start error
-E_START=1
-M_START="$PROG is currently running"
-# Daemon stop error
-E_STOP=2
-M_STOP="$PROG not started"
 # Userid error
-E_ROOT=3
-M_ROOT="$PROG must be run as root"
+E_ROOT=(3 "$PROG must be run as root")
 # Usage error
-E_USAGE=4
-M_USAGE="Usage: $0 {start|stop|reload}"
+E_USAGE=(4 "Usage: $0 {fstab|status} <Source>")
 # Missing source files
-E_SOURCE=5
-M_SOURCE="Missing source files"
+E_SOURCE=(5 "Missing source files")
 # Missing config files
-E_CONFIG=6
-M_CONFIG="Missing or unset configuration"
+E_CONFIG=(6 "Missing or unset configuration")
 # Empty data error
-E_DATA=7
-M_DATA="Empty data found"
+E_DATA=(7 "Empty data found")
 # Disconnected device error
-E_DEVICE=8
-M_DEVICE="Device not connected"
+E_DEVICE=(8 "Device not connected")
 # Empty control file error
-E_CONTROL=9
-M_CONTROL="Unsupported control file format"
+E_CONTROL=(9 "Unsupported control file format")
 # Mounting error
-E_MOUNT=10
-M_MOUNT="Failed to mount"
+E_MOUNT=(10 "Failed to mount")
