@@ -18,7 +18,7 @@ class modAddOns extends PiNASModule
 		
 		$this->Description = "Easily add and remove NAS-Pi Add Ons.";
 		$this->Author = "Brian Murphy";
-		$this->Version = "v13.06.12";
+		$this->Version = "v13.07.09";
 		$this->AuthorURL = "http://www.gurudigitalsolutions.com";
  
 		$this->AddSubMenu("home", "Installed");
