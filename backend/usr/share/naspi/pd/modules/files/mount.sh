@@ -238,10 +238,6 @@ function write_bind_fstab() {
 #
 function create_fstab() {
 	#set -x
-	if [[ ! -f $FSTAB_DIR/fstab.orignial ]]; then
-		cat /etc/fstab > $FSTAB_DIR/fstab.orignial
-	fi
-	
 	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
 		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > $FSTAB_DIR/fullstab
 	else
