@@ -33,6 +33,10 @@ class modAddOns extends PiNASModule
 		global $Scripts;
 		global $Modules;
 		
+		
+		$StyleSheets[] = "addons";
+		$Scripts[] = "addons";
+		
 		$toret = "";
  
 		if($RequestVars["sub"] == "") { $RequestVars["sub"] = "home"; }
@@ -101,36 +105,7 @@ class modAddOns extends PiNASModule
 				$fulladdon = $fulladdon.$taot;
 			}
 			
-			/*foreach($Modules as $emkey=>$emval)
-			{
-				$taot = $EachAddOnTmp;
-				$taot = str_replace("[ADDONCODE]", $emkey, $taot);
-				$taot = str_replace("[TITLE]", $emval->MenuTitle, $taot);
-				$taot = str_replace("[VERSION]", $emval->Version, $taot);
-				$taot = str_replace("[DESCRIPTION]", $emval->Description, $taot);
-				
-				if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$emkey.".png"))
-				{
-					$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $emkey, $AddOnIconTmp), $taot);
-					
-				}
-				else
-				{
-					$taot = str_replace("[MODULEICON]", $emkey, $taot);
-				}
-				
-				if($emval->AuthorURL == "") { $taot = str_replace("[AUTHOR]", $emval->Author, $taot); }
-				else
-				{
-					$tauth = $AuthorLinkTmp;
-					$tauth = str_replace("[AUTHOR]", $emval->Author, $tauth);
-					$tauth = str_replace("[AUTHORURL]", $emval->AuthorURL, $tauth);
-					$taot = str_replace("[AUTHOR]", $tauth, $taot);
-				}
-				$fulladdon = $fulladdon.$taot;
-			}
-			*/
-			//$fulladdon = $fulladdon."<br />".$addonlist;
+			
 			$template = str_replace("[EACHADDON]", $fulladdon, $template);
 			$toret = $template;
 		}
@@ -159,6 +134,8 @@ class modAddOns extends PiNASModule
 			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
 			$AddOnIconTmp = file_get_contents(MODULEPATH."/addons/templates/addon-icon.html");
 			$AuthorLinkTmp = file_get_contents(MODULEPATH."/addons/templates/addon-authorlink.html");
+			$AddOnOptionsTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each-notinstalledoptions.html");
+			
 			
 			$fulladdon = "";
 			foreach($Packages as $ek=>$ev)
@@ -167,7 +144,7 @@ class modAddOns extends PiNASModule
 				$taot = str_replace("[ADDONCODE]", $ev->modcode, $taot);
 				$taot = str_replace("[TITLE]", $ev->title, $taot);
 				$taot = str_replace("[VERSION]", $ev->version, $taot);
-				$taot = str_replace("[DESCRIPTION]", $ev->description, $taot);
+				$taot = str_replace("[DESCRIPTION]", $ev->shortdesc, $taot);
 				
 				if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$ev->modcode.".png"))
 				{
@@ -198,6 +175,28 @@ class modAddOns extends PiNASModule
 					$tauth = str_replace("[AUTHORURL]", $ev->Author->URL, $tauth);
 					$taot = str_replace("[AUTHOR]", $tauth, $taot);
 				}*/
+				
+				$optstm = $AddOnOptionsTmp;
+				$optstm = str_replace("[MODULECODE]", $ev->modcode, $optstm);
+				$optstm = str_replace("[TITLE]", $ev->title, $optstm);
+				$optstm = str_replace("[DESCRIPTION]", $ev->description, $optstm);
+				
+				if(count($ev->screenshots) > 0)
+				{
+					$allss = "";
+					foreach($ev->screenshots as $ess)
+					{
+						$allss = $allss.$ess."<br />";
+					}
+					$optstm = str_replace("[SCREENSHOTS]", $allss, $optstm);
+				}
+				else
+				{
+					$optstm = str_replace("[SCREENSHOTS]", "No screenshots available", $optstm);
+				}
+				
+				$taot = str_replace("[ADDONOPTIONS]", $optstm, $taot);
+				
 				$fulladdon = $fulladdon.$taot;
 			}
 			
