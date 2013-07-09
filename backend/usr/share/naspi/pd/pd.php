@@ -39,7 +39,13 @@ $socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
 socket_bind($socket, $sockDir."/".$sockFile);
 $spermcmd = "chown naspi:naspi ".$sockDir."/".$sockFile;
 `$spermcmd`;
-socket_listen($socket);
+
+if(!socket_listen($socket))
+{
+	echo "NAS-Pi pd daemon: socket_listen returned false!\n";
+	echo "\t".socket_strerror(socket_last_error($socket))."\n";
+	exit;
+}
 
 socket_select($temp = array($socket), $temp = null, $temp = null, 20);
 
