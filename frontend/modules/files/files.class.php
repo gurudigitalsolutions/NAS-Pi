@@ -495,7 +495,7 @@ class modFiles extends PiNASModule
 		return $toret;
 	}
 	
-	public function GetBlocks()
+	/*public function GetBlocks()
 	{
 		$blkcmd = `/sbin/blkid`;
 
@@ -528,7 +528,7 @@ class modFiles extends PiNASModule
 		
 		
 		return $toret;
-	}
+	}*/
 	
 	public function LoadSources()
 	{
