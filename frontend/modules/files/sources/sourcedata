@@ -48,6 +48,7 @@ require_once("source-ftp.class.php");
 require_once("source-local.class.php");
 require_once("source-smb.class.php");
 require_once("source-sshfs.class.php");
+require_once("source-bind.class.php");
 
 if(!file_exists("data/".$argv[1]))
 {
