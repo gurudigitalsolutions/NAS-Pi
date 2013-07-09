@@ -22,7 +22,7 @@
 DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs git curlftpfs netcat-openbsd)
 
 APACHE_USER="naspi"
-LOCATION="/usr/share/naspi"
+INSTALL_DIR="/usr/share/naspi"
 
 SITE="/etc/apache2/sites-available/nas-pi"
 ETC="/etc/naspi"
@@ -174,9 +174,9 @@ function configure_apache
 function create_empty_directories() {
 	#set -x
 	for empty in ${EMPTY_DIR[@]};do
-		if [[ ! -e $LOCATION/$empty ]]; then
-			mkdir -p -m 755 $LOCATION/$empty
-			chown $APACHE_USER:$APACHE_USER $LOCATION/$empty
+		if [[ ! -e $INSTALL_DIR/$empty ]]; then
+			mkdir -p -m 755 $INSTALL_DIR/$empty
+			chown $APACHE_USER:$APACHE_USER $INSTALL_DIR/$empty
 		fi
 	done
 }
@@ -186,20 +186,20 @@ function create_empty_directories() {
 #
 function place_files
 {
-	echo "[PLACING FRONTEND FILES INTO $LOCATION/]"
+	echo "[PLACING FRONTEND FILES INTO $INSTALL_DIR/]"
 	
-	cp -r frontend/cms "$LOCATION"
-	cp -r frontend/modules "$LOCATION"
-	cp -r frontend/public_html "$LOCATION"
+	cp -r frontend/cms "$INSTALL_DIR"
+	cp -r frontend/modules "$INSTALL_DIR"
+	cp -r frontend/public_html "$INSTALL_DIR"
 	
-	chown -R "naspi:naspi" "$LOCATION"
+	chown -R "naspi:naspi" "$INSTALL_DIR"
 	
-	#chmod 777 "$LOCATION"/modules/btguru/settings.cfg
-	chmod 777 "$LOCATION"/modules/users/groups.txt
-	chmod 755 "$LOCATION"/modules/files/sources/sourcedata
+	#chmod 777 "$INSTALL_DIR"/modules/btguru/settings.cfg
+	chmod 777 "$INSTALL_DIR"/modules/users/groups.txt
+	chmod 755 "$INSTALL_DIR"/modules/files/sources/sourcedata
 	
 	if [[ ! -e /var/www/nas-pi ]]; then
-		ln -s $LOCATION/public_html /var/www/nas-pi
+		ln -s $INSTALL_DIR/public_html /var/www/nas-pi
 	fi
 }
 
@@ -229,7 +229,7 @@ function place_backend_files ()
 #	TODO
 
 	#set -f;IFS=$n
-	#list=($(ls backend${ETC} -R) $(ls backend${LOCATION})
+	#list=($(ls backend${ETC} -R) $(ls backend${INSTALL_DIR})
 	#list=($list[@] backend${INIT} backend${BIN} backend${PDINIT}
 	#unset IFS;set +f
 	#
@@ -248,14 +248,14 @@ function place_backend_files ()
 	cp backend${INIT} ${INIT}
 	cp backend${BIN} ${BIN}
 	cp backend${PDINIT} ${PDINIT}
-	cp -r backend${LOCATION}/* ${LOCATION}
+	cp -r backend${INSTALL_DIR}/* ${INSTALL_DIR}
 
 	echo "[ADJUSTING OWNERSHIPS OF BACKEND FILES]"
 	
 	chmod 0755 $BIN
 	chmod 0755 $INIT
-	chmod 0755 ${LOCATION}/pd/pd.php
-	chown naspi:naspi ${LOCATION}/pd -R
+	chmod 0755 ${INSTALL_DIR}/pd/pd.php
+	chown naspi:naspi ${INSTALL_DIR}/pd -R
 	
 	echo "[UPDATING INIT DAEMON]"
 	
