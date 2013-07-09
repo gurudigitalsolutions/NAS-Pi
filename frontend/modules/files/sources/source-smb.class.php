@@ -69,6 +69,10 @@ class FileSourceSMB extends FileSource
 		$res = trim($res);
 		$resparts = explode("\n", $res);
 		
+		$ExtraTemplate = file_get_contents(MODULEPATH."/files/templates/smb-extra-main.html");
+		$EachShareT = file_get_contents(MODULEPATH."/files/templates/smb-extra-eachshare.html");
+		$EachServT = file_get_contents(MODULEPATH."/files/templates/smb-extra-eachserver.html");
+		
 		$step = 0;
 		$Shares = array();
 		$Servers = array();
@@ -77,7 +81,7 @@ class FileSourceSMB extends FileSource
 			$elin = trim($elin);
 			if($step == 0)
 			{
-				if(subst($elin, 0, 10) == "--------- ") { $step = 1; }
+				if(substr($elin, 0, 10) == "--------- ") { $step = 1; }
 				
 			}
 			else if($step == 1)
@@ -88,8 +92,8 @@ class FileSourceSMB extends FileSource
 					$sharename = substr($elin, 0, strpos($elin, " "));
 					$type = trim(substr($elin, strlen($sharename)));
 					$type = substr($type, 0, strpos($type, " "));
-					$comment = trim(substr($elin, 0, strlen($sharename)));
-					$comment = trim(substr($comment, 0, strlen($type)));
+					$comment = trim(substr($elin, strlen($sharename)));
+					$comment = trim(substr($comment, strlen($type)));
 					$Shares[] = array("sharename"=>$sharename,
 										"type"=>$type,
 										"comment"=>$comment);
@@ -112,17 +116,32 @@ class FileSourceSMB extends FileSource
 			}
 		}
 		
-		$toret = "";
+		$toret = ExtraTemplate;
+		$fullshares = "";
 		foreach($Shares as $esh)
 		{
-			$toret = $toret.$esh["sharename"]." || ".$esh["type"]." || ".$esh["comment"]."<br />";
-		}
-		$toret = $toret."<hr />";
-		foreach($Servers as $esh
-		{
-			$toret = $toret.$esh["server"]." || ".$esh["comment"]."<br />";
+			$tSh = $EachShareT;
+			$tSh = str_replace("[SHARENAME]", $esh["sharename"], $tSh);
+			$tSh = str_replace("[TYPE]", $esh["type"], $tSh);
+			$tSh = str_replace("[COMMENT]", $esh["comment"], $tSh);
+			
+			$fullshares = $fullshares.$tSh;
+			
 		}
 		
+		$toret = str_replace("[EACHSHARE]", $fullshares, $toret);
+		
+		$fullshares = "";
+		foreach($Servers as $esh)
+		{
+			$tSh = $EachServT;
+			$tSh = str_replace("[SERVER]", $esh["server"], $tSh);
+			$tSh = str_replace("[COMMENT]", $esh["comment"], $tSh);
+			$fullshares = $fullshares.$tSh;
+			
+		}
+		
+		$toret = str_replace("[EACHSERVER]", $fullshares, $toret);
 		return $toret;
 
 	}
