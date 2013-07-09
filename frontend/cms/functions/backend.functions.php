@@ -13,6 +13,7 @@ function DaemonModuleCommand($modcode, $command)
 
 function DaemonRawCommand($command)
 {
+	$command = trim($command)."\n";
 	$socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
 	
 	if($socket === false) { return "FAIL Could not create socket."; }
