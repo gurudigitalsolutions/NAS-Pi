@@ -344,6 +344,26 @@ class modAddOns extends PiNASModule
 			
 			$taot = str_replace("[AUTHOR]", $ev->displayname, $taot);
 			
+			if(file_exists(PUBLICHTMLPATH."/images/module-icons/".$ev->modcode.".png"))
+			{
+				$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->modcode, $AddOnIconTmp), $taot);
+				
+			}
+			else
+			{
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+				curl_setopt($ch, CURLOPT_URL, $this->RepoHost.$ev->iconurl);
+				
+				$raw = curl_exec($ch);
+				
+				$fp = fopen(PUBLICHTMLPATH."/images/module-icons/".$ev->modcode.".png", 'x');
+				fwrite($fp, $raw);
+				fclose($fp);
+				
+				$taot = str_replace("[MODULEICON]", str_replace("[ADDONCODE]", $ev->modcode, $AddOnIconTmp), $taot);
+			}
+			
 			$optstm = $AddOnOptionsTmp;
 			$optstm = str_replace("[MODULECODE]", $ev->modcode, $optstm);
 			$optstm = str_replace("[TITLE]", $ev->title, $optstm);
@@ -369,11 +389,11 @@ class modAddOns extends PiNASModule
 			
 			if(array_key_exists($ev->modcode, $PackagesInstalled))
 			{
-				$taot = str_replace("[INSTALLEDSTYLE]", ".addons_row_installed", $taot);
+				$taot = str_replace("[INSTALLEDSTYLE]", "addons_row_installed", $taot);
 			}
 			else
 			{
-				$taot = str_replace("[INSTALLEDSTYLE]", ".addons_row_uninstalled", $taot);
+				$taot = str_replace("[INSTALLEDSTYLE]", "addons_row_uninstalled", $taot);
 			}
 			
 			$fulladdon = $fulladdon.$taot;

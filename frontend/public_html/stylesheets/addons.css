@@ -13,10 +13,15 @@
 
 .addons_row_installed
 {
-	background: #DDFFDD;
+	background: #CCFFCC;
 }
 
 .addons_row_uninstalled
 {
 
+}
+
+.addons_zoom
+{
+	display: none;
 }
