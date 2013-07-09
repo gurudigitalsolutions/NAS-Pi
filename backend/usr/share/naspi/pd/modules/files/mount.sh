@@ -17,8 +17,9 @@ ENVARS=/etc/$PROG/envars
 #
 # Source the errors file
 #
+#set -x
 . $ENVARS
-
+set +x
 #
 # Test user and group id for root
 #
@@ -30,9 +31,9 @@ fi
 #
 # sources each of the 3 configuration file locations
 #
-CONFIG_SET=FALSE
 CONFIG_PATHS=("/etc/naspi" '~' '~/naspi')
 
+#set -x
 for EACH_CONFIG in "${CONFIG_PATHS[@]}"; do
 	
 	if [[ -f $EACH_CONFIG/$PROG.conf ]]; then
@@ -41,25 +42,19 @@ for EACH_CONFIG in "${CONFIG_PATHS[@]}"; do
 	fi
 
 done
+set +x
 
 #
 # Source the errors file
 #
-. $ERROR_FILE
-
-#
-#
-#
-SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
-
-if [[ ! -x "$SOURCE_DATA"/sourcedata ]]; then
-	log ${E_SOURCE[0]} ${E_SOURCE[1]}
-	exit ${E_SOURCE[1]}
-fi
+#set -x
+. $ERRORS
+set +x
 
 #
 # Creates the error log if missing
 #
+#set -x
 if [[ ! -e $LOG ]]; then
 	touch $LOG
 fi
@@ -70,7 +65,7 @@ set +x
 #
 #	Common Script Functions
 #
-#	functions used by update_fstab and update_status
+#	functions used by save_fstab and update_status
 #
 #-----------------------------------------------------------------------
 
@@ -78,35 +73,40 @@ set +x
 # Logs messages and errors, if enabled, to file
 #
 function log() {
-
 	#set -x
-	# Log any messages
 	if [[ $# -eq 1 ]]; then
 		echo $1 >> $LOG
-	
-	# Log error messages if logging is enabled
 	elif [[ $# -ge 2 ]] && [[ $E_LOGGING == TRUE ]];then
-		
-		# If mount error then include the mount's name
-		if [[ $1 -eq 10 ]]; then
-			echo "[ERROR $1]: $2 $3" >> $LOG
-		
-		# Log the error code and message to log file
-		else 
-			echo "[ERROR $1]: ${@:2}" >> $LOG
-		fi
+		echo "[ ERROR $1 ]: ${@:2}" >> $LOG
 	fi
 	
 	set +x
 }
 
 #
-# Checks that a configuration was set
+# Checks for the sourcedata script. Sourcedata is used to obtain all
+# necessary information for a given source
 #
-if [[ $CONFIG_SET = FALSE ]]; then
+#set -x
+SOURCE_DATA="$INSTALL_DIR"/modules/files/sources
+
+if [[ ! -x "$SOURCE_DATA"/sourcedata ]]; then
+	log "${E_SOURCE[0]}" "${E_SOURCE[1]}"
+	exit ${E_SOURCE[1]}
+fi
+
+set +x
+
+#
+# Checks that at least one configuration was sourced
+#
+#set -x
+if [[ $CONFIG_SET != TRUE ]]; then
 	log "${E_CONFIG[0]}" "${E_CONFIG[1]}"
 	exit ${E_CONFIG[0]}
 fi
+
+set +x
 
 #
 # Create a directory if not already present
@@ -124,7 +124,6 @@ function create_missing_directory() {
 # Run external script to query frontend for source information
 #
 function get_data() {
-	
 	#set -x
 	"$SOURCE_DATA"/./sourcedata $1 $2
 	set +x
@@ -148,7 +147,7 @@ function write_device_fstab() {
 	local UUID=$(get_data $1 UUID)
 	local Source_Code=$(get_data $1 SourceCode)
 
-	echo "UUID=$UUID \
+	echo -e "UUID=$UUID \
 	$MOUNT_PATH/$Source_Code \
 	$DEVICE_DEFAULTS" \
 	> $FSTAB_DIR/$1.fstab
@@ -166,13 +165,12 @@ function write_smb_fstab() {
 	local Username=$(get_data $1 Username)
 	local Password=$(get_data $1 Password)
 	
-	echo "username=$Username\npassword=$Password" \
-	> $HOME/$CREDENTIALS/$1.smb
-	
-	echo "//$Remote_Host${Remote_Path// /\\040} \
+	echo -e "username=$Username\npassword=$Password" \
+	> $CREDENTIALS/$1.smb
+
+	echo -e "//$Remote_Host/${Remote_Path#/} \
 	$MOUNT_PATH/$Source_Code \
-	$SMB_DEFAULTS$HOME/$CREDENTIALS/$1.smb \
-	0 0" \
+	$SMB_DEFAULTS$CREDENTIALS/$1.smb" \
 	> $FSTAB_DIR/$1.fstab
 	set +x
 }
@@ -190,9 +188,9 @@ function write_sshfs_fstab() {
 	local Password=$(get_data $1 Password)
 	
 	echo "$Password" \
-	> $HOME/$CREDENTIALS/$1.sshfs
+	> $CREDENTIALS/$1.sshfs
 	
-	echo "sshfs $Username@$Remote_Host:$Remote_Path \
+	echo -e "sshfs $Username@$Remote_Host:$Remote_Path \
 	-p $REMOTE_PORT \
 	-o password_stdin \
 	-o allow_other \
@@ -216,7 +214,7 @@ function write_ftp_fstab() {
 	echo -e  "machine $Remote_Host\nlogin $Username\npassword $Password" \
 	> $HOME/.netrc
 	
-	echo "curlftpfs#$Username:$Password@$Remote_Host \
+	echo -e "curlftpfs#$Username:$Password@$Remote_Host \
 	$MOUNT_PATH/$Source_Code \
 	$FTP_DEFAULTS"\
 	> $FSTAB_DIR/$1.fstab
@@ -227,11 +225,11 @@ function write_ftp_fstab() {
 # Create fstab for bind mounts
 #
 function write_bind_fstab() {
-	#set -x
-	local TARGET=$(get_data $1 Target)
+	set -x
+	local Target=$(get_data $1 Target)
 	local Source_Code=$(get_data $1 SourceCode)
 	
-	echo "$TARGET \
+	echo -e "$Target \
 	$Source_Code \
 	$BIND_DEFAULTS" \
 	> $FSTAB_DIR/$1.fstab
@@ -261,28 +259,18 @@ function create_fstab() {
 # Checks the file system type of source and creates/updates an fstab 
 # entry
 #
-function update_fstab() {
+function save_fstab() {
 	#set -x
 	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
-
-	if [[ $FSType = device ]]; then
-		write_device_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = smb ]]; then
-		write_smb_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = sshfs ]]; then
-		write_sshfs_fstab $Source
+	
+	write_$FSType_fstab $Source
+	if [[ $FSType == ssshfs ]]; then
 		log "$Write_Log-sshfs.sh"
-	elif [[ $FSType = ftp ]]; then
-		write_ftp_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = bind ]]; then
-		write_bind_fstab $Source
+	else
 		log "$Write_Log.fstab"
 	fi
 
-	set -x
+	#set -x
 	create_fstab
 
 	set +x
@@ -320,7 +308,7 @@ function check_enabled_status() {
 # mounts source using methods based on filesystem type
 #
 function mount_by_type() {
-	#set -x
+	 #set -x
 	if [[ $FSType = sshfs ]]; then
 		SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
 		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
@@ -423,8 +411,17 @@ function update_status() {
 #	Determines which functions to call based on command line arguments
 #
 #-----------------------------------------------------------------------
- set -x
+#set -x
 echo $FSType
 export FSType=$(get_data $Source FSType)
 
-update_$1 $2
+case $1 in
+	save)
+		save_fstab
+		update_status
+		;;
+	*)
+		log "${E_ARGS[0]}" "${E_ARGS[1]}"
+		exit "${E_ARGS[0]}"
+		;;
+esac
