@@ -29,6 +29,7 @@ class FileSourceSSHFS extends FileSource
 		$this->Password = $RequestVars["password"];
 		$this->Title = $RequestVars["title"];
 		$this->SourceCode = $RequestVars["sourcecode"];
+		if(array_key_exists("enabled", $RequestVars)) { $this->Enabled = true; } else { $this->Enabled = false; }
 		
 		$this->FSType = "sshfs";
 		if($RequestVars["port"] != "") { $this->Port = $RequestVars["port"]; }
@@ -39,7 +40,7 @@ class FileSourceSSHFS extends FileSource
 		if($this->Password == "") { return false; }
 		if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
-		if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
+		//if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
 		
 		return true;
 	}

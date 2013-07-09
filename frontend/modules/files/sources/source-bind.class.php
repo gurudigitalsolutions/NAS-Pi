@@ -26,6 +26,7 @@ class FileSourceBIND extends FileSource
 		$this->Title = $RequestVars["title"];
 		$this->SourceCode = $RequestVars["sourcecode"];
 		$this->FSType = "bind";
+		if(array_key_exists("enabled", $RequestVars)) { $this->Enabled = true; } else { $this->Enabled = false; }
 		
 		if($this->OriginalSourceCode == "") { return false; }
 		if($this->OriginalPath == "") { return false; }
@@ -36,7 +37,7 @@ class FileSourceBIND extends FileSource
 		}
 		if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
-		if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
+		//if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
 		
 		return true;
 	}

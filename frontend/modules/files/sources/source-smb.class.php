@@ -29,6 +29,7 @@ class FileSourceSMB extends FileSource
 		$this->Title = $RequestVars["title"];
 		$this->SourceCode = $RequestVars["sourcecode"];
 		$this->FSType = "smb";
+		if(array_key_exists("enabled", $RequestVars)) { $this->Enabled = true; } else { $this->Enabled = false; }
 		
 		if($this->RemoteHost == "") { return false; }
 		if($this->RemotePath == "") { $this->RemotePath = "/"; }
@@ -36,7 +37,7 @@ class FileSourceSMB extends FileSource
 		if($this->Password == "") { return false; }
 		if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
-		if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
+		//if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
 		
 		return true;
 	}

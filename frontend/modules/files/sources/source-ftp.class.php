@@ -31,6 +31,7 @@ class FileSourceFTP extends FileSource
 		$this->SourceCode = $RequestVars["sourcecode"];
 		$this->FSType = "ftp";
 		if($RequestVars["port"] != "") { $this->Port = $RequestVars["port"]; }
+		if(array_key_exists("enabled", $RequestVars)) { $this->Enabled = true; } else { $this->Enabled = false; }
 		
 		if($this->RemoteHost == "") { return false; }
 		if($this->RemotePath == "") { $this->RemotePath = "/"; }
@@ -38,7 +39,7 @@ class FileSourceFTP extends FileSource
 		if($this->Password == "") { return false; }
 		if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
-		if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
+		//if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
 		
 		return true;
 	}

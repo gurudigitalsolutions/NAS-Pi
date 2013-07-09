@@ -30,7 +30,7 @@ class FileSourceLocal extends FileSource
 		$this->UUID = $RequestVars["uuid"];
 		$this->Label = $RequestVars["label"];
 		$this->Device = $RequestVars["device"];
-		
+		if(array_key_exists("enabled", $RequestVars)) { $this->Enabled = true; } else { $this->Enabled = false; }
 		
 		if($this->Title == "") { return false; }
 		if($this->SourceCode == "") { return false; }
@@ -38,7 +38,7 @@ class FileSourceLocal extends FileSource
 		&& $this->Label == ""
 		&& $this->Device == "") { return false; }
 		
-		if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
+		//if($RequestVars["enabled"] == "") { $this->Enabled = false; } else { $this->Enabled = true; }
 		
 		$fnd = array();
 		if($this->Device != "")
