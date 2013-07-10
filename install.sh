@@ -19,7 +19,7 @@
 #
 #-----------------------------------------------------------------------
 
-DEPENDENCIES=( samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs curlftpfs netcat-openbsd unzip)
+DEPENDENCIES="samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs curlftpfs netcat-openbsd unzip"
 
 APACHE_USER="naspi"
 INSTALL_DIR="/usr/share/naspi"
@@ -43,7 +43,7 @@ ERRORS=$INSTALL_DIR/errors
 
 ENVARS=$ETC/envars
 
-EMPTY_DIR=( "$INSTALL_DIR" "log" "modules/users/accounts" "modules/users/sessions" "modules/files/sources/data" )
+EMPTY_DIR="$INSTALL_DIR log modules/users/accounts modules/users/sessions modules/files/sources/data"
 
 #-----------------------------------------------------------------------
 #
@@ -81,7 +81,7 @@ function install_dependencies
 {
 #set -x
 	echo "  [ CHECKING DEPENDANCIES ]"
-	for dep in ${DEPENDENCIES[@]}; do
+	for dep in $DEPENDENCIES; do
 
 		dpkg -s $dep &>/dev/null
 		if [[ $? -eq 1 ]];then
@@ -189,7 +189,7 @@ function configure_apache
 #
 function create_empty_directories() {
 #set -x
-	for empty in ${EMPTY_DIR[@]};do
+	for empty in $EMPTY_DIR;do
 		if [[ ! -e $INSTALL_DIR/$empty ]]; then
 			echo "  [ CREATING $INSTALL_DIR/$empty ]"
 			mkdir -p -m 755 $INSTALL_DIR/$empty	
@@ -227,6 +227,7 @@ function configure_fuse
 {
 	if [[ ! -e $FUSE ]]; then
 		echo "  [ CONFIGURING FUSE FOR USERS ]"
+		mv $FUSE $FUSE-bak
 		cp "backend${FUSE}" "${FUSE}"
 	else
 		compare_files "backend${FUSE}" "${FUSE}"
