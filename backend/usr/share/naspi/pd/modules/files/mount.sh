@@ -107,12 +107,20 @@ fi
 # Create a directory if not already present
 #
 function create_missing_directory() {
-	#set -x
-	if [[ ! -e $1 ]] && [[ ! -d $1 ]]; then
-		echo "Created directory: $1"
-		mkdir -p "$1"
+#set -x
+	if [[ ! -e $1 ]]; then
+		
+		if [[ x$2 != x ]]; then
+			mkdir -pm "$2" "$1"
+		else
+			mkdir -p "$1"
+		fi
+		
+		if [[ $? -eq 0 ]];then
+			echo "Created directory: $1"
+		fi
 	fi
-	set +x
+set +x
 }
 
 #
@@ -347,10 +355,11 @@ set +x
 #
 function save_fstab() {
 #set -x
+	create_missing_directory $CREDENTIALS 750
 	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
 	
 	${FSType}_fstab
-	log "$Write_Log.fstab"
+	log "$Write_Log.$FSType"
 	create_fstab
 
 set +x
@@ -378,7 +387,7 @@ function mount_control() {
 			
 		elif [[ $1 == mount ]]; then 	
 			SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
-			$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
+			$SSHFS_SCRIPT < $CREDENTIALS/$Source.sshfs
 		fi
 		
 	elif [[ $1 == unmount ]]; then
