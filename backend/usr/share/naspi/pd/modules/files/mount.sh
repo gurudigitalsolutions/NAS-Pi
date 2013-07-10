@@ -15,7 +15,7 @@ PROG=naspi
 ENVARS=/etc/$PROG/envars
 
 #
-# Source the errors file
+# Source environment variable file
 #
 #set -x
 . $ENVARS
@@ -85,11 +85,11 @@ function log() {
 	#set -x
 	
 	if [[ $# -eq 1 ]]; then
-		echo $1 >> $LOG
+		echo "[$(date +%m/%d\ %H:%M:%S)]" $1 >> $LOG
 	
 	# Log error messages if logging is enabled
 	elif [[ $# -ge 2 ]] && [[ $E_LOGGING == TRUE ]];then
-		echo "[ERROR $1]: ${@:2}" >> $LOG
+		echo "[$(date +%m/%d\ %H:%M:%S)|[ERROR $1]: ${@:2}" >> $LOG
 	fi
 	
 	set +x
@@ -107,28 +107,43 @@ fi
 # Create a directory if not already present
 #
 function create_missing_directory() {
-	#set -x
-	if [[ ! -e $1 ]] && [[ ! -d $1 ]]; then
-		echo "Created directory: $1"
-		mkdir -p "$1"
+#set -x
+	if [[ ! -e $1 ]]; then
+		if [[ $# -eq 2 ]]; then
+			mkdir -pm "$2" "$1"
+		else
+			mkdir -p "$1"
+		fi
+		if [[ $? -eq 0 ]];then
+			echo "Created directory: $1"
+		fi
 	fi
-	set +x
+set +x
 }
 
 #
 # Run external script to query frontend for source information
 #
 function get_data() {
-	
-	#set -x
+#set -x
 	"$SOURCE_DATA"/./sourcedata $1 $2
-	set +x
+set +x
 }
 
-set -f
-IFS=$'\n'
+FSType=$(get_data $Source FSType)
 
-Attributes=($(get_data $Source))
+Source_List=$(get_data)
+
+#Device_Atrib="UUID Label Device FSType FindBy Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired"
+	
+#Smb_Atrib="RemoteHost RemotePath Username Password Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
+
+#Sshfs_Atrib="RemoteHost RemotePath Username Password Port Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
+
+#Ftp_Atrib="RemoteHost RemotePath Username Password Port Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
+
+#Bind_Atrib="SourceNode DestinationNode Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired OriginalSourceCode OriginalPath FSType"
+
 #-----------------------------------------------------------------------
 #
 #	Update Fstab
@@ -140,9 +155,9 @@ Attributes=($(get_data $Source))
 #-----------------------------------------------------------------------
 
 #
-# Makes decisions based on share types
+# Block device specifics
 #
-function write_device_fstab() {		
+function device_fstab() {		
 	#set -x
 	local UUID=$(get_data $1 UUID)
 	local Source_Code=$(get_data $1 SourceCode)
@@ -155,10 +170,12 @@ function write_device_fstab() {
 }
 
 #
-# Create fstab for smb specific shares
+# SMB specifics
 #
-function write_smb_fstab() {
-	#set -x
+function smb_fstab() {
+#set -x
+	create_missing_directory $CREDENTIALS 750
+
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local Remote_Path=$(get_data $1 RemotePath)
 	local Source_Code=$(get_data $1 SourceCode)
@@ -167,28 +184,35 @@ function write_smb_fstab() {
 	
 	echo -e "username=$Username\npassword=$Password" \
 	> $CREDENTIALS/$1.smb
-
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
+	
 	echo -e "//$Remote_Host/${Remote_Path#/} \
 	$MOUNT_PATH/$Source_Code \
 	$SMB_DEFAULTS$CREDENTIALS/$1.smb" \
 	> $FSTAB_DIR/$1.fstab
-	set +x
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
+	
+set +x
 }
 
 #
-# Create shell script for sshfs shares
+# SSHFS specifics
 #
-function write_sshfs_fstab() {
-	#set -x
+function sshfs_fstab() {
+#set -x
+	create_missing_directory $CREDENTIALS 750
+	
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local REMOTE_PORT=$(get_data $1 Port)
 	local Remote_Path=$(get_data $1 RemotePath)
 	local Source_Code=$(get_data $1 SourceCode)
 	local Username=$(get_data $1 Username)
 	local Password=$(get_data $1 Password)
-	
+
 	echo "$Password" \
 	> $CREDENTIALS/$1.sshfs
+	
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
 	
 	echo "sshfs $Username@$Remote_Host:$Remote_Path \
 	-p $REMOTE_PORT \
@@ -197,13 +221,16 @@ function write_sshfs_fstab() {
 	-o StrictHostKeyChecking=no \
 	$MOUNT_PATH/$Source_Code" \
 	> $FSTAB_DIR/$1-sshfs.sh
-	set +x
+	
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
+	
+set +x
 }
 
 #
-# Create fstab for ftp shares
+# FTP specifics
 #
-function write_ftp_fstab() {
+function ftp_fstab() {
 	#set -x
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local REMOTE_PORT=$(get_data $1 Port)
@@ -212,20 +239,25 @@ function write_ftp_fstab() {
 	local Password=$(get_data $1 Password)
 	
 	echo -e  "machine $Remote_Host\nlogin $Username\npassword $Password" \
-	> $HOME/.netrc
+	> /root/.netrc
+	
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
 	
 	echo "curlftpfs#$Username:$Password@$Remote_Host \
 	$MOUNT_PATH/$Source_Code \
 	$FTP_DEFAULTS"\
 	> $FSTAB_DIR/$1.fstab
-	set +x
+
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
+	
+set +x
 }
 
 #
-# Create fstab for bind mounts
+# Bind specifics
 #
-function write_bind_fstab() {
-	#set -x
+function bind_fstab() {
+#set -x
 	local Source_Code=$(get_data $1 SourceCode)
 	local Original_Source_Code=$(get_data $1 OriginalSourceCode)
 	local Original_Path=$(get_data $1 OriginalPath)
@@ -234,18 +266,9 @@ function write_bind_fstab() {
 	$MOUNT_PATH/$Source_Code \
 	$BIND_DEFAULTS" \
 	> $FSTAB_DIR/$1.fstab
-	set +x
-}
 
-#
-# Write new fstab file for resume at boot
-#
-function create_fstab() {
-#set -x
-	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
-		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > $FSTAB_DIR/fullstab
-	fi
-	cat $FSTAB_DIR/fullstab > /etc/fstab
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
+	
 set +x
 }
 
@@ -255,12 +278,13 @@ set +x
 #
 function save_fstab() {
 #set -x
-	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
-	
-	write_$FSType_fstab
-	log "$Write_Log.fstab"
-	create_fstab
+	${FSType}_fstab $Source
+	[[ $? -eq 0 ]]&& log "Saved source to $FSTAB_DIR/$Source"
 
+	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
+		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > /etc/fstab
+	fi
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} main fstab"
 set +x
 }
 
@@ -279,21 +303,27 @@ set +x
 #
 function mount_control() {
 #set -x
-	if [[ $FSType = sshfs ]]&&[[ $1 == unmount ]]; then
-		fusermount -u $MOUNT_PATH/$Source
+	if [[ $FSType == sshfs ]];then
+		
+		if [[ $1 == unmount ]]; then
+			fusermount -u $MOUNT_PATH/$Source
 
-	elif [[ $FSType = sshfs ]]&&[[ $1 == mount ]]; then 	
-		SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
-		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
-
-	else
-		$1 "$MOUNT_PATH/$Source"
+		elif [[ $1 == mount ]]; then 	
+			SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
+			$SSHFS_SCRIPT < $CREDENTIALS/$Source.sshfs
+		fi
+		
+	elif [[ $1 == unmount ]]; then
+		umount "$MOUNT_PATH/$Source"
+		
+	elif [[ $1 == mount ]]; then
+		mount "$MOUNT_PATH/$Source"
 	fi
 
 	if [[ $? -ne 0 ]]; then
-		log ${E_MOUNT[0]} "${E_MOUNT[1]}"
+		log ${E_MOUNT[0]} "${E_MOUNT[1]} ${1}ing $MOUNT_PATH/$Source"
 	else
-		log "$1ed $Source successfully"
+		log "${1}ed $MOUNT_PATH/$Source successfully"
 	fi
 set +x
 }
@@ -306,19 +336,17 @@ function update_status() {
 #set -x
 	Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
 	Enabled=$(get_data $Source Enabled)
-	
-#set -x		YES				NO
-	if [[ X$Enabled == X1 ]]&&[[ X$Mounted == X ]];then
+
+	if [[ X$Enabled != X ]]&&[[ X$Mounted == X ]];then
 		create_missing_directory "$MOUNT_PATH/$Source"
 		mount_control mount
-		
-#set -x		YES				YES
-	elif [[ X$Enabled == X1 ]]&&[[ X$Mounted != X ]];then
-		mount_control unmount
-		mount_control mount
-		
-#set -x		NO				YES
+
 	elif [[ X$Enabled != X ]]&&[[ X$Mounted != X ]];then
+		mount_control unmount
+		create_missing_directory "$MOUNT_PATH/$Source"
+		mount_control mount
+
+	elif [[ X$Enabled == X ]]&&[[ X$Mounted != X ]];then
 		mount_control unmount
 
 	fi
