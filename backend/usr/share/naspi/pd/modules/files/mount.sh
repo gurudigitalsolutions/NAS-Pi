@@ -241,15 +241,12 @@ function write_bind_fstab() {
 # Write new fstab file for resume at boot
 #
 function create_fstab() {
-	#set -x
+#set -x
 	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
 		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > $FSTAB_DIR/fullstab
-	else
-		cp $FSTAB_DIR/fstab.orignial $FSTAB_DIR/fullstab
 	fi
-	
 	cat $FSTAB_DIR/fullstab > /etc/fstab
-	set +x
+set +x
 }
 
 #
@@ -257,30 +254,14 @@ function create_fstab() {
 # entry
 #
 function save_fstab() {
-	#set -x
+#set -x
 	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
-
-	if [[ $FSType = device ]]; then
-		write_device_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = smb ]]; then
-		write_smb_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = sshfs ]]; then
-		write_sshfs_fstab $Source
-		log "$Write_Log-sshfs.sh"
-	elif [[ $FSType = ftp ]]; then
-		write_ftp_fstab $Source
-		log "$Write_Log.fstab"
-	elif [[ $FSType = bind ]]; then
-		write_bind_fstab $Source
-		log "$Write_Log.fstab"
-	fi
-
-	#set -x
+	
+	write_$FSType_fstab
+	log "$Write_Log.fstab"
 	create_fstab
 
-	set +x
+set +x
 }
 
 #-----------------------------------------------------------------------
@@ -294,112 +275,55 @@ function save_fstab() {
 #-----------------------------------------------------------------------
 
 #
-# checks if the source is mounted
+# mounts/unmounts sources based on filesystem type
 #
-function check_status() {
-	#set -x
-	if [[ $1 == mount ]];then
-		Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
-	elif [[ $1 == enabled ]]; then
-		Enabled=$(get_data $Source Enabled)
-	fi
-	
-	set +x
-}
-
-#
-# mounts source using methods based on filesystem type
-#
-function mount_by_type() {
-	 #set -x
-	if [[ $FSType = sshfs ]]; then
-		SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
-		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
-	else
-		mount "$MOUNT_PATH/$Source"
-	fi
-	set +x
-}
-
-#
-# unmounts source using methods based on filesystem type
-#
-function unmount_by_type() {
-	#set -x
+function mount_control() {
+#set -x
 	if [[ $FSType = sshfs ]]&&[[ $1 == unmount ]]; then
 		fusermount -u $MOUNT_PATH/$Source
+
 	elif [[ $FSType = sshfs ]]&&[[ $1 == mount ]]; then 	
 		SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
 		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
+
 	else
 		$1 "$MOUNT_PATH/$Source"
 	fi
-	
-	set +x
-}
 
-#
-# unmount mounted sources if the source has been disabled
-#
-function mount_control() {
-	#set -x
-	if [[ $1 == unmount ]];then
-		Test="[[ X$Mounted == X ]]"
-	elif [[ $1 == mount ]];then
-		Test="[[ X$Mounted != X ]]"
-		create_missing_directory "$MOUNT_PATH/$Source"
-	fi
-	
-	Attempt=0
-	until "$Test" ||[[ $Attempt = $RETRIES ]];do
-		$1_by_type
-		check_status mount
-		((Attempt++))
-		sleep $RETRY_INTERVAL
-	done
-	
-	set +x
-}
-
-#
-# logs status of mount/unmount attempt
-#
-function success_fail() {
-	#set -x
-	if [[ $Attempt = $RETRIES ]];then
-		log "$E_MOUNT" "$M_MOUNT"
-		
+	if [[ $? -ne 0 ]]; then
+		log ${E_MOUNT[0]} "${E_MOUNT[1]}"
 	else
-		log "$1 $Source successfully"
+		log "$1ed $Source successfully"
 	fi
-	
-	set +x
+set +x
 }
-
 
 #
 # Checks if the specified source is mounted and attempts to mount it if
 # not already mounted
 #
 function update_status() {
-	#set -x
-	check_status mount
-	check_status enabled
-
-	#set -x
+#set -x
+	Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
+	Enabled=$(get_data $Source Enabled)
+	
+#set -x		YES				NO
 	if [[ X$Enabled == X1 ]]&&[[ X$Mounted == X ]];then
+		create_missing_directory "$MOUNT_PATH/$Source"
 		mount_control mount
-		success_fail "Mounted"
+		
+#set -x		YES				YES
 	elif [[ X$Enabled == X1 ]]&&[[ X$Mounted != X ]];then
 		mount_control unmount
 		mount_control mount
-		success_fail "Remounted"
-	elif [[ X$Enabled = X ]]&&[[ X$Mounted != X ]];then
+		
+#set -x		NO				YES
+	elif [[ X$Enabled != X ]]&&[[ X$Mounted != X ]];then
 		mount_control unmount
-		success_fail "Unmounted"
+
 	fi
 
-	set +x
+set +x
 }
 
 #-----------------------------------------------------------------------
