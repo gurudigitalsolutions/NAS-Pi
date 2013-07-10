@@ -276,21 +276,25 @@ set +x
 #
 function mount_control() {
  set -x
-	if [[ $FSType = sshfs ]]&&[[ $1 == unmount ]]; then
-		fusermount -u $MOUNT_PATH/$Source
-
-	elif [[ $FSType = sshfs ]]&&[[ $1 == mount ]]; then 	
-		SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
-		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
-
-	else
-		${1//un/u} "$MOUNT_PATH/$Source"
+	if [[ $FSType == sshfs ]];then
+		
+		if [[ $1 == unmount ]]; then
+			fusermount -u $MOUNT_PATH/$Source
+		elif [[ $1 == mount ]]; then 	
+			SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
+			$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
+		fi
+		
+	elif [[ $1 == unmount ]]; then
+		umount "$MOUNT_PATH/$Source"
+	elif [[ $1 == mount ]]; then
+		mount "$MOUNT_PATH/$Source"
 	fi
 
 	if [[ $? -ne 0 ]]; then
 		log ${E_MOUNT[0]} "${E_MOUNT[1]}"
 	else
-		log "$1ed $Source successfully"
+		log "${1}ed $Source successfully"
 	fi
 set +x
 }
