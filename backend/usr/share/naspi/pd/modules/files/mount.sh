@@ -344,14 +344,14 @@ function unmount_by_type() {
 function mount_control() {
 	#set -x
 	if [[ $1 == unmount ]];then
-		Test='[[ X$Mounted == X ]]'
+		Test="[[ X$Mounted == X ]]"
 	elif [[ $1 == mount ]];then
-		Test='[[ X$Mounted != X ]]'
+		Test="[[ X$Mounted != X ]]"
 		create_missing_directory "$MOUNT_PATH/$Source"
 	fi
 	
 	Attempt=0
-	until $Test||[[ $Attempt = $RETRIES ]];do
+	until "$Test" ||[[ $Attempt = $RETRIES ]];do
 		$1_by_type
 		check_status mount
 		((Attempt++))
