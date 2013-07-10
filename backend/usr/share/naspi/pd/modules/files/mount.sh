@@ -125,7 +125,102 @@ function get_data() {
 	set +x
 }
 FSType=$(get_data $Source FSType)
-Attributes=($(get_data $Source))
+
+#
+#
+#
+function source_attributes() {
+#set -x
+	Attrs=$(get_data $Source)
+}
+	#DEVICE
+#UUID
+#Label
+#Device
+#FSType
+#FindBy
+#Title
+#SourceCode
+#Enabled
+#HTTPShareEnabled
+#HTTPShareAuthRequired
+	#
+	#UUID=$(get_data $1 UUID)
+	#Source_Code=$(get_data $1 SourceCode)
+	
+	#SMB
+#RemoteHost
+#RemotePath
+#Username
+#Password
+#Title
+#SourceCode
+#Enabled
+#HTTPShareEnabled
+#HTTPShareAuthRequired
+#FSType
+	#
+	#Remote_Host=$(get_data $1 RemoteHost)
+	#Remote_Path=$(get_data $1 RemotePath)
+	#Source_Code=$(get_data $1 SourceCode)
+	#Username=$(get_data $1 Username)
+	#Password=$(get_data $1 Password)
+	
+	#SSHFS
+#RemoteHost
+#RemotePath
+#Username
+#Password
+#Port
+#Title
+#SourceCode
+#Enabled
+#HTTPShareEnabled
+#HTTPShareAuthRequired
+#FSType
+#
+	#Remote_Host=$(get_data $1 RemoteHost)
+	#REMOTE_PORT=$(get_data $1 Port)
+	#Remote_Path=$(get_data $1 RemotePath)
+	#Source_Code=$(get_data $1 SourceCode)
+	#Username=$(get_data $1 Username)
+	#Password=$(get_data $1 Password)
+
+	#FTP
+#RemoteHost
+#RemotePath
+#Username
+#Password
+#Port
+#Title
+#SourceCode
+#Enabled
+#HTTPShareEnabled
+#HTTPShareAuthRequired
+#FSType
+#
+	#Remote_Host=$(get_data $1 RemoteHost)
+	#REMOTE_PORT=$(get_data $1 Port)
+	#Source_Code=$(get_data $1 SourceCode)
+	#Username=$(get_data $1 Username)
+	#Password=$(get_data $1 Password)
+
+	#BIND
+#SourceNode
+#DestinationNode
+#Title
+#SourceCode
+#Enabled
+#HTTPShareEnabled
+#HTTPShareAuthRequired
+#OriginalSourceCode
+#OriginalPath
+#FSType
+#
+	#Source_Code=$(get_data $1 SourceCode)
+	#Original_Source_Code=$(get_data $1 OriginalSourceCode)
+	#Original_Path=$(get_data $1 OriginalPath)
+
 #-----------------------------------------------------------------------
 #
 #	Update Fstab
@@ -275,11 +370,12 @@ set +x
 # mounts/unmounts sources based on filesystem type
 #
 function mount_control() {
- set -x
+#set -x
 	if [[ $FSType == sshfs ]];then
 		
 		if [[ $1 == unmount ]]; then
 			fusermount -u $MOUNT_PATH/$Source
+			
 		elif [[ $1 == mount ]]; then 	
 			SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
 			$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
@@ -287,6 +383,7 @@ function mount_control() {
 		
 	elif [[ $1 == unmount ]]; then
 		umount "$MOUNT_PATH/$Source"
+		
 	elif [[ $1 == mount ]]; then
 		mount "$MOUNT_PATH/$Source"
 	fi
@@ -294,7 +391,7 @@ function mount_control() {
 	if [[ $? -ne 0 ]]; then
 		log ${E_MOUNT[0]} "${E_MOUNT[1]}"
 	else
-		log "${1}ed $Source successfully"
+		log "${1}ed $MOUNT_PATH/$Source successfully"
 	fi
 set +x
 }
@@ -307,19 +404,16 @@ function update_status() {
 #set -x
 	Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
 	Enabled=$(get_data $Source Enabled)
-	
-#set -x		YES				NO
-	if [[ X$Enabled == X ]]&&[[ X$Mounted == X ]];then
+
+	if [[ X$Enabled != X ]]&&[[ X$Mounted == X ]];then
 		create_missing_directory "$MOUNT_PATH/$Source"
 		mount_control mount
-		
-#set -x		YES				YES
-	elif [[ X$Enabled == X ]]&&[[ X$Mounted != X ]];then
+
+	elif [[ X$Enabled != X ]]&&[[ X$Mounted != X ]];then
 		mount_control unmount
 		mount_control mount
-		
-#set -x		NO				YES
-	elif [[ X$Enabled != X ]]&&[[ X$Mounted != X ]];then
+
+	elif [[ X$Enabled == X ]]&&[[ X$Mounted != X ]];then
 		mount_control unmount
 
 	fi
