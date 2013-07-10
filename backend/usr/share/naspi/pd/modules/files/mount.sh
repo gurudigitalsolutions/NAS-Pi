@@ -134,41 +134,15 @@ FSType=$(get_data $Source FSType)
 
 Source_List=$(get_data)
 
-#DEVICE
-Device_Atrib="UUID Label Device FSType FindBy Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired"
-#UUID=$(get_data $1 UUID)
-#Source_Code=$(get_data $1 SourceCode)
+#Device_Atrib="UUID Label Device FSType FindBy Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired"
 	
-#SMB
-Smb_Atrib="RemoteHost RemotePath Username Password Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
-#Remote_Host=$(get_data $1 RemoteHost)
-#Remote_Path=$(get_data $1 RemotePath)
-#Source_Code=$(get_data $1 SourceCode)
-#Username=$(get_data $1 Username)
-#Password=$(get_data $1 Password)
+#Smb_Atrib="RemoteHost RemotePath Username Password Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
 
-#SSHFS
-Sshfs_Atrib="RemoteHost RemotePath Username Password Port Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
-#Remote_Host=$(get_data $1 RemoteHost)
-#REMOTE_PORT=$(get_data $1 Port)
-#Remote_Path=$(get_data $1 RemotePath)
-#Source_Code=$(get_data $1 SourceCode)
-#Username=$(get_data $1 Username)
-#Password=$(get_data $1 Password)
+#Sshfs_Atrib="RemoteHost RemotePath Username Password Port Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
 
-#FTP
-Ftp_Atrib="RemoteHost RemotePath Username Password Port Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
-#Remote_Host=$(get_data $1 RemoteHost)
-#REMOTE_PORT=$(get_data $1 Port)
-#Source_Code=$(get_data $1 SourceCode)
-#Username=$(get_data $1 Username)
-#Password=$(get_data $1 Password)
+#Ftp_Atrib="RemoteHost RemotePath Username Password Port Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
 
-#BIND
-Bind_Atrib="SourceNode DestinationNode Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired OriginalSourceCode OriginalPath FSType"
-#Source_Code=$(get_data $1 SourceCode)
-#Original_Source_Code=$(get_data $1 OriginalSourceCode)
-#Original_Path=$(get_data $1 OriginalPath)
+#Bind_Atrib="SourceNode DestinationNode Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired OriginalSourceCode OriginalPath FSType"
 
 #-----------------------------------------------------------------------
 #
@@ -210,12 +184,14 @@ function smb_fstab() {
 	
 	echo -e "username=$Username\npassword=$Password" \
 	> $CREDENTIALS/$1.smb
-	[[ $? -eq 0 ]]|| return $?
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
 	
 	echo -e "//$Remote_Host/${Remote_Path#/} \
 	$MOUNT_PATH/$Source_Code \
 	$SMB_DEFAULTS$CREDENTIALS/$1.smb" \
 	> $FSTAB_DIR/$1.fstab
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
+	
 set +x
 }
 
@@ -235,7 +211,8 @@ function sshfs_fstab() {
 
 	echo "$Password" \
 	> $CREDENTIALS/$1.sshfs
-	[[ $? -eq 0 ]]|| return $?
+	
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
 	
 	echo "sshfs $Username@$Remote_Host:$Remote_Path \
 	-p $REMOTE_PORT \
@@ -244,6 +221,9 @@ function sshfs_fstab() {
 	-o StrictHostKeyChecking=no \
 	$MOUNT_PATH/$Source_Code" \
 	> $FSTAB_DIR/$1-sshfs.sh
+	
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
+	
 set +x
 }
 
@@ -260,13 +240,16 @@ function ftp_fstab() {
 	
 	echo -e  "machine $Remote_Host\nlogin $Username\npassword $Password" \
 	> /root/.netrc
-	[[ $? -eq 0 ]]|| return $?
+	
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
 	
 	echo "curlftpfs#$Username:$Password@$Remote_Host \
 	$MOUNT_PATH/$Source_Code \
 	$FTP_DEFAULTS"\
 	> $FSTAB_DIR/$1.fstab
 
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
+	
 set +x
 }
 
@@ -283,6 +266,8 @@ function bind_fstab() {
 	$MOUNT_PATH/$Source_Code \
 	$BIND_DEFAULTS" \
 	> $FSTAB_DIR/$1.fstab
+
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} $Source"
 	
 set +x
 }
@@ -299,7 +284,7 @@ function save_fstab() {
 	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
 		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > /etc/fstab
 	fi
-	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]}"
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]} main fstab"
 set +x
 }
 
@@ -339,7 +324,6 @@ function mount_control() {
 		log ${E_MOUNT[0]} "${E_MOUNT[1]} ${1}ing $MOUNT_PATH/$Source"
 	else
 		log "${1}ed $MOUNT_PATH/$Source successfully"
-			rmdir $MOUNT_PATH/$Source
 	fi
 set +x
 }
@@ -350,19 +334,19 @@ set +x
 #
 function update_status() {
 #set -x
-	mount -l | grep "on / type " &>/dev/null
-	Mounted=$(echo $?)
+	Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
 	Enabled=$(get_data $Source Enabled)
 
-	if [[ X$Enabled != X ]]&&[[ $Mounted -ne 0 ]];then
+	if [[ X$Enabled != X ]]&&[[ X$Mounted == X ]];then
 		create_missing_directory "$MOUNT_PATH/$Source"
 		mount_control mount
 
-	elif [[ X$Enabled != X ]]&&[[ $Mounted -eq 0 ]];then
+	elif [[ X$Enabled != X ]]&&[[ X$Mounted != X ]];then
 		mount_control unmount
+		create_missing_directory "$MOUNT_PATH/$Source"
 		mount_control mount
 
-	elif [[ X$Enabled == X ]]&&[[ $Mounted -eq 0 ]];then
+	elif [[ X$Enabled == X ]]&&[[ X$Mounted != X ]];then
 		mount_control unmount
 
 	fi
