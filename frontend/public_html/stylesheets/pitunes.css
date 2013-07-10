@@ -1,0 +1,43 @@
+.pitunes_header
+{
+	background: #000000;
+	color: #FFFFFF;
+	font-size: 1.4em;
+	font-weight: bold;
+}
+
+.pitunes_player
+{
+
+}
+
+.pitunes_playlist
+{
+	width: 500px;
+	height: 340px;
+	overflow: scroll;
+	overflow-x: scroll;
+	overflow-y: scroll;
+	white-space: nowrap;
+	background: #222222;
+	color: #FFFFFF;
+}
+
+.pitunes_library
+{
+
+}
+
+.pitunes_currentlyplaying
+{
+	border-style: inset;
+	border-color: #BBBBBB;
+	padding: 5px;
+	background: #DDDDDD;
+	width: 500px;
+}
+
+.pitunes_controls
+{
+
+}
