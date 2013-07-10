@@ -19,17 +19,17 @@ CONFIG=/etc/$PROG/${PROG}.conf
 . $ERRORS
 
 error() {
-	echo "[ ERROR $1 ] ${@:2}" 1>&2 >$LOG
+	echo "[ ERROR $1 ] ${@:2}" 1>&2 >>$LOG
 	exit "$1"
 }
 
 start() {
 	rm "/tmp/naspi/pd/pd.sock" 2>/dev/null
-	$DAEMON_PATH/$DAEMON_SCRIPT start &>$LOG &
+	$DAEMON_PATH/$DAEMON_SCRIPT start &>>$LOG &
 }
 
 stop() {
-	$DAEMON_PATH/$DAEMON_SCRIPT stop &>$LOG &
+	$DAEMON_PATH/$DAEMON_SCRIPT stop &>>$LOG &
 }
 
 
