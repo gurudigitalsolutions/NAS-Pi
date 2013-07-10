@@ -279,17 +279,17 @@ function smb_fstab() {
 # Create shell script for sshfs shares
 #
 function sshfs_fstab() {
-	#set -x
+#set -x
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local REMOTE_PORT=$(get_data $1 Port)
 	local Remote_Path=$(get_data $1 RemotePath)
 	local Source_Code=$(get_data $1 SourceCode)
 	local Username=$(get_data $1 Username)
 	local Password=$(get_data $1 Password)
-	
+set -x	
 	echo "$Password" \
 	> $CREDENTIALS/$1.sshfs
-	
+set +x	
 	echo "sshfs $Username@$Remote_Host:$Remote_Path \
 	-p $REMOTE_PORT \
 	-o password_stdin \
@@ -297,7 +297,7 @@ function sshfs_fstab() {
 	-o StrictHostKeyChecking=no \
 	$MOUNT_PATH/$Source_Code" \
 	> $FSTAB_DIR/$1-sshfs.sh
-	set +x
+set +x
 }
 
 #
@@ -384,12 +384,12 @@ function mount_control() {
 		
 		if [[ $1 == unmount ]]; then
 			fusermount -u $MOUNT_PATH/$Source
-			
+set -x			
 		elif [[ $1 == mount ]]; then 	
 			SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
 			$SSHFS_SCRIPT < $CREDENTIALS/$Source.sshfs
 		fi
-		
+set +x		
 	elif [[ $1 == unmount ]]; then
 		umount "$MOUNT_PATH/$Source"
 		
