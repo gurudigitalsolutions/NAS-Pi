@@ -15,7 +15,7 @@ PROG=naspi
 ENVARS=/etc/$PROG/envars
 
 #
-# Source the errors file
+# Source environment variable file
 #
 #set -x
 . $ENVARS
@@ -109,13 +109,11 @@ fi
 function create_missing_directory() {
 #set -x
 	if [[ ! -e $1 ]]; then
-		
-		if [[ x$2 != x ]]; then
+		if [[ $# -eq 2 ]]; then
 			mkdir -pm "$2" "$1"
 		else
 			mkdir -p "$1"
 		fi
-		
 		if [[ $? -eq 0 ]];then
 			echo "Created directory: $1"
 		fi
@@ -127,107 +125,50 @@ set +x
 # Run external script to query frontend for source information
 #
 function get_data() {
-	
-	#set -x
+#set -x
 	"$SOURCE_DATA"/./sourcedata $1 $2
-	set +x
+set +x
 }
+
 FSType=$(get_data $Source FSType)
 
-#
-#
-#
-function source_attributes() {
-#set -x
-	Attrs=$(get_data $Source)
-}
-	#DEVICE
-#UUID
-#Label
-#Device
-#FSType
-#FindBy
-#Title
-#SourceCode
-#Enabled
-#HTTPShareEnabled
-#HTTPShareAuthRequired
-	#
-	#UUID=$(get_data $1 UUID)
-	#Source_Code=$(get_data $1 SourceCode)
-	
-	#SMB
-#RemoteHost
-#RemotePath
-#Username
-#Password
-#Title
-#SourceCode
-#Enabled
-#HTTPShareEnabled
-#HTTPShareAuthRequired
-#FSType
-	#
-	#Remote_Host=$(get_data $1 RemoteHost)
-	#Remote_Path=$(get_data $1 RemotePath)
-	#Source_Code=$(get_data $1 SourceCode)
-	#Username=$(get_data $1 Username)
-	#Password=$(get_data $1 Password)
-	
-	#SSHFS
-#RemoteHost
-#RemotePath
-#Username
-#Password
-#Port
-#Title
-#SourceCode
-#Enabled
-#HTTPShareEnabled
-#HTTPShareAuthRequired
-#FSType
-#
-	#Remote_Host=$(get_data $1 RemoteHost)
-	#REMOTE_PORT=$(get_data $1 Port)
-	#Remote_Path=$(get_data $1 RemotePath)
-	#Source_Code=$(get_data $1 SourceCode)
-	#Username=$(get_data $1 Username)
-	#Password=$(get_data $1 Password)
+Source_List=$(get_data)
 
-	#FTP
-#RemoteHost
-#RemotePath
-#Username
-#Password
-#Port
-#Title
-#SourceCode
-#Enabled
-#HTTPShareEnabled
-#HTTPShareAuthRequired
-#FSType
-#
-	#Remote_Host=$(get_data $1 RemoteHost)
-	#REMOTE_PORT=$(get_data $1 Port)
-	#Source_Code=$(get_data $1 SourceCode)
-	#Username=$(get_data $1 Username)
-	#Password=$(get_data $1 Password)
+#DEVICE
+Device_Atrib="UUID Label Device FSType FindBy Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired"
+#UUID=$(get_data $1 UUID)
+#Source_Code=$(get_data $1 SourceCode)
+	
+#SMB
+Smb_Atrib="RemoteHost RemotePath Username Password Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
+#Remote_Host=$(get_data $1 RemoteHost)
+#Remote_Path=$(get_data $1 RemotePath)
+#Source_Code=$(get_data $1 SourceCode)
+#Username=$(get_data $1 Username)
+#Password=$(get_data $1 Password)
 
-	#BIND
-#SourceNode
-#DestinationNode
-#Title
-#SourceCode
-#Enabled
-#HTTPShareEnabled
-#HTTPShareAuthRequired
-#OriginalSourceCode
-#OriginalPath
-#FSType
-#
-	#Source_Code=$(get_data $1 SourceCode)
-	#Original_Source_Code=$(get_data $1 OriginalSourceCode)
-	#Original_Path=$(get_data $1 OriginalPath)
+#SSHFS
+Sshfs_Atrib="RemoteHost RemotePath Username Password Port Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
+#Remote_Host=$(get_data $1 RemoteHost)
+#REMOTE_PORT=$(get_data $1 Port)
+#Remote_Path=$(get_data $1 RemotePath)
+#Source_Code=$(get_data $1 SourceCode)
+#Username=$(get_data $1 Username)
+#Password=$(get_data $1 Password)
+
+#FTP
+Ftp_Atrib="RemoteHost RemotePath Username Password Port Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired FSType"
+#Remote_Host=$(get_data $1 RemoteHost)
+#REMOTE_PORT=$(get_data $1 Port)
+#Source_Code=$(get_data $1 SourceCode)
+#Username=$(get_data $1 Username)
+#Password=$(get_data $1 Password)
+
+#BIND
+Bind_Atrib="SourceNode DestinationNode Title SourceCode Enabled HTTPShareEnabled HTTPShareAuthRequired OriginalSourceCode OriginalPath FSType"
+#Source_Code=$(get_data $1 SourceCode)
+#Original_Source_Code=$(get_data $1 OriginalSourceCode)
+#Original_Path=$(get_data $1 OriginalPath)
 
 #-----------------------------------------------------------------------
 #
@@ -240,7 +181,7 @@ function source_attributes() {
 #-----------------------------------------------------------------------
 
 #
-# Makes decisions based on share types
+# Block device specifics
 #
 function device_fstab() {		
 	#set -x
@@ -255,10 +196,12 @@ function device_fstab() {
 }
 
 #
-# Create fstab for smb specific shares
+# SMB specifics
 #
 function smb_fstab() {
-	#set -x
+#set -x
+	create_missing_directory $CREDENTIALS 750
+
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local Remote_Path=$(get_data $1 RemotePath)
 	local Source_Code=$(get_data $1 SourceCode)
@@ -267,19 +210,22 @@ function smb_fstab() {
 	
 	echo -e "username=$Username\npassword=$Password" \
 	> $CREDENTIALS/$1.smb
-
+	[[ $? -eq 0 ]]|| return $?
+	
 	echo -e "//$Remote_Host/${Remote_Path#/} \
 	$MOUNT_PATH/$Source_Code \
 	$SMB_DEFAULTS$CREDENTIALS/$1.smb" \
 	> $FSTAB_DIR/$1.fstab
-	set +x
+set +x
 }
 
 #
-# Create shell script for sshfs shares
+# SSHFS specifics
 #
 function sshfs_fstab() {
 #set -x
+	create_missing_directory $CREDENTIALS 750
+	
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local REMOTE_PORT=$(get_data $1 Port)
 	local Remote_Path=$(get_data $1 RemotePath)
@@ -289,7 +235,8 @@ function sshfs_fstab() {
 
 	echo "$Password" \
 	> $CREDENTIALS/$1.sshfs
-
+	[[ $? -eq 0 ]]|| return $?
+	
 	echo "sshfs $Username@$Remote_Host:$Remote_Path \
 	-p $REMOTE_PORT \
 	-o password_stdin \
@@ -301,7 +248,7 @@ set +x
 }
 
 #
-# Create fstab for ftp shares
+# FTP specifics
 #
 function ftp_fstab() {
 	#set -x
@@ -312,17 +259,19 @@ function ftp_fstab() {
 	local Password=$(get_data $1 Password)
 	
 	echo -e  "machine $Remote_Host\nlogin $Username\npassword $Password" \
-	> $HOME/.netrc
+	> /root/.netrc
+	[[ $? -eq 0 ]]|| return $?
 	
 	echo "curlftpfs#$Username:$Password@$Remote_Host \
 	$MOUNT_PATH/$Source_Code \
 	$FTP_DEFAULTS"\
 	> $FSTAB_DIR/$1.fstab
-	set +x
+
+set +x
 }
 
 #
-# Create fstab for bind mounts
+# Bind specifics
 #
 function bind_fstab() {
 #set -x
@@ -334,17 +283,7 @@ function bind_fstab() {
 	$MOUNT_PATH/$Source_Code \
 	$BIND_DEFAULTS" \
 	> $FSTAB_DIR/$1.fstab
-set +x
-}
-
-#
-# Write new fstab file for resume at boot
-#
-function create_fstab() {
-#set -x
-	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
-		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > /etc/fstab
-	fi
+	
 set +x
 }
 
@@ -354,13 +293,13 @@ set +x
 #
 function save_fstab() {
 #set -x
-	create_missing_directory $CREDENTIALS 750
-	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
-	
 	${FSType}_fstab $Source
-	log "$Write_Log.$FSType"
-	create_fstab
+	[[ $? -eq 0 ]]&& log "Saved source to $FSTAB_DIR/$Source"
 
+	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
+		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > /etc/fstab
+	fi
+	[[ $? -eq 0 ]]|| log {E_FSTAB[0]} "{E_FSTAB[1]}"
 set +x
 }
 
@@ -397,9 +336,10 @@ function mount_control() {
 	fi
 
 	if [[ $? -ne 0 ]]; then
-		log ${E_MOUNT[0]} "${E_MOUNT[1]}"
+		log ${E_MOUNT[0]} "${E_MOUNT[1]} ${1}ing $MOUNT_PATH/$Source"
 	else
 		log "${1}ed $MOUNT_PATH/$Source successfully"
+			rmdir $MOUNT_PATH/$Source
 	fi
 set +x
 }
@@ -410,18 +350,19 @@ set +x
 #
 function update_status() {
 #set -x
-	Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
+	mount -l | grep "on / type " &>/dev/null
+	Mounted=$(echo $?)
 	Enabled=$(get_data $Source Enabled)
 
-	if [[ X$Enabled != X ]]&&[[ X$Mounted == X ]];then
+	if [[ X$Enabled != X ]]&&[[ $Mounted -ne 0 ]];then
 		create_missing_directory "$MOUNT_PATH/$Source"
 		mount_control mount
 
-	elif [[ X$Enabled != X ]]&&[[ X$Mounted != X ]];then
+	elif [[ X$Enabled != X ]]&&[[ $Mounted -eq 0 ]];then
 		mount_control unmount
 		mount_control mount
 
-	elif [[ X$Enabled == X ]]&&[[ X$Mounted != X ]];then
+	elif [[ X$Enabled == X ]]&&[[ $Mounted -eq 0 ]];then
 		mount_control unmount
 
 	fi

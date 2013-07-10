@@ -1,16 +1,16 @@
 # These are the default error messages for NASPID
 
-E_MOUNT=(2 "Failed to mount")
+E_MOUNT=(2 "Failure")
 
 E_ROOT=(3 "Must be run as root")
 
 E_ARGS=(4 "Improper usage. [ $0 {save} <Source> ]")
 
-E_SOURCE=(5 "Missing source files")
+E_CLEAN=(5 "Cleanup of un-used source files failed")
 
 E_CONFIG=(6 "Missing or unset configuration")
 
-E_DATA=(7 "Empty data found")
+E_FSTAB=(7 "Something went wrong writing fstab for")
 
 E_DEP=(8 "You have unmet dependancies")
 
