@@ -12,6 +12,6 @@ E_CONFIG=(6 "Missing or unset configuration")
 
 E_DATA=(7 "Empty data found")
 
-E_DEVICE=(8 "Device not connected")
+E_DEP=(8 "You have unmet dependancies")
 
 E_USAGE=(9 "USAGE: [ $0 {stop|start|restart|reload}]")

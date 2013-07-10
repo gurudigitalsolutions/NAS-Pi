@@ -286,10 +286,10 @@ function sshfs_fstab() {
 	local Source_Code=$(get_data $1 SourceCode)
 	local Username=$(get_data $1 Username)
 	local Password=$(get_data $1 Password)
-set -x	
+
 	echo "$Password" \
 	> $CREDENTIALS/$1.sshfs
-set +x	
+
 	echo "sshfs $Username@$Remote_Host:$Remote_Path \
 	-p $REMOTE_PORT \
 	-o password_stdin \
@@ -325,7 +325,7 @@ function ftp_fstab() {
 # Create fstab for bind mounts
 #
 function bind_fstab() {
-	#set -x
+#set -x
 	local Source_Code=$(get_data $1 SourceCode)
 	local Original_Source_Code=$(get_data $1 OriginalSourceCode)
 	local Original_Path=$(get_data $1 OriginalPath)
@@ -334,7 +334,7 @@ function bind_fstab() {
 	$MOUNT_PATH/$Source_Code \
 	$BIND_DEFAULTS" \
 	> $FSTAB_DIR/$1.fstab
-	set +x
+set +x
 }
 
 #
@@ -343,9 +343,8 @@ function bind_fstab() {
 function create_fstab() {
 #set -x
 	if [[ -f $FSTAB_DIR/$Source.fstab ]]; then
-		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > $FSTAB_DIR/fullstab
+		cat $FSTAB_DIR/fstab.orignial $FSTAB_DIR/*.fstab > /etc/fstab
 	fi
-	cat $FSTAB_DIR/fullstab > /etc/fstab
 set +x
 }
 
@@ -358,7 +357,7 @@ function save_fstab() {
 	create_missing_directory $CREDENTIALS 750
 	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
 	
-	${FSType}_fstab
+	${FSType}_fstab $Source
 	log "$Write_Log.$FSType"
 	create_fstab
 
@@ -384,12 +383,12 @@ function mount_control() {
 		
 		if [[ $1 == unmount ]]; then
 			fusermount -u $MOUNT_PATH/$Source
-set -x			
+
 		elif [[ $1 == mount ]]; then 	
 			SSHFS_SCRIPT=$(cat ${FSTAB_DIR}/$Source-sshfs.sh)
 			$SSHFS_SCRIPT < $CREDENTIALS/$Source.sshfs
 		fi
-set +x		
+		
 	elif [[ $1 == unmount ]]; then
 		umount "$MOUNT_PATH/$Source"
 		
