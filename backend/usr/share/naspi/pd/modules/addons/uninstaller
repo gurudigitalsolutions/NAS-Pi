@@ -1,0 +1,77 @@
+#!/usr/bin/php
+<?///////////////////////////////////////////////////////////////////////////////////
+//
+//	This script reads a copy log for a specified module.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+
+if(count($argv) < 2) { echo "No modcode supplied.\n"; exit; }
+
+$LogF = "/usr/share/naspi/addons/modules/".$argv[1]."/copylog.srl";
+define("BASEPATH", "/usr/share/naspi");
+if(!file_exists($LogF)) { echo "Copy Log not found.\n"; exit; }
+
+$CopyLog = unserialize(file_get_contents($LogF));
+
+if(!file_exists(BASEPATH."/addons/_uninstalled")) { mkdir(BASEPATH."/addons/_uninstalled"); }
+file_put_contents(BASEPATH."/addons/_uninstalled/".$argv[1]."-".(time()).".srl", serialize($CopyLog));
+
+TravelFiles(BASEPATH."/modules", $CopyLog["modules"], true);
+TravelFiles(BASEPATH."/cms", $CopyLog["cms"]);
+TravelFiles(BASEPATH."/public_html/scripts", $CopyLog["scripts"]);
+TravelFiles(BASEPATH."/public_html/stylesheets", $CopyLog["stylesheets"]);
+TravelFiles(BASEPATH."/public_html/images", $CopyLog["images"], true);
+
+echo "DELETING Manifest\n";
+unlink(BASEPATH."/addons/modules/".$argv[1]."/manifest.ini");
+unlink(BASEPATH."/addons/modules/".$argv[1]."/manifest.srl");
+
+echo "DELETING CopyLog\n";
+unlink(BASEPATH."/addons/modules/".$argv[1]."/copylog.srl");
+rmdir(BASEPATH."/addons/modules/".$argv[1]);
+echo "Uninstall complete\n";
+exit;
+
+
+function TravelFiles($dir, $subfiles, $rmemptydirs = false)
+{
+	foreach($subfiles as $key=>$val)
+	{
+		if(is_array($val))
+		{
+			//	This is another sub folder
+			TravelFiles($dir."/".$key, $val,$rmemptydirs);
+			if(IsDirEmpty($dir."/".$key))
+			{
+				if($rmemptydirs)
+				{
+					echo "REMOVING ".$dir."/".$key."\n";
+					rmdir($dir."/".$key);
+				}
+			}
+		}
+		else
+		{
+			//	This is a file
+			$fname = $dir."/".$key;
+			
+			if(file_exists($fname))
+			{ 
+				echo "DELETING ".$fname."\n";
+				unlink($fname);
+			}
+			else
+			{ 
+				echo "NOTFOUND ".$fname."\n";
+			}
+		}
+	}
+
+}
+
+function IsDirEmpty($dir)
+{
+	return (count(scandir($dir)) == 2);
+}
+
+?>

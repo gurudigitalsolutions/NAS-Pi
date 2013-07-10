@@ -21,8 +21,11 @@ class modAddOns extends PiNASModule
 		$this->Version = "v13.07.09";
 		$this->AuthorURL = "http://www.gurudigitalsolutions.com";
  
-		$this->AddSubMenu("home", "Installed");
-		$this->AddSubMenu("browse", "Browse");
+		
+		//$this->AddSubMenu("home", "Installed");
+		//$this->AddSubMenu("browse", "Browse");
+		$this->AddSubAuth("install", array("admin", "addons"));
+		$this->AddSubAuth("uninstall", array("admin", "addons"));
 	}
  
 	public function Render()
