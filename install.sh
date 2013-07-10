@@ -323,7 +323,8 @@ place_files
 place_backend_files
 set_envars
 fstab_backup
-service apache2 restart
+echo "  [ RESTARTING SERVICES ]"
+service apache2 restart &>/dev/null
 service naspi-pd restart
 cd $START_DIR
 echo "  [ NAS-Pi SUCCESSFULLY INSTALLED ]"
