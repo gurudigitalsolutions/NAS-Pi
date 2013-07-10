@@ -185,8 +185,7 @@ function create_empty_directories() {
 	echo "  [ CREATING FRONTEND FOLDERS ]"
 	for empty in ${EMPTY_DIR[@]};do
 		if [[ ! -e $INSTALL_DIR/$empty ]]; then
-			mkdir -p -m 755 $INSTALL_DIR/$empty
-			chown $APACHE_USER:$APACHE_USER $INSTALL_DIR/$empty
+			mkdir -p -m 755 $INSTALL_DIR/$empty	
 		fi
 	done
 }
@@ -201,9 +200,7 @@ function place_files
 	cp -r frontend/cms "$INSTALL_DIR"
 	cp -r frontend/modules "$INSTALL_DIR"
 	cp -r frontend/public_html "$INSTALL_DIR"
-	
-	chown -R "naspi:naspi" "$INSTALL_DIR"
-	
+		
 	chmod 777 "$INSTALL_DIR"/modules/users/groups.txt
 	chmod 755 "$INSTALL_DIR"/modules/files/sources/sourcedata
 	
@@ -245,11 +242,12 @@ function place_backend_files ()
 
 	echo "  [ ADJUSTING OWNERSHIPS ]"
 	
+	chown -R $APACHE_USER:$APACHE_USER $INSTALL_DIR
+	
 	chmod 0755 $BIN
 	chmod 0755 $INIT
 	chmod 0755 ${INSTALL_DIR}/pd/pd.php
-	chown naspi:naspi ${INSTALL_DIR}/pd -R
-	
+		
 	echo "  [ UPDATING INIT DAEMON ]"
 	
 	update-rc.d naspid defaults
@@ -305,8 +303,8 @@ function fstab_backup() {
 install_dependencies
 create_naspi_user
 configure_apache
-place_files
 create_empty_directories
+place_files
 place_backend_files
 set_envars
 service apache2 restart
