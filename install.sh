@@ -155,12 +155,12 @@ function configure_apache
 	if [[ ! -e $SITE ]]; then
 		echo "  [ ADDING NAS-Pi TO SITES-AVAILIBLE ]"
 		cp backend${SITE} $SITE
-		a2ensite nas-pi
+		a2ensite nas-pi &>/dev/null
 	fi
 
 	if [[ $default = TRUE ]];then
 		unset default
-		a2dissite 000-default
+		a2dissite 000-default &>/dev/null
 	
 	elif [[ -e /etc/apache2/sites-enabled/000-default ]]; then
 		echo -e "\n  [ NOTICE ]\n 000-default is already configured and installed on apache2."
@@ -171,8 +171,8 @@ function configure_apache
 	
 		case $configure in
 			y|Y|yes|YES)
-				a2dissite 000-default
-				a2ensite nas-pi
+				a2dissite 000-default &>/dev/null
+				a2ensite nas-pi &>/dev/null
 				;;
 			*)
 				a2ensite nas-pi
@@ -261,8 +261,8 @@ function place_backend_files ()
 		
 	echo "  [ UPDATING INIT DAEMON ]"
 	
-	update-rc.d naspid defaults
-	update-rc.d naspi-pd defaults
+	update-rc.d naspid defaults &>/dev/null
+	update-rc.d naspi-pd defaults &>/dev/null
 set +x
 }
 
