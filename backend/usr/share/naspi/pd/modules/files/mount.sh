@@ -85,11 +85,11 @@ function log() {
 	#set -x
 	
 	if [[ $# -eq 1 ]]; then
-		echo $1 >> $LOG
+		echo "[$(date +%m/%d\ %H:%M:%S)]" $1 >> $LOG
 	
 	# Log error messages if logging is enabled
 	elif [[ $# -ge 2 ]] && [[ $E_LOGGING == TRUE ]];then
-		echo "[ERROR $1]: ${@:2}" >> $LOG
+		echo "[$(date +%m/%d\ %H:%M:%S)|[ERROR $1]: ${@:2}" >> $LOG
 	fi
 	
 	set +x
@@ -124,10 +124,7 @@ function get_data() {
 	"$SOURCE_DATA"/./sourcedata $1 $2
 	set +x
 }
-
-set -f
-IFS=$'\n'
-
+FSType=$(get_data $Source FSType)
 Attributes=($(get_data $Source))
 #-----------------------------------------------------------------------
 #
@@ -142,7 +139,7 @@ Attributes=($(get_data $Source))
 #
 # Makes decisions based on share types
 #
-function write_device_fstab() {		
+function device_fstab() {		
 	#set -x
 	local UUID=$(get_data $1 UUID)
 	local Source_Code=$(get_data $1 SourceCode)
@@ -157,7 +154,7 @@ function write_device_fstab() {
 #
 # Create fstab for smb specific shares
 #
-function write_smb_fstab() {
+function smb_fstab() {
 	#set -x
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local Remote_Path=$(get_data $1 RemotePath)
@@ -178,7 +175,7 @@ function write_smb_fstab() {
 #
 # Create shell script for sshfs shares
 #
-function write_sshfs_fstab() {
+function sshfs_fstab() {
 	#set -x
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local REMOTE_PORT=$(get_data $1 Port)
@@ -203,7 +200,7 @@ function write_sshfs_fstab() {
 #
 # Create fstab for ftp shares
 #
-function write_ftp_fstab() {
+function ftp_fstab() {
 	#set -x
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local REMOTE_PORT=$(get_data $1 Port)
@@ -224,7 +221,7 @@ function write_ftp_fstab() {
 #
 # Create fstab for bind mounts
 #
-function write_bind_fstab() {
+function bind_fstab() {
 	#set -x
 	local Source_Code=$(get_data $1 SourceCode)
 	local Original_Source_Code=$(get_data $1 OriginalSourceCode)
@@ -257,7 +254,7 @@ function save_fstab() {
 #set -x
 	Write_Log="Wrote FSType: $FSType to $FSTAB_DIR/$Source"
 	
-	write_$FSType_fstab
+	${FSType}_fstab
 	log "$Write_Log.fstab"
 	create_fstab
 
@@ -278,7 +275,7 @@ set +x
 # mounts/unmounts sources based on filesystem type
 #
 function mount_control() {
-#set -x
+ set -x
 	if [[ $FSType = sshfs ]]&&[[ $1 == unmount ]]; then
 		fusermount -u $MOUNT_PATH/$Source
 
@@ -287,7 +284,7 @@ function mount_control() {
 		$SSHFS_SCRIPT < $HOME/$CREDENTIALS/$Source.sshfs
 
 	else
-		$1 "$MOUNT_PATH/$Source"
+		${1//un/u} "$MOUNT_PATH/$Source"
 	fi
 
 	if [[ $? -ne 0 ]]; then
@@ -308,12 +305,12 @@ function update_status() {
 	Enabled=$(get_data $Source Enabled)
 	
 #set -x		YES				NO
-	if [[ X$Enabled == X1 ]]&&[[ X$Mounted == X ]];then
+	if [[ X$Enabled == X ]]&&[[ X$Mounted == X ]];then
 		create_missing_directory "$MOUNT_PATH/$Source"
 		mount_control mount
 		
 #set -x		YES				YES
-	elif [[ X$Enabled == X1 ]]&&[[ X$Mounted != X ]];then
+	elif [[ X$Enabled == X ]]&&[[ X$Mounted != X ]];then
 		mount_control unmount
 		mount_control mount
 		
