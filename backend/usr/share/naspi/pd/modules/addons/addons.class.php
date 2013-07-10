@@ -29,6 +29,7 @@ class modAddons extends BackendModule
 		
 		if($arguments[0] == "list") { return $this->ListInstalledModules(); }
 		else if($arguments[0] == "install") { return $this->LaunchInstaller($arguments); }
+		else if($arguments[0] == "uninstall") { return $this->LaunchUnInstaller($arguments); }
 		else if($arguments[0] == "list-installing") { return $this->ListInstalling($arguments); }
 		else if($arguments[0] == "installprogress") { return $this->InstallerProgress($arguments); }
 		else if($arguments[0] == "downloadicon") { return $this->DownloadIcon($arguments); }
@@ -74,6 +75,27 @@ class modAddons extends BackendModule
 		
 		$instcmd = $ModulesPath."/addons/install-addon.sh ".$modcode;
 		//exec(sprintf("%s > %s 2>&1 & echo $! >> %s", $instcmd, $outputfile, $pidfile));
+		exec(sprintf("%s > %s 2>&1 & echo $! >> %s", $instcmd, $JobDir."/".$jobid, $JobDir."/".$jobid.".pid"));
+		
+		return ":) ".$jobid;
+	}
+	
+	function LaunchUnInstaller($arguments)
+	{
+		global $ModulesPath;
+		
+		if(count($arguments) < 2) { return "FAIL No module code was specified."; }
+		$modcode = $arguments[1];
+		$jobid = $modcode;
+		
+		$JobDir = $ModulesPath."/addons/data/uninstalljobs";
+		if(!file_exists($JobDir))
+		{
+			$cmd = "mkdir \"".$JobDir."\" -p";
+			`$cmd`;
+		}
+		
+		$instcmd = $ModulesPath."/addons/uninstaller ".$modcode;
 		exec(sprintf("%s > %s 2>&1 & echo $! >> %s", $instcmd, $JobDir."/".$jobid, $JobDir."/".$jobid.".pid"));
 		
 		return ":) ".$jobid;

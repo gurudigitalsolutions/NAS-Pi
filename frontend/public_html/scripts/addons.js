@@ -258,6 +258,39 @@ function AddOnBrowser()
 		}
 	}
 	
+	this.Uninstall = function(modcode)
+	{
+		if (window.XMLHttpRequest)
+		{// code for IE7+, Firefox, Chrome, Opera, Safari
+			lnxhr = new XMLHttpRequest();
+		}
+		else
+		{// code for IE6, IE5
+			lnxhr = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		lnxhr.open("GET", "/?module=addons&sub=uninstall&modcode="+modcode, false);
+		lnxhr.send(null);
+
+		var resp = lnxhr.responseText;
+		if(resp.substring(0, 5) == "FAIL ")
+		{
+			alert("Uninstallation has failed to start.\n\n"+resp.replace("FAIL ", ""));
+		}
+		else
+		{
+			//	Cool
+			var optd = document.getElementById("addons_browser_ropt_"+modcode);
+			optd.innerHTML = "Uninstalling...";
+			
+			var modid = this.idFromModCode(modcode);
+			AvailableAddons[modid].installed = false;
+			
+			var abr = document.getElementById("addons_browser_row_"+modcode);
+			abr.className = "addons_row_uninstalled";
+		}
+	}
+	
 	this.InstallerProgress = function(modcode)
 	{
 		if(modcode == "") { alert("You need to specify a modcode to check the progress of an installation."); return; }

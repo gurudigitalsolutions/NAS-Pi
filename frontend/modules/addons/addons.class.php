@@ -42,9 +42,9 @@ class modAddOns extends PiNASModule
 		
 		$toret = "";
  
-		if($RequestVars["sub"] == "") { $RequestVars["sub"] = "home"; }
+		if($RequestVars["sub"] == "") { $RequestVars["sub"] = "explore"; }
  
-		if($RequestVars["sub"] == "home")
+		/*if($RequestVars["sub"] == "home")
 		{
 			$template = file_get_contents(MODULEPATH."/addons/templates/main.html");
 			$EachAddOnTmp = file_get_contents(MODULEPATH."/addons/templates/addon-each.html");
@@ -112,9 +112,10 @@ class modAddOns extends PiNASModule
 			$template = str_replace("[EACHADDON]", $fulladdon, $template);
 			$toret = $template;
 		}
-		else if($RequestVars["sub"] == "browse")
+		else*/ if($RequestVars["sub"] == "browse")
 		{
-			$toret = $this->BuildRemoteAddons();
+			$toret = "Function Disabled";
+			//$toret = $this->BuildRemoteAddons();
 		}
 		else if($RequestVars["sub"] == "list")
 		{
@@ -165,6 +166,17 @@ class modAddOns extends PiNASModule
 			}
 			
 			echo DaemonModuleCommand("addons", "installprogress ".$RequestVars["modcode"]);
+			exit;
+		}
+		else if($RequestVars["sub"] == "uninstall")
+		{
+			if($RequestVars["modcode"] == "")
+			{
+				echo "FAIL No modcode was supplied.";
+				exit;
+			}
+			
+			echo DaemonModuleCommand("addons", "uninstall ".$RequestVars["modcode"]);
 			exit;
 		}
 		else
