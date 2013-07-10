@@ -87,7 +87,7 @@ function AddOnBrowser()
 			var thisrow = this.tableRowTemplate;
 			thisrow = thisrow.replace("[TITLE]", AvailableAddons[i].title);
 			thisrow = thisrow.replace("[AUTHOR]", AvailableAddons[i].displayname);
-			thisrow = thisrow.replace("[MODCODE]", AvailableAddons[i].modcode);
+			while(thisrow.indexOf("[MODCODE]") != -1) { thisrow = thisrow.replace("[MODCODE]", AvailableAddons[i].modcode); }
 			thisrow = thisrow.replace("[VERSION]", AvailableAddons[i].version);
 			thisrow = thisrow.replace("[ICONURL]", AvailableAddons[i].modcode);
 			
@@ -213,7 +213,7 @@ function AddOnBrowser()
 		return false;
 	}
 	
-	this.QueryActiveInstalls()
+	this.QueryActiveInstalls = function()
 	{
 		if (window.XMLHttpRequest)
 		{// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -224,10 +224,81 @@ function AddOnBrowser()
 			lnxhr = new ActiveXObject("Microsoft.XMLHTTP");
 		}
 
-		lnxhr.open("GET", "/?module=addons&sub=listinstalling, false);
+		lnxhr.open("GET", "/?module=addons&sub=listinstalling", false);
 		lnxhr.send(null);
 
 		this.ActiveInstalls = eval("("+lnxhr.responseText+")");
+	}
+	
+	this.Install = function(modcode)
+	{
+		if (window.XMLHttpRequest)
+		{// code for IE7+, Firefox, Chrome, Opera, Safari
+			lnxhr = new XMLHttpRequest();
+		}
+		else
+		{// code for IE6, IE5
+			lnxhr = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		lnxhr.open("GET", "/?module=addons&sub=install&modcode="+modcode, false);
+		lnxhr.send(null);
+
+		var resp = lnxhr.responseText;
+		if(resp.substring(0, 5) == "FAIL ")
+		{
+			alert("Installation has failed to start.\n\n"+resp.replace("FAIL ", ""));
+		}
+		else
+		{
+			//	Cool
+			var optd = document.getElementById("addons_browser_ropt_"+modcode);
+			optd.innerHTML = "Installing...";
+			setTimeout(function() { Browser.InstallerProgress(modcode); }, 2000);
+		}
+	}
+	
+	this.InstallerProgress = function(modcode)
+	{
+		if(modcode == "") { alert("You need to specify a modcode to check the progress of an installation."); return; }
+		
+		if (window.XMLHttpRequest)
+		{// code for IE7+, Firefox, Chrome, Opera, Safari
+			lnxhr = new XMLHttpRequest();
+		}
+		else
+		{// code for IE6, IE5
+			lnxhr = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		lnxhr.open("GET", "/?module=addons&sub=installprogress&modcode="+modcode, false);
+		lnxhr.send(null);
+
+		var resp = lnxhr.responseText;
+		if(resp.substring(0, 5) == "FAIL ")
+		{
+			alert("Something failed while checking the installation progress!\n\n"+resp.replace("FAIL ", ""));
+			
+		}
+		else
+		{
+			if(resp.substring(0, 3) == ":) ") { resp = resp.replace(":) ", ""); }
+			var optd = document.getElementById("addons_browser_ropt_"+modcode);
+			optd.innerHTML = resp;
+			
+			if(resp == "Installation complete")
+			{
+				var modid = this.idFromModCode(modcode);
+				AvailableAddons[modid].installed = true;
+				
+				var abr = document.getElementById("addons_browser_row_"+modcode);
+				abr.className = "addons_row_installed";
+			}
+			else
+			{
+				setTimeout(function() { Browser.InstallerProgress(modcode); }, 2500);
+			}
+		}
 	}
 }
 

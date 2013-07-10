@@ -113,11 +113,13 @@ class modAddons extends BackendModule
 	
 	function InstallerProgress($arguments)
 	{
+		global $ModulesPath;
+		
 		if(count($arguments) < 2) { return "FAIL No jobid Specified"; }
 		$jobid = $arguments[1];
 		
 		$JobDir = $ModulesPath."/addons/data/installjobs";
-		if(!file_exists($JobDir."/".$jobid)) { return "FAIL Job not found."; }
+		if(!file_exists($JobDir."/".$jobid)) { return "FAIL Job not found. (".$JobDir."/".$jobid.")"; }
 		
 		$flines = file($JobDir."/".$jobid);
 		$lstat = "";
@@ -126,7 +128,7 @@ class modAddons extends BackendModule
 			if(strlen($efl) > 11 && substr($efl, 0, 11) == "::STATUS:: ") { $lstat = substr($efl, 11); }
 		}
 		
-		if($lstat == "") { $lstat = "Progress unknown..."; }
+		if($lstat == "") { $lstat = "Processing..."; }
 		return ":) ".trim($lstat);
 	}
 	

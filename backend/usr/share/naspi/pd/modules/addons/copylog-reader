@@ -1,0 +1,19 @@
+#!/usr/bin/php
+<?///////////////////////////////////////////////////////////////////////////////////
+//
+//	This script reads a copy log for a specified module.
+//
+/////////////////////////////////////////////////////////////////////////////////////
+
+if(count($argv) < 2) { echo "No modcode supplied.\n"; exit; }
+
+$LogF = "/usr/share/naspi/addons/modules/".$argv[1]."/copylog.srl";
+if(!file_exists($LogF)) { echo "Copy Log not found.\n"; exit; }
+
+$CopyLog = unserialize(file_get_contents($LogF));
+
+print_r($CopyLog);
+
+
+
+?>

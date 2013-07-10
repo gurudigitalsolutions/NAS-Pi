@@ -142,6 +142,28 @@ class modAddOns extends PiNASModule
 		{
 			$this->GetBrowserFormatting();
 		}
+		else if($RequestVars["sub"] == "install")
+		{
+			if($RequestVars["modcode"] == "")
+			{
+				echo "FAIL No modcode was supplied.";
+				exit;
+			}
+			
+			echo DaemonModuleCommand("addons", "install ".$RequestVars["modcode"]);
+			exit;
+		}
+		else if($RequestVars["sub"] == "installprogress")
+		{
+			if($RequestVars["modcode"] == "")
+			{
+				echo "FAIL No modcode was supplied.";
+				exit;
+			}
+			
+			echo DaemonModuleCommand("addons", "installprogress ".$RequestVars["modcode"]);
+			exit;
+		}
 		else
 		{
 			$toret = "No idea what you are trying to do :(";
