@@ -1,0 +1,23 @@
+# This file is created during installation. Please make certain of what 
+# you are changing when modifying this file"
+
+# Base install directory
+INSTALL_DIR=$INSTALL
+
+# Location of error code file
+ERRORS=$ERRORS
+
+# Non-Root User error
+E_ROOT=(${E_ROOT[0]} "${E_ROOT[1]}")
+
+# Location of log file
+LOG=$LOG
+ 
+# Apache2 Virtual Host name
+SITE=$SITE
+
+# User site runs as
+APACHE_USER=$APACHE_USER
+ 
+# Dependancies
+DEPENDENCIES=(${DEPENDENCIES[@]})

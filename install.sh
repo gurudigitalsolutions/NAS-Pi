@@ -11,8 +11,6 @@
 #-----------------------------------------------------------------------
 
 
-
-
 #-----------------------------------------------------------------------
 #
 # Set Installation variables
@@ -22,7 +20,7 @@
 DEPENDENCIES="samba smbclient apache2 php5 php5-cli php5-curl apache2-mpm-itk sshfs curlftpfs netcat-openbsd unzip"
 
 APACHE_USER="naspi"
-INSTALL_DIR="/usr/share/naspi"
+INSTALL="/usr/share/naspi"
 
 SITE="/etc/apache2/sites-available/nas-pi"
 
@@ -36,48 +34,22 @@ FSTAB="/etc/fstab.d/"
 PDINIT="/etc/init.d/naspi-pd"
 PDBIN="/usr/share/naspi/pd/pd.php"
 FUSE="/etc/fuse.conf"
+TMP="/tmp/nas-pi-install"
 
 BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-ERRORS=$INSTALL_DIR/errors
+ERRORS="$INSTALL/errors"
 
-ENVARS=$ETC/envars
+ENVARS="$ETC/envars"
 
-EMPTY_DIR="$INSTALL_DIR log modules/users/accounts modules/users/sessions modules/files/sources/data"
-
-#-----------------------------------------------------------------------
-#
-# Begin installer
-#
-#-----------------------------------------------------------------------
-
-echo "  [ NAS-Pi Installer ]"
-echo "  [ Copyright 2013 Guru Digital Solutions ]"
-
-START_DIR=$(pwd)
-
-cd $BASE
-
-. backend/$ERRORS
-
-#
-# Test user and group id for root
-#
-if [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]; then
-	echo "[ERROR $E_ROOT[0]}] ${E_ROOT[1]}"
-	exit "${E_ROOT[0]}"
-fi
+EMPTY_DIR="$INSTALL log modules/users/accounts modules/users/sessions modules/files/sources/data"
 
 #-----------------------------------------------------------------------
 #
 # Functions
 #
 #-----------------------------------------------------------------------
-
-#
-# Checks dependancies and installs any missing
-#
-function install_dependencies
+install_dependencies() # Checks dependancies and installs any missing
 {
 #set -x
 	echo "  [ CHECKING DEPENDANCIES ]"
@@ -91,7 +63,7 @@ function install_dependencies
 	done
 
 	if [[ x$need != x ]];then
-		apt-get install $need
+		${T}apt-get install $need$t
 	
 		if [[ $? -eq 1 ]];then
 			echo "[ERROR $E_DEP[0]}] ${E_DEP[1]} $need"
@@ -101,11 +73,10 @@ function install_dependencies
 set +x
 }
 
-#
-# Compare two files for any differences. If differences are found then
-# has dialoge for replacing, backup, or ignoring
-#
-function compare_files
+
+#-----------------------------------------------------------------------
+compare_files () # Compare two files for any differences. If differences 
+# are found then has dialoge for replacing, backup, or ignoring
 {
 	if [[ $(diff -q $1 $2 2>/dev/null) ]]; then
 		
@@ -117,13 +88,13 @@ function compare_files
 			
 			[y,Y]|[y,Y][e,E][s,S])
 				echo "  [ CONFIGURING FUSE FOR USERS ]"
-				cat $1 > $2
+				${T}cat $1 $t> $2
 				$3;$4;$5
 				;;
 
 			m|M)
-				mv $2 $2.old
-				cat $1 > $2
+				${T}mv $2 $2.old$t
+				${T}cat $1 $t> $2
 				$3;$4;$5
 				;;
 			*)
@@ -134,33 +105,29 @@ function compare_files
 	fi
 }
 
-#
-# Creates the user which Apache2 will run as
-#
-function create_naspi_user
+#-----------------------------------------------------------------------
+create_naspi_user() # Creates the user which Apache2 will run as
 {
 	if [[ -z $(cat /etc/group | grep $APACHE_USER) ]]; then
 		echo "  [ CREATING APACHE2 SYSTEM USER ]"
-		useradd -M -r -s /bin/bash -U $APACHE_USER
+		${T}useradd -M -r -s /bin/bash -U $APACHE_USER$t
 	fi
 }
 
-#
-# Places the naspid virtual host file and enables the site
-#
-function configure_apache
+#-----------------------------------------------------------------------
+configure_apache() # Places virtual host file and enables the site
 {
 	echo "  [ CONFIGURING APACHE2 ]"
 	
 	if [[ ! -e $SITE ]]; then
 		echo "  [ ADDING NAS-Pi TO SITES-AVAILIBLE ]"
-		cp backend${SITE} $SITE
-		a2ensite nas-pi &>/dev/null
+		${T}cp backend${SITE} $SITE$t
+		${T}a2ensite nas-pi $t&>/dev/null
 	fi
 
 	if [[ $default = TRUE ]];then
 		unset default
-		a2dissite 000-default &>/dev/null
+		${T}a2dissite 000-default $t&>/dev/null
 	
 	elif [[ -e /etc/apache2/sites-enabled/000-default ]]; then
 		echo -e "\n  [ NOTICE ]\n 000-default is already configured and installed on apache2."
@@ -171,11 +138,11 @@ function configure_apache
 	
 		case $configure in
 			y|Y|yes|YES)
-				a2dissite 000-default &>/dev/null
-				a2ensite nas-pi &>/dev/null
+				${T}a2dissite 000-default $t&>/dev/null
+				${T}a2ensite nas-pi $t&>/dev/null
 				;;
 			*)
-				a2ensite nas-pi
+				${T}a2ensite nas-pi$t
 				echo "Manually configure apache2\'s sites-avalible"
 				;;
 		esac
@@ -184,60 +151,53 @@ function configure_apache
 	compare_files "backend${SITE}" "$SITE" "a2ensite nas-pi"
 }
 
-#
-# Creates and modifies the permissions of frontend folders
-#
-function create_empty_directories() {
+#-----------------------------------------------------------------------
+create_empty_directories() # Creates/modifies frontend folders
+{
 #set -x
 	for empty in $EMPTY_DIR;do
-		if [[ ! -e $INSTALL_DIR/$empty ]]; then
-			echo "  [ CREATING $INSTALL_DIR/$empty ]"
-			mkdir -p -m 755 $INSTALL_DIR/$empty	
+		if [[ ! -e $INSTALL/$empty ]]; then
+			echo "  [ CREATING $INSTALL/$empty ]"
+			${T}mkdir -p -m 755 $INSTALL/$empty	$t
 		fi
 	done
 }
 
-#
-# Places all the frontend files into the install location
-#
-function place_files
+place_files() # Places all the frontend files into the install location
 {
 #set -x
-	echo "  [ PLACING FRONTEND FILES INTO $INSTALL_DIR/ ]"
+	echo "  [ PLACING FRONTEND FILES INTO $INSTALL/ ]"
 	
-	cp -r frontend/cms "$INSTALL_DIR"
-	cp -r frontend/modules "$INSTALL_DIR"
-	cp -r frontend/public_html "$INSTALL_DIR"
+	${T}cp -r frontend/cms "$INSTALL"$t
+	${T}cp -r frontend/modules "$INSTALL"$t
+	${T}cp -r frontend/public_html "$INSTALL"$t
 		
-	chmod 777 "$INSTALL_DIR"/modules/users/groups.txt
-	chmod 755 "$INSTALL_DIR"/modules/files/sources/sourcedata
-
 	echo "  [ ADJUSTING FILE/FOLDER PERMISSIONS ]"
+	${T}chmod 777 "$INSTALL"/modules/users/groups.txt$t
+	${T}chmod 755 "$INSTALL"/modules/files/sources/sourcedata$t
+
 	if [[ ! -e /var/www/nas-pi ]]; then
-		echo "  [ LINKING $INSTALL_DIR/public_html to /var/www/nas-pi ]"
-		ln -s $INSTALL_DIR/public_html /var/www/nas-pi
+		echo "  [ LINKING $INSTALL/public_html to /var/www/nas-pi ]"
+		${T}ln -s $INSTALL/public_html /var/www/nas-pi$t
 	fi
 set +x
 }
 
-#
-# Enables users to use fuse mounts
-#
-function configure_fuse
+#-----------------------------------------------------------------------
+configure_fuse() # Enables users to use fuse mounts
 {
 	if [[ ! -e $FUSE ]]; then
 		echo "  [ CONFIGURING FUSE FOR USERS ]"
-		mv $FUSE $FUSE-bak
-		cp "backend${FUSE}" "${FUSE}"
+		${T}mv $FUSE $FUSE-bak$t
+		${T}cp "backend${FUSE}" "${FUSE}"$t
+		${T}chmod 540 $FUSE$t
 	else
 		compare_files "backend${FUSE}" "${FUSE}"
 	fi
 }
 
-#
-# Places all backend files and create apache error log
-#
-function place_backend_files ()
+#-----------------------------------------------------------------------
+place_backend_files () # Places all backend files and create apache error log
 {
 #set -x
 	echo "  [ PLACING BACKEND FILES IN /etc and /usr ]"
@@ -245,86 +205,103 @@ function place_backend_files ()
 	[[ -e $ETC ]] || mkdir -p -m 755 $ETC
 	[[ -e $FSTAB ]] || mkdir -p -m 755 $FSTAB
 
-	cp -r backend${ETC}/* ${ETC}	
-	cp backend${INIT} ${INIT}
-	cp backend${BIN} ${BIN}
-	cp backend${PDINIT} ${PDINIT}
-	cp -r backend${INSTALL_DIR}/* ${INSTALL_DIR}
+	${T}cp -r backend${ETC}/* ${ETC}	$t
+	${T}cp backend${INIT} ${INIT}$t
+	${T}cp backend${BIN} ${BIN}$t
+	${T}cp backend${PDINIT} ${PDINIT}$t
+	${T}cp -r backend${INSTALL_DIR}/* ${INSTALL_DIR}$t
 
 	echo "  [ ADJUSTING OWNERSHIPS ]"
 	
-	chown -R $APACHE_USER:$APACHE_USER $INSTALL_DIR
+	${T}chown -R $APACHE_USER:$APACHE_USER $INSTALL$t
 	
-	chmod 0755 $BIN
-	chmod 0755 $INIT
-	chmod 0755 ${INSTALL_DIR}/pd/pd.php
+	${T}chmod 0755 $BIN$t
+	${T}chmod 0755 $INIT$t
+	${T}chmod 0755 ${INSTALL_DIR}/pd/pd.php$t
 		
 	echo "  [ UPDATING INIT DAEMON ]"
 	
-	update-rc.d naspid defaults &>/dev/null
-	update-rc.d naspi-pd defaults &>/dev/null
+	${T}update-rc.d naspid defaults $t&> /dev/null 
+	${T}update-rc.d naspi-pd defaults $t&> /dev/null 
 set +x
 }
 
-#
-# Creates an envars file for minimal configuration sourcing
-#
-function set_envars() {
+#-----------------------------------------------------------------------
+set_envars()  # Creates an envars file for minimal configuration sourcing
+{
 #set -x
 	echo "  [ SETTING ENVIROMENT VARIABLES ]"
-	
-	HEAD="\
-# This file is created during installation. Please make certain of what 
-# you are changing when modifying this file"
 
-	BODY="
-# Base install directory
-INSTALL_DIR=$INSTALL_DIR
+	set -f;IFS=$'\n'
+	a=($(cat $1))
+	c=${#a[@]}
+	unset IFS;set +f
 
-# Location of error code file
-ERRORS=$ERRORS
-# Non-root user error code
-E_ROOT=(${E_ROOT[0]} \"${E_ROOT[1]}\")
+	exec 3<$1
+	t=$(grep -c '^' $1)
+	c=0
 
-# Location of log file
-LOG=$LOG
+	read -u3 line
+	until [[ $c -eq $t ]];do
+		if [[ x$(echo $line|grep '^#') != x ]];then
+			Body="$Body$line \n"
+		else
+			Body="$Body$(eval "echo \"$line\"") \n"
+		fi
+		((c++))
+		read -u3 line
+	done
+	exec 3<&-
 
-# Apache2 Virtual Host name
-SITE=$SITE
-# User site runs as
-APACHE_USER=$APACHE_USER
-
-# Array of dependancies
-DEPENDENCIES=(${DEPENDENCIES[@]})"
-
-	echo -e "$HEAD\n$BODY" > $ENVARS
+	${T}echo -e "Body" $t > $ENVARS
 set +x
 }
 
-#
-# Create an original backup of fstab
-#
-function fstab_backup() {
+#-----------------------------------------------------------------------
+fstab_backup()  # Create an original backup of fstab
+{
 #set -x
 	if [[ ! -f $FSTAB/fstab.orignial ]]; then
 		echo "  [ CREATING FSTAB BACKUP ]"
-		cat /etc/fstab > $FSTAB/fstab.orignial
+		${T}cp /etc/fstab $FSTAB/fstab.orignial$t
 	fi
 set +x
 }
+
+#-----------------------------------------------------------------------
 #
-# Run each function
+# Begin installer
 #
+#-----------------------------------------------------------------------
+
+echo "  [ NAS-Pi Installer ]"
+echo "  [ Copyright 2013 Guru Digital Solutions ]"
+START_DIR=$(pwd)
+
+cd $BASE
+
+. backend/$ERRORS
+
+if [[ $1 == '--test' ]];then
+	echo "  [ Test Mode ]"
+	T=echo\ \'
+	t=\'
+fi
+
+if [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]; then
+	echo "[ERROR $E_ROOT[0]}] ${E_ROOT[1]}"
+	${T}exit "${E_ROOT[0]}"$T
+fi
 install_dependencies
 create_naspi_user
 configure_apache
 create_empty_directories
 place_files
 place_backend_files
-set_envars
+set_envars envars
 fstab_backup
 echo "  [ RESTARTING SERVICES ]"
-service apache2 restart &>/dev/null
-service naspi-pd restart
+${T}service apache2 restart $t&>/dev/null
+${T}service naspi-pd restart$t
 cd $START_DIR
 echo "  [ NAS-Pi SUCCESSFULLY INSTALLED ]"
