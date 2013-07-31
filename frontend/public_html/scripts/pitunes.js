@@ -10,9 +10,37 @@ function PiTunesPlayer()
 	this.TimeElapsed = 0;
 	this.TimeRemaining = 0;
 	this.cactive = 0;
+	this.PlaylistTemplate = "";
+	this.PlaylistRowTemplate = "";
 	
 	this.Initialize = function()
 	{
+		if (window.XMLHttpRequest)
+		{// code for IE7+, Firefox, Chrome, Opera, Safari
+			var lnxhr = new XMLHttpRequest();
+		}
+		else
+		{// code for IE6, IE5
+			var lnxhr = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		lnxhr.open("GET", "/?module=pitunes&sub=template&template=playlist", false);
+		lnxhr.send(null);
+		this.PlaylistTemplate = lnxhr.responseText;
+		
+		if (window.XMLHttpRequest)
+		{// code for IE7+, Firefox, Chrome, Opera, Safari
+			var lnxhr = new XMLHttpRequest();
+		}
+		else
+		{// code for IE6, IE5
+			var lnxhr = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		lnxhr.open("GET", "/?module=pitunes&sub=template&template=playlistrow", false);
+		lnxhr.send(null);
+		this.PlaylistRowTemplate = lnxhr.responseText;
+		
 		this.CurrentTrackFetcher();
 		this.PlaylistFetcher(0, 4);
 	}
@@ -87,8 +115,13 @@ function PiTunesPlayer()
 	this.CurrentTrackHandler = function(currenttrack)
 	{
 		this.cactive = 0;
-		var fprt = currenttrack.split("\t");;
+		var fprt = currenttrack.split("\t");
+		
+		var dd = document.getElementById("playlist_row_"+this.CurrentPos);
+		if(dd != null) { dd.className = "playlist_row"; }
 		this.CurrentPos = fprt[0];
+		var dx = document.getElementById("playlist_row_"+this.CurrentPos);
+		if(dx != null) { dx.className="playlist_row_current"; }
 		
 		currenttrack = currenttrack.substring(currenttrack.lastIndexOf("/") + 1);
 		
@@ -124,31 +157,28 @@ function PiTunesPlayer()
 		this.cactive = 0;
 		
 		this.Playlist = eval("("+entries+")");
-		/*
-		var tracks = entries.split("	&^%$|");
 		
-		for(var i=0; i < tracks.length; i++)
+		this.RenderPlaylist();
+	}
+	
+	this.RenderPlaylist = function()
+	{
+		var allrows = "";
+		for(var et = 0; et < this.Playlist.length; et++)
 		{
-			if(tracks[i].length > 10)
-			{
-				var numnnam = tracks[i].split("\t");
+			var trow = this.PlaylistRowTemplate;
 			
-				this.Playlist[numnnam[0]] = numnnam[1];
-			}
-			else { this.PlaylistLow = 0; }
+			trow = trow.replace("[TRACK]", this.Playlist[et]);
+			while(trow.indexOf("[INDEX]") != -1) { trow = trow.replace("[INDEX]", et); }
+			
+			allrows = allrows+trow;
 		}
 		
+		var tmp = this.PlaylistTemplate;
+		tmp = tmp.replace("[EACHROW]", allrows);
 		
-		setTimeout(function() { Player.PlaylistFetcher(); }, 6000);
-		*/
-		var fllst = "";
-		for(var i=0; i < this.Playlist.length; i++)
-		{
-			fllst = fllst+this.Playlist[i]+"<br />";
-		}
-		document.getElementById("pitunes_playlist").innerHTML = fllst;
+		document.getElementById("pitunes_playlist").innerHTML = tmp;
 		
-		/*this.PlaylistLow = this.PlaylistLow + 5;
-		if(this.PlaylistLow >= 100) { this.PlaylistLow = 0; }*/
+		document.getElementById("playlist_row_"+this.CurrentPos).className = "playlist_row_current";
 	}
 }

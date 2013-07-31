@@ -8,7 +8,7 @@
 
 class modAddons extends BackendModule
 {
-	public $RepoHost = "10.42.0.151:3000";
+	public $RepoHost = "www.nas-pi.com";
 	
 	function Initialize()
 	{

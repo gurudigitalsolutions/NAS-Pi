@@ -13,14 +13,35 @@
 
 .pitunes_playlist
 {
-	width: 500px;
+	width: 700px;
 	height: 340px;
+	margin-left: auto;
+	margin-right: auto;
 	overflow: scroll;
 	overflow-x: scroll;
 	overflow-y: scroll;
 	white-space: nowrap;
 	background: #222222;
 	color: #FFFFFF;
+}
+
+.playlist_row
+{
+	border-style: solid;
+	border-top-width: 0px;
+	border-left-width: 0px;
+	border-right-width: 0px;
+	border-bottom-width: 1px;
+}
+
+.playlist_row:hover
+{
+	background: #444444;
+}
+
+.playlist_row_current
+{
+	background: #336633;
 }
 
 .pitunes_library
@@ -34,10 +55,9 @@
 	border-color: #BBBBBB;
 	padding: 5px;
 	background: #DDDDDD;
-	width: 500px;
 }
 
 .pitunes_controls
 {
-
+	text-align: center;
 }

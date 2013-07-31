@@ -45,6 +45,7 @@ class modPiTunes extends PiNASModule
 		
 		if($sub == "home") { $toret = $this->BuildPlayer(); }
 		else if($sub == "query") { $this->RunQuery($RequestVars["args"]); }
+		else if($sub == "template") { $this->GetTemplate(); }
 		else { $toret = "PiTunes?"; }
 		
 		return $toret;
@@ -109,6 +110,18 @@ class modPiTunes extends PiNASModule
 		
 		$nothing = array();
 		echo json_encode($nothing);
+		exit;
+	}
+	
+	public function GetTemplate()
+	{
+		global $RequestVars;
+		$tmp = $RequestVars['template'];
+		if($tmp == "") { echo "FAIL No template suggested."; exit; }
+		else if($tmp == "playlist") { echo file_get_contents(MODULEPATH."/pitunes/templates/playlist.html"); exit; }
+		else if($tmp == "playlistrow") { echo file_get_contents(MODULEPATH."/pitunes/templates/playlist-eachrow.html"); exit; }
+		
+		echo "I dunno?";
 		exit;
 	}
 	

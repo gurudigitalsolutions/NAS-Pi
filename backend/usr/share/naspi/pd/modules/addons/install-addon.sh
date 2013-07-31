@@ -8,7 +8,7 @@
 #
 #####################################################################################
 
-REPOURL="http://10.42.0.151:3000"
+REPOURL="http://www.nas-pi.com"
 mkdir /tmp/naspi/downloads -p
 cd /tmp/naspi/downloads
 mkdir $1

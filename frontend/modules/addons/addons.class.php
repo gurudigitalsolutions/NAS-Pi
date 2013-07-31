@@ -7,7 +7,7 @@ class modAddOns extends PiNASModule
 {
 
 	public $MandatoryAddOns = array("admin", "users", "files", "addons");
-	public $RepoHost = "10.42.0.151:3000";
+	public $RepoHost = "www.nas-pi.com";
 	public $RepoPath = "/addons/list";
 	public $ReupdatePeriod = 3600;
 	
