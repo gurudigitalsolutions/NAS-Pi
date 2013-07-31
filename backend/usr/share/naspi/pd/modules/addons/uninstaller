@@ -21,6 +21,8 @@ TravelFiles(BASEPATH."/cms", $CopyLog["cms"]);
 TravelFiles(BASEPATH."/public_html/scripts", $CopyLog["scripts"]);
 TravelFiles(BASEPATH."/public_html/stylesheets", $CopyLog["stylesheets"]);
 TravelFiles(BASEPATH."/public_html/images", $CopyLog["images"], true);
+TravelFiles("/usr", $CopyLog["usr"], true);
+TravelFiles("/etc", $CopyLog["etc"], true);
 
 echo "DELETING Manifest\n";
 unlink(BASEPATH."/addons/modules/".$argv[1]."/manifest.ini");

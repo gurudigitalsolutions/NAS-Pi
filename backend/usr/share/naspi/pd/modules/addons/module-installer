@@ -115,6 +115,19 @@ echo "::STATUS:: Copying images\n"; $CopyLog["images"] = DoScan("images", $publi
 echo "::STATUS:: Copying stylesheets\n"; $CopyLog["stylesheets"] = DoScan("stylesheets", $publichtmldir."/stylesheets");
 echo "::STATUS:: Copying cms\n"; $CopyLog["cms"] = DoScan("cms", $cmsdir);
 
+if(file_exists("backend") && is_dir("backend"))
+{
+	if(file_exists("backend/etc"))
+	{
+		echo "::STATUS:: Copying /etc\n"; $CopyLog["etc"] = DoScan("backend/etc", "/etc");
+	}
+	
+	if(file_exists("backend/usr"))
+	{
+		echo "::STATUS:: Copying /usr\n"; $CopyLog["usr"] = DoScan("backend/usr", "/usr");
+	}
+}
+
 file_put_contents($modconfdir."/".$Manifest["code"]."/copylog.srl", serialize($CopyLog));
 //print_r($CopyLog);
 
