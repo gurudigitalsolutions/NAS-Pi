@@ -67,7 +67,7 @@ function InitPackageBrowser()
 
 function AddOnBrowser()
 {
-	this.RepoHost = "http://10.42.0.151:3000";
+	this.RepoHost = "http://www.nas-pi.com";
 	this.tableTemplate = "";
 	this.tableRowTemplate = "";
 	this.zoomTemplate = "";
