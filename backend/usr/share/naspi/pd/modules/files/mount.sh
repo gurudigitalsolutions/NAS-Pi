@@ -78,10 +78,9 @@ set +x
 #
 #-----------------------------------------------------------------------
 
-#
-# Logs messages and errors, if enabled, to file
-#
-function log() {
+log() #
+# Logs messages and errors, if enabled, to file 
+{
 	#set -x
 	
 	if [[ $# -eq 1 ]]; then
@@ -103,10 +102,9 @@ if [[ $CONFIG_SET = FALSE ]]; then
 	exit ${E_CONFIG[0]}
 fi
 
-#
+create_missing_directory() #
 # Create a directory if not already present
-#
-function create_missing_directory() {
+{
 #set -x
 	if [[ ! -e $1 ]]; then
 		if [[ $# -eq 2 ]]; then
@@ -121,10 +119,9 @@ function create_missing_directory() {
 set +x
 }
 
-#
+get_data() #
 # Run external script to query frontend for source information
-#
-function get_data() {
+{
 #set -x
 	"$SOURCE_DATA"/./sourcedata $1 $2
 set +x
@@ -154,10 +151,9 @@ Source_List=$(get_data)
 #
 #-----------------------------------------------------------------------
 
-#
+device_fstab() #
 # Block device specifics
-#
-function device_fstab() {		
+{
 	#set -x
 	local UUID=$(get_data $1 UUID)
 	local Source_Code=$(get_data $1 SourceCode)
@@ -169,10 +165,9 @@ function device_fstab() {
 	set +x
 }
 
-#
+smb_fstab() #
 # SMB specifics
-#
-function smb_fstab() {
+{
 #set -x
 	create_missing_directory $CREDENTIALS 750
 
@@ -195,10 +190,9 @@ function smb_fstab() {
 set +x
 }
 
-#
+function sshfs_fstab() #
 # SSHFS specifics
-#
-function sshfs_fstab() {
+{
 #set -x
 	create_missing_directory $CREDENTIALS 750
 	
@@ -227,10 +221,9 @@ function sshfs_fstab() {
 set +x
 }
 
-#
+ftp_fstab() #
 # FTP specifics
-#
-function ftp_fstab() {
+{
 	#set -x
 	local Remote_Host=$(get_data $1 RemoteHost)
 	local REMOTE_PORT=$(get_data $1 Port)
@@ -253,10 +246,9 @@ function ftp_fstab() {
 set +x
 }
 
-#
+bind_fstab() #
 # Bind specifics
-#
-function bind_fstab() {
+{
 #set -x
 	local Source_Code=$(get_data $1 SourceCode)
 	local Original_Source_Code=$(get_data $1 OriginalSourceCode)
@@ -272,11 +264,10 @@ function bind_fstab() {
 set +x
 }
 
-#
+function save_fstab() #
 # Checks the file system type of source and creates/updates an fstab 
 # entry
-#
-function save_fstab() {
+{
 #set -x
 	${FSType}_fstab $Source
 	[[ $? -eq 0 ]]&& log "Saved source to $FSTAB_DIR/$Source"
@@ -298,10 +289,9 @@ set +x
 #
 #-----------------------------------------------------------------------
 
-#
+mount_control() #
 # mounts/unmounts sources based on filesystem type
-#
-function mount_control() {
+{
 #set -x
 	if [[ $FSType == sshfs ]];then
 		
@@ -328,11 +318,10 @@ function mount_control() {
 set +x
 }
 
-#
+update_status() #
 # Checks if the specified source is mounted and attempts to mount it if
 # not already mounted
-#
-function update_status() {
+{
 #set -x
 	Mounted=$(mount -l | grep "on $MOUNT_PATH/$Source type ")
 	Enabled=$(get_data $Source Enabled)
