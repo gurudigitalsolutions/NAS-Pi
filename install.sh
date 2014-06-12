@@ -288,7 +288,7 @@ if [[ $1 == '--test' ]];then
 	t=\'
 fi
 
-if [[ $(id -u) != 0 ]]&&[[ $(id -g) != 0 ]]; then
+if [[ $(id -u) > 0 ]] || [[ $(id -g) > 0 ]]; then
 	echo "[ERROR $E_ROOT[0]}] ${E_ROOT[1]}"
 	${T}exit "${E_ROOT[0]}"$T
 fi
